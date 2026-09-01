@@ -1,0 +1,1131 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WordFlow · 英文精读翻译</title>
+    <style>
+      :root {
+        --ink: #17211b;
+        --muted: #69736d;
+        --line: #dfe4e1;
+        --soft-line: #ecefed;
+        --paper: #ffffff;
+        --canvas: #f5f7f5;
+        --green: #176b48;
+        --green-dark: #0f5036;
+        --green-soft: #e8f3ed;
+        --amber: #d59625;
+        --amber-soft: #fff4dc;
+        --danger: #b43d3d;
+        --shadow: 0 14px 36px rgba(31, 50, 39, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        min-height: 100vh;
+        color: var(--ink);
+        background: var(--canvas);
+        font-family:
+          Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        letter-spacing: 0;
+      }
+
+      button,
+      textarea,
+      select {
+        font: inherit;
+      }
+
+      button {
+        color: inherit;
+      }
+
+      .app-shell {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: 64px 1fr;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 0 28px;
+        color: #fff;
+        background: #173f2f;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .brand-mark {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        color: #173f2f;
+        background: #f6c85f;
+        border-radius: 7px;
+        font-family: Georgia, serif;
+        font-size: 19px;
+        font-weight: 700;
+      }
+
+      .brand-name {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 19px;
+        font-weight: 700;
+      }
+
+      .brand-subtitle {
+        margin-left: 10px;
+        color: rgba(255, 255, 255, 0.64);
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .header-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .status-dot {
+        width: 7px;
+        height: 7px;
+        background: #f6c85f;
+        border-radius: 50%;
+        box-shadow: 0 0 0 4px rgba(246, 200, 95, 0.13);
+      }
+
+      .status-dot.ready {
+        background: #78d4a4;
+        box-shadow: 0 0 0 4px rgba(120, 212, 164, 0.13);
+      }
+
+      .status-dot.loading {
+        animation: status-pulse 1.1s ease-in-out infinite;
+      }
+
+      .status-dot.error {
+        background: #ee8b8b;
+        box-shadow: 0 0 0 4px rgba(238, 139, 139, 0.13);
+      }
+
+      @keyframes status-pulse {
+        50% {
+          opacity: 0.45;
+        }
+      }
+
+      main {
+        width: min(1440px, 100%);
+        margin: 0 auto;
+        padding: 28px;
+        display: grid;
+        grid-template-columns: minmax(310px, 0.82fr) minmax(500px, 1.38fr);
+        gap: 20px;
+        align-items: stretch;
+      }
+
+      .panel {
+        min-width: 0;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .source-panel {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        min-height: calc(100vh - 120px);
+      }
+
+      .panel-heading {
+        min-height: 66px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--soft-line);
+      }
+
+      .title-group h1,
+      .title-group h2 {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.3;
+      }
+
+      .eyebrow {
+        margin: 0 0 4px;
+        color: var(--green);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .language-pair {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .language-pair strong {
+        color: var(--ink);
+        font-weight: 650;
+      }
+
+      .source-body {
+        display: grid;
+        grid-template-rows: auto auto minmax(260px, 1fr) auto;
+        min-height: 0;
+        padding: 18px;
+      }
+
+      .field-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .sample-select {
+        width: 100%;
+        height: 38px;
+        margin-bottom: 14px;
+        padding: 0 34px 0 11px;
+        color: var(--ink);
+        background: #fafbfa;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        outline: none;
+      }
+
+      .sample-select:focus,
+      textarea:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px rgba(23, 107, 72, 0.1);
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 260px;
+        padding: 16px;
+        resize: none;
+        color: #26332c;
+        background: #fbfcfb;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        outline: none;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 17px;
+        line-height: 1.75;
+        letter-spacing: 0;
+      }
+
+      .source-meta {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .source-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 18px;
+        background: #fafbfa;
+        border-top: 1px solid var(--soft-line);
+      }
+
+      .footer-note {
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.45;
+      }
+
+      .primary-button,
+      .tool-button,
+      .segment-button {
+        border: 0;
+        cursor: pointer;
+      }
+
+      .primary-button {
+        min-width: 116px;
+        height: 42px;
+        padding: 0 18px;
+        color: #fff;
+        background: var(--green);
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 700;
+        box-shadow: 0 6px 14px rgba(23, 107, 72, 0.2);
+      }
+
+      .primary-button:hover {
+        background: var(--green-dark);
+      }
+
+      .primary-button:active {
+        transform: translateY(1px);
+      }
+
+      .result-panel {
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        min-height: calc(100vh - 120px);
+      }
+
+      .reading-toolbar {
+        min-height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 9px 18px;
+        background: #fafbfa;
+        border-bottom: 1px solid var(--soft-line);
+      }
+
+      .playback-actions,
+      .audio-controls,
+      .speed-control {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .voice-select {
+        width: 148px;
+        height: 34px;
+        padding: 0 28px 0 9px;
+        color: #314139;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        outline: none;
+        font-size: 11px;
+        font-weight: 650;
+      }
+
+      .voice-select:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px rgba(23, 107, 72, 0.1);
+      }
+
+      .tool-button {
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 0 11px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: #314139;
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .tool-button:hover {
+        color: var(--green);
+        border-color: #a8c5b5;
+      }
+
+      .tool-button:disabled,
+      .voice-select:disabled,
+      .segment-button:disabled,
+      .word-token:disabled,
+      .detail-speaker:disabled {
+        cursor: wait;
+        opacity: 0.52;
+      }
+
+      .tool-button svg {
+        width: 15px;
+        height: 15px;
+        fill: currentColor;
+      }
+
+      .speed-label {
+        margin-right: 2px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .segmented {
+        display: flex;
+        padding: 3px;
+        background: #edf0ee;
+        border-radius: 6px;
+      }
+
+      .segment-button {
+        width: 42px;
+        height: 27px;
+        padding: 0;
+        color: var(--muted);
+        background: transparent;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .segment-button.active {
+        color: var(--green-dark);
+        background: #fff;
+        box-shadow: 0 1px 4px rgba(24, 42, 32, 0.12);
+      }
+
+      .reading-area {
+        min-height: 0;
+        overflow-y: auto;
+        padding: 38px clamp(24px, 5vw, 64px) 42px;
+      }
+
+      .sentence-number {
+        width: 24px;
+        height: 24px;
+        display: inline-grid;
+        place-items: center;
+        margin-bottom: 22px;
+        color: var(--green-dark);
+        background: var(--green-soft);
+        border-radius: 50%;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .word-stream {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        column-gap: 5px;
+        row-gap: 20px;
+      }
+
+      .word-token {
+        min-width: 22px;
+        display: inline-grid;
+        grid-template-rows: 23px 31px;
+        place-items: center;
+        padding: 2px 5px;
+        border: 0;
+        border-radius: 5px;
+        background: transparent;
+        cursor: pointer;
+        transition:
+          background 150ms ease,
+          color 150ms ease,
+          transform 150ms ease;
+      }
+
+      .word-token:hover {
+        color: var(--green-dark);
+        background: var(--green-soft);
+        transform: translateY(-1px);
+      }
+
+      .word-token.active {
+        color: #79520c;
+        background: var(--amber-soft);
+        box-shadow: inset 0 -2px 0 var(--amber);
+      }
+
+      .phonetic {
+        color: #7b8580;
+        font-family: "Arial Unicode MS", Arial, sans-serif;
+        font-size: 11px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .word {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 21px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .translation-block {
+        margin-top: 34px;
+        padding-top: 26px;
+        border-top: 1px solid var(--line);
+      }
+
+      .translation-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 750;
+      }
+
+      .translation-label::before {
+        content: "";
+        width: 18px;
+        height: 2px;
+        background: var(--amber);
+      }
+
+      .translation {
+        margin: 0;
+        color: #26342d;
+        font-size: 18px;
+        line-height: 1.9;
+      }
+
+      .word-detail {
+        min-height: 78px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 18px;
+        padding: 14px 20px;
+        background: #f7faf8;
+        border-top: 1px solid var(--line);
+      }
+
+      .detail-main {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .detail-speaker {
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        color: var(--green-dark);
+        background: var(--green-soft);
+        border: 0;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      .detail-speaker svg {
+        width: 17px;
+        height: 17px;
+        fill: currentColor;
+      }
+
+      .detail-word {
+        margin-right: 8px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .detail-phonetic {
+        color: var(--green);
+        font-size: 12px;
+      }
+
+      .detail-meaning {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .play-state {
+        min-width: 76px;
+        color: var(--muted);
+        font-size: 11px;
+        text-align: right;
+      }
+
+      .play-state.speaking {
+        color: var(--green);
+        font-weight: 700;
+      }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 24px;
+        z-index: 10;
+        max-width: calc(100vw - 32px);
+        padding: 10px 14px;
+        color: #fff;
+        background: rgba(26, 37, 31, 0.94);
+        border-radius: 6px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+        font-size: 12px;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 8px);
+        transition: 160ms ease;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      @media (max-width: 900px) {
+        .app-shell {
+          grid-template-rows: 58px 1fr;
+        }
+
+        .topbar {
+          padding: 0 18px;
+        }
+
+        main {
+          padding: 16px;
+          grid-template-columns: 1fr;
+        }
+
+        .source-panel,
+        .result-panel {
+          min-height: auto;
+        }
+
+        .source-panel {
+          grid-template-rows: auto auto auto;
+        }
+
+        textarea {
+          min-height: 180px;
+        }
+
+        .result-panel {
+          min-height: 620px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .brand-subtitle,
+        .header-status,
+        .language-pair,
+        .footer-note,
+        .speed-label {
+          display: none;
+        }
+
+        main {
+          padding: 10px;
+          gap: 12px;
+        }
+
+        .panel-heading,
+        .reading-toolbar {
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+
+        .reading-toolbar {
+          flex-wrap: wrap;
+        }
+
+        .audio-controls {
+          width: 100%;
+          justify-content: space-between;
+        }
+
+        .voice-select {
+          width: min(150px, 46vw);
+        }
+
+        .source-body {
+          padding: 14px;
+        }
+
+        .source-footer {
+          justify-content: flex-end;
+        }
+
+        .primary-button {
+          width: 100%;
+        }
+
+        .tool-button span {
+          display: none;
+        }
+
+        .tool-button {
+          width: 34px;
+          padding: 0;
+        }
+
+        .segment-button {
+          width: 36px;
+        }
+
+        .reading-area {
+          padding: 28px 18px 34px;
+        }
+
+        .word-stream {
+          column-gap: 3px;
+          row-gap: 17px;
+        }
+
+        .word-token {
+          padding-left: 4px;
+          padding-right: 4px;
+        }
+
+        .word {
+          font-size: 19px;
+        }
+
+        .phonetic {
+          font-size: 10px;
+        }
+
+        .translation {
+          font-size: 16px;
+        }
+
+        .word-detail {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .play-state {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">W</div>
+          <div>
+            <span class="brand-name">WordFlow</span>
+            <span class="brand-subtitle">英文精读翻译</span>
+          </div>
+        </div>
+        <div class="header-status">
+          <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+          <span id="model-status">系统音色 · 正在检测</span>
+        </div>
+      </header>
+
+      <main>
+        <section class="panel source-panel" aria-labelledby="source-title">
+          <div class="panel-heading">
+            <div class="title-group">
+              <p class="eyebrow">Input</p>
+              <h1 id="source-title">英文原文</h1>
+            </div>
+            <div class="language-pair">
+              <strong>English</strong>
+              <span aria-hidden="true">→</span>
+              <strong>简体中文</strong>
+            </div>
+          </div>
+
+          <div class="source-body">
+            <label class="field-label" for="sample-select">
+              <span>选择示例段落</span>
+            </label>
+            <select class="sample-select" id="sample-select">
+              <option value="curiosity">好奇心与学习</option>
+              <option value="morning">清晨的城市</option>
+              <option value="ocean">海洋与生态</option>
+            </select>
+            <textarea id="source-input" maxlength="800" spellcheck="true"></textarea>
+            <div class="source-meta">
+              <span id="char-count">0 / 800</span>
+            </div>
+          </div>
+
+          <div class="source-footer">
+            <span class="footer-note">支持英文段落，单次最多 800 字符</span>
+            <button class="primary-button" id="translate-button" type="button">
+              翻译并解析
+            </button>
+          </div>
+        </section>
+
+        <section class="panel result-panel" aria-labelledby="result-title">
+          <div class="panel-heading">
+            <div class="title-group">
+              <p class="eyebrow">Reading</p>
+              <h2 id="result-title">逐词精读</h2>
+            </div>
+            <div class="language-pair">
+              <span id="word-count">0 个单词</span>
+            </div>
+          </div>
+
+          <div class="reading-toolbar">
+            <div class="playback-actions">
+              <button class="tool-button" id="play-all" type="button" title="朗读整段">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8c0 .8.9 1.3 1.6.8l9.2-6.4a1 1 0 0 0 0-1.6L9.6 4.8A1 1 0 0 0 8 5.6Z"/></svg>
+                <span>朗读整段</span>
+              </button>
+              <button class="tool-button" id="stop-all" type="button" title="停止朗读">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5h11v11h-11z"/></svg>
+                <span>停止</span>
+              </button>
+            </div>
+            <div class="audio-controls">
+              <select class="voice-select" id="voice-select" aria-label="浏览器系统英文音色">
+                <option value="">系统默认英文</option>
+              </select>
+              <div class="speed-control" aria-label="朗读速度">
+                <span class="speed-label">语速</span>
+                <div class="segmented">
+                  <button class="segment-button" type="button" data-rate="0.8">0.8x</button>
+                  <button class="segment-button active" type="button" data-rate="1">1x</button>
+                  <button class="segment-button" type="button" data-rate="1.2">1.2x</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="reading-area">
+            <span class="sentence-number" aria-label="第 1 段">1</span>
+            <div class="word-stream" id="word-stream"></div>
+
+            <div class="translation-block">
+              <div class="translation-label">中文翻译</div>
+              <p class="translation" id="translation"></p>
+            </div>
+          </div>
+
+          <div class="word-detail" aria-live="polite">
+            <div class="detail-main">
+              <button class="detail-speaker" id="detail-speaker" type="button" title="播放当前单词">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Zm12.4-.9a1 1 0 0 0-1.4 1.4 3.5 3.5 0 0 1 0 5 1 1 0 0 0 1.4 1.4 5.5 5.5 0 0 0 0-7.8Zm2.8-2.8a1 1 0 1 0-1.4 1.4 7.5 7.5 0 0 1 0 10.6 1 1 0 1 0 1.4 1.4 9.5 9.5 0 0 0 0-13.4Z"/></svg>
+              </button>
+              <div>
+                <div>
+                  <span class="detail-word" id="detail-word">curiosity</span>
+                  <span class="detail-phonetic" id="detail-phonetic">/ˌkjʊriˈɒsəti/</span>
+                </div>
+                <div class="detail-meaning" id="detail-meaning">n. 好奇心；求知欲</div>
+              </div>
+            </div>
+            <div class="play-state" id="play-state">点击单词发音</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+
+    <script>
+      const samples = {
+        curiosity: {
+          text: "Curiosity turns ordinary moments into opportunities for discovery. When we ask thoughtful questions, even familiar ideas can reveal something new.",
+          translation: "好奇心能把平凡的时刻变成探索的机会。当我们提出有思考的问题时，即使是熟悉的想法也能展现出新的一面。",
+          words: [
+            ["Curiosity", "/ˌkjʊriˈɒsəti/", "n. 好奇心；求知欲"],
+            ["turns", "/tɜːnz/", "v. 使变成；转变"],
+            ["ordinary", "/ˈɔːdənri/", "adj. 普通的；平常的"],
+            ["moments", "/ˈməʊmənts/", "n. 时刻；片刻"],
+            ["into", "/ˈɪntuː/", "prep. 到……里面；成为"],
+            ["opportunities", "/ˌɒpəˈtjuːnətiz/", "n. 机会；时机"],
+            ["for", "/fɔːr/", "prep. 为了；对于"],
+            ["discovery.", "/dɪˈskʌvəri/", "n. 发现；探索成果"],
+            ["When", "/wen/", "conj. 当……时"],
+            ["we", "/wiː/", "pron. 我们"],
+            ["ask", "/ɑːsk/", "v. 询问；提出"],
+            ["thoughtful", "/ˈθɔːtfl/", "adj. 深思熟虑的"],
+            ["questions,", "/ˈkwestʃənz/", "n. 问题"],
+            ["even", "/ˈiːvən/", "adv. 甚至；即使"],
+            ["familiar", "/fəˈmɪliə/", "adj. 熟悉的"],
+            ["ideas", "/aɪˈdɪəz/", "n. 想法；观念"],
+            ["can", "/kæn/", "modal v. 能够"],
+            ["reveal", "/rɪˈviːl/", "v. 揭示；展现"],
+            ["something", "/ˈsʌmθɪŋ/", "pron. 某事；某物"],
+            ["new.", "/njuː/", "adj. 新的"],
+          ],
+        },
+        morning: {
+          text: "The city wakes slowly in the early light. Bakers open their doors, buses begin their routes, and the first cups of coffee warm tired hands.",
+          translation: "城市在晨光中缓缓苏醒。面包师打开店门，公交车开始行驶，而第一杯咖啡温暖了疲惫的双手。",
+          words: [
+            ["The", "/ðə/", "art. 这；该"], ["city", "/ˈsɪti/", "n. 城市"],
+            ["wakes", "/weɪks/", "v. 醒来"], ["slowly", "/ˈsləʊli/", "adv. 缓慢地"],
+            ["in", "/ɪn/", "prep. 在……中"], ["the", "/ðə/", "art. 这；该"],
+            ["early", "/ˈɜːli/", "adj. 早期的"], ["light.", "/laɪt/", "n. 光线"],
+            ["Bakers", "/ˈbeɪkəz/", "n. 面包师"], ["open", "/ˈəʊpən/", "v. 打开"],
+            ["their", "/ðeə/", "det. 他们的"], ["doors,", "/dɔːz/", "n. 门"],
+            ["buses", "/ˈbʌsɪz/", "n. 公交车"], ["begin", "/bɪˈɡɪn/", "v. 开始"],
+            ["their", "/ðeə/", "det. 他们的"], ["routes,", "/ruːts/", "n. 路线"],
+            ["and", "/ænd/", "conj. 和；并且"], ["the", "/ðə/", "art. 这；该"],
+            ["first", "/fɜːst/", "adj. 第一的"], ["cups", "/kʌps/", "n. 杯"],
+            ["of", "/əv/", "prep. ……的"], ["coffee", "/ˈkɒfi/", "n. 咖啡"],
+            ["warm", "/wɔːm/", "v. 使温暖"], ["tired", "/ˈtaɪəd/", "adj. 疲惫的"],
+            ["hands.", "/hændz/", "n. 手"],
+          ],
+        },
+        ocean: {
+          text: "Healthy oceans support countless forms of life. Protecting them requires patient research, responsible choices, and cooperation across borders.",
+          translation: "健康的海洋养育着无数生命。保护海洋需要耐心的研究、负责任的选择，以及跨越国界的合作。",
+          words: [
+            ["Healthy", "/ˈhelθi/", "adj. 健康的"], ["oceans", "/ˈəʊʃənz/", "n. 海洋"],
+            ["support", "/səˈpɔːt/", "v. 支持；供养"], ["countless", "/ˈkaʊntləs/", "adj. 无数的"],
+            ["forms", "/fɔːmz/", "n. 形式；种类"], ["of", "/əv/", "prep. ……的"],
+            ["life.", "/laɪf/", "n. 生命"], ["Protecting", "/prəˈtektɪŋ/", "v. 保护"],
+            ["them", "/ðem/", "pron. 它们"], ["requires", "/rɪˈkwaɪəz/", "v. 需要"],
+            ["patient", "/ˈpeɪʃənt/", "adj. 有耐心的"], ["research,", "/rɪˈsɜːtʃ/", "n. 研究"],
+            ["responsible", "/rɪˈspɒnsəbl/", "adj. 负责任的"], ["choices,", "/ˈtʃɔɪsɪz/", "n. 选择"],
+            ["and", "/ænd/", "conj. 和；并且"], ["cooperation", "/kəʊˌɒpəˈreɪʃn/", "n. 合作"],
+            ["across", "/əˈkrɒs/", "prep. 跨越"], ["borders.", "/ˈbɔːdəz/", "n. 边界；国界"],
+          ],
+        },
+      };
+
+      const sourceInput = document.querySelector("#source-input");
+      const sampleSelect = document.querySelector("#sample-select");
+      const charCount = document.querySelector("#char-count");
+      const wordStream = document.querySelector("#word-stream");
+      const translation = document.querySelector("#translation");
+      const wordCount = document.querySelector("#word-count");
+      const detailWord = document.querySelector("#detail-word");
+      const detailPhonetic = document.querySelector("#detail-phonetic");
+      const detailMeaning = document.querySelector("#detail-meaning");
+      const playState = document.querySelector("#play-state");
+      const toast = document.querySelector("#toast");
+      const voiceSelect = document.querySelector("#voice-select");
+      const modelStatus = document.querySelector("#model-status");
+      const statusDot = document.querySelector("#status-dot");
+      let activeSample = samples.curiosity;
+      let activeWordIndex = 0;
+      let activeVoice = null;
+      let rate = 1;
+      let toastTimer;
+      let englishVoices = [];
+
+      const preferredVoicePatterns = [
+        /Microsoft.*(Ava|Jenny|Aria).*Natural/i,
+        /^Samantha$/i,
+        /^Google US English$/i,
+        /Microsoft.*(Natural|Online)/i,
+        /^Alex$/i,
+        /^Daniel$/i,
+      ];
+
+      const cleanWord = (word) => word.replace(/[^a-zA-Z'-]/g, "");
+
+      function updateCount() {
+        charCount.textContent = `${sourceInput.value.length} / 800`;
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+      }
+
+      function updateModelStatus(text, state = "") {
+        modelStatus.textContent = text;
+        statusDot.className = `status-dot ${state}`.trim();
+      }
+
+      function voiceKey(voice) {
+        return voice.voiceURI || `${voice.name}|${voice.lang}`;
+      }
+
+      function choosePreferredVoice(voices) {
+        for (const pattern of preferredVoicePatterns) {
+          const match = voices.find((voice) => pattern.test(voice.name));
+          if (match) return match;
+        }
+        return voices.find((voice) => voice.default && voice.lang === "en-US")
+          || voices.find((voice) => voice.lang === "en-US")
+          || voices.find((voice) => voice.default)
+          || voices[0]
+          || null;
+      }
+
+      function loadSystemVoices() {
+        if (!("speechSynthesis" in window)) {
+          voiceSelect.disabled = true;
+          updateModelStatus("系统音色 · 浏览器不支持", "error");
+          return;
+        }
+
+        const voices = window.speechSynthesis.getVoices();
+        englishVoices = voices.filter((voice) => voice.lang.toLowerCase().startsWith("en"));
+        if (!englishVoices.length) {
+          updateModelStatus("系统音色 · 使用浏览器默认", "loading");
+          return;
+        }
+
+        const previousKey = activeVoice ? voiceKey(activeVoice) : "";
+        activeVoice = englishVoices.find((voice) => voiceKey(voice) === previousKey)
+          || choosePreferredVoice(englishVoices);
+
+        voiceSelect.replaceChildren();
+        englishVoices.forEach((voice) => {
+          const option = document.createElement("option");
+          option.value = voiceKey(voice);
+          option.textContent = `${voice.name} · ${voice.lang}`;
+          voiceSelect.appendChild(option);
+        });
+        voiceSelect.value = voiceKey(activeVoice);
+        updateModelStatus(`系统音色 · ${activeVoice.name}`, "ready");
+      }
+
+      function clearSpeakingState() {
+        document.querySelectorAll(".word-token.active").forEach((item) => item.classList.remove("active"));
+        playState.textContent = "点击单词发音";
+        playState.classList.remove("speaking");
+      }
+
+      function stopSpeech() {
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        clearSpeakingState();
+      }
+
+      function speak(text, index = null) {
+        if (!("speechSynthesis" in window)) {
+          showToast("当前浏览器不支持系统语音");
+          return;
+        }
+
+        stopSpeech();
+        if (index !== null) {
+          const token = wordStream.children[index];
+          token?.classList.add("active");
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = activeVoice?.lang || "en-US";
+        utterance.rate = rate;
+        if (activeVoice) utterance.voice = activeVoice;
+        utterance.onstart = () => {
+          playState.textContent = index === null ? "正在朗读整段" : "正在播放";
+          playState.classList.add("speaking");
+        };
+        utterance.onend = clearSpeakingState;
+        utterance.onerror = (event) => {
+          clearSpeakingState();
+          if (event.error !== "canceled" && event.error !== "interrupted") {
+            showToast("系统语音播放失败，请切换音色后重试");
+          }
+        };
+        window.speechSynthesis.speak(utterance);
+      }
+
+      function selectWord(index, shouldSpeak = true) {
+        const item = activeSample.words[index];
+        if (!item) return;
+        activeWordIndex = index;
+        detailWord.textContent = cleanWord(item[0]);
+        detailPhonetic.textContent = item[1];
+        detailMeaning.textContent = item[2];
+        if (shouldSpeak) speak(cleanWord(item[0]), index);
+      }
+
+      function renderResult(sample) {
+        activeSample = sample;
+        wordStream.replaceChildren();
+
+        sample.words.forEach((item, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "word-token";
+          button.title = `播放 ${cleanWord(item[0])}`;
+          button.setAttribute("aria-label", `${item[0]}，音标 ${item[1]}，点击发音`);
+          button.innerHTML = `<span class="phonetic">${item[1]}</span><span class="word">${item[0]}</span>`;
+          button.addEventListener("click", () => selectWord(index));
+          wordStream.appendChild(button);
+        });
+
+        translation.textContent = sample.translation;
+        wordCount.textContent = `${sample.words.length} 个单词`;
+        selectWord(0, false);
+      }
+
+      function loadSample(key) {
+        stopSpeech();
+        const sample = samples[key];
+        sourceInput.value = sample.text;
+        updateCount();
+        renderResult(sample);
+      }
+
+      sampleSelect.addEventListener("change", (event) => loadSample(event.target.value));
+      sourceInput.addEventListener("input", updateCount);
+
+      document.querySelector("#translate-button").addEventListener("click", () => {
+        const normalized = sourceInput.value.trim().replace(/\s+/g, " ");
+        const match = Object.values(samples).find((sample) => sample.text === normalized);
+        if (match) {
+          renderResult(match);
+          showToast("翻译与音标解析已更新");
+          return;
+        }
+        showToast("当前原型仅演示内置段落，请选择示例体验完整流程");
+      });
+
+      document.querySelector("#play-all").addEventListener("click", () => speak(activeSample.text));
+      document.querySelector("#stop-all").addEventListener("click", stopSpeech);
+      document.querySelector("#detail-speaker").addEventListener("click", () => selectWord(activeWordIndex));
+      voiceSelect.addEventListener("change", (event) => {
+        activeVoice = englishVoices.find((voice) => voiceKey(voice) === event.target.value) || null;
+        stopSpeech();
+        updateModelStatus(
+          activeVoice ? `系统音色 · ${activeVoice.name}` : "系统音色 · 浏览器默认",
+          "ready",
+        );
+      });
+
+      document.querySelectorAll(".segment-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll(".segment-button").forEach((item) => item.classList.remove("active"));
+          button.classList.add("active");
+          rate = Number(button.dataset.rate);
+          stopSpeech();
+        });
+      });
+
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.addEventListener("voiceschanged", loadSystemVoices);
+      }
+      window.addEventListener("beforeunload", stopSpeech);
+      loadSample("curiosity");
+      loadSystemVoices();
+    </script>
+  </body>
+</html>
