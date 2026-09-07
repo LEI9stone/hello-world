@@ -32,8 +32,15 @@
         color: var(--ink);
         background: var(--canvas);
         font-family:
-          Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+          Inter,
+          ui-sans-serif,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          'PingFang SC',
+          'Hiragino Sans GB',
+          'Microsoft YaHei',
+          sans-serif;
         letter-spacing: 0;
       }
 
@@ -86,7 +93,7 @@
       }
 
       .brand-name {
-        font-family: Georgia, "Times New Roman", serif;
+        font-family: Georgia, 'Times New Roman', serif;
         font-size: 19px;
         font-weight: 700;
       }
@@ -244,7 +251,7 @@
         border: 1px solid var(--line);
         border-radius: 6px;
         outline: none;
-        font-family: Georgia, "Times New Roman", serif;
+        font-family: Georgia, 'Times New Roman', serif;
         font-size: 17px;
         line-height: 1.75;
         letter-spacing: 0;
@@ -466,14 +473,14 @@
 
       .phonetic {
         color: #7b8580;
-        font-family: "Arial Unicode MS", Arial, sans-serif;
+        font-family: 'Arial Unicode MS', Arial, sans-serif;
         font-size: 11px;
         line-height: 1;
         white-space: nowrap;
       }
 
       .word {
-        font-family: Georgia, "Times New Roman", serif;
+        font-family: Georgia, 'Times New Roman', serif;
         font-size: 21px;
         line-height: 1;
         white-space: nowrap;
@@ -496,7 +503,7 @@
       }
 
       .translation-label::before {
-        content: "";
+        content: '';
         width: 18px;
         height: 2px;
         background: var(--amber);
@@ -548,7 +555,7 @@
 
       .detail-word {
         margin-right: 8px;
-        font-family: Georgia, "Times New Roman", serif;
+        font-family: Georgia, 'Times New Roman', serif;
         font-size: 18px;
         font-weight: 700;
       }
@@ -745,7 +752,7 @@
       </header>
 
       <main>
-        <section class="panel source-panel" aria-labelledby="source-title">
+        <!-- <section class="panel source-panel" aria-labelledby="source-title">
           <div class="panel-heading">
             <div class="title-group">
               <p class="eyebrow">Input</p>
@@ -767,7 +774,11 @@
               <option value="morning">清晨的城市</option>
               <option value="ocean">海洋与生态</option>
             </select>
-            <textarea id="source-input" maxlength="800" spellcheck="true"></textarea>
+            <textarea
+              id="source-input"
+              maxlength="800"
+              spellcheck="true"
+            ></textarea>
             <div class="source-meta">
               <span id="char-count">0 / 800</span>
             </div>
@@ -779,7 +790,7 @@
               翻译并解析
             </button>
           </div>
-        </section>
+        </section> -->
 
         <section class="panel result-panel" aria-labelledby="result-title">
           <div class="panel-heading">
@@ -794,25 +805,55 @@
 
           <div class="reading-toolbar">
             <div class="playback-actions">
-              <button class="tool-button" id="play-all" type="button" title="朗读整段">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8c0 .8.9 1.3 1.6.8l9.2-6.4a1 1 0 0 0 0-1.6L9.6 4.8A1 1 0 0 0 8 5.6Z"/></svg>
+              <button
+                class="tool-button"
+                id="play-all"
+                type="button"
+                title="朗读整段"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M8 5.6v12.8c0 .8.9 1.3 1.6.8l9.2-6.4a1 1 0 0 0 0-1.6L9.6 4.8A1 1 0 0 0 8 5.6Z"
+                  />
+                </svg>
                 <span>朗读整段</span>
               </button>
-              <button class="tool-button" id="stop-all" type="button" title="停止朗读">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5h11v11h-11z"/></svg>
+              <button
+                class="tool-button"
+                id="stop-all"
+                type="button"
+                title="停止朗读"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6.5 6.5h11v11h-11z" />
+                </svg>
                 <span>停止</span>
               </button>
             </div>
             <div class="audio-controls">
-              <select class="voice-select" id="voice-select" aria-label="浏览器系统英文音色">
+              <select
+                class="voice-select"
+                id="voice-select"
+                aria-label="浏览器系统英文音色"
+              >
                 <option value="">系统默认英文</option>
               </select>
               <div class="speed-control" aria-label="朗读速度">
                 <span class="speed-label">语速</span>
                 <div class="segmented">
-                  <button class="segment-button" type="button" data-rate="0.8">0.8x</button>
-                  <button class="segment-button active" type="button" data-rate="1">1x</button>
-                  <button class="segment-button" type="button" data-rate="1.2">1.2x</button>
+                  <button class="segment-button" type="button" data-rate="0.8">
+                    0.8x
+                  </button>
+                  <button
+                    class="segment-button active"
+                    type="button"
+                    data-rate="1"
+                  >
+                    1x
+                  </button>
+                  <button class="segment-button" type="button" data-rate="1.2">
+                    1.2x
+                  </button>
                 </div>
               </div>
             </div>
@@ -830,15 +871,28 @@
 
           <div class="word-detail" aria-live="polite">
             <div class="detail-main">
-              <button class="detail-speaker" id="detail-speaker" type="button" title="播放当前单词">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Zm12.4-.9a1 1 0 0 0-1.4 1.4 3.5 3.5 0 0 1 0 5 1 1 0 0 0 1.4 1.4 5.5 5.5 0 0 0 0-7.8Zm2.8-2.8a1 1 0 1 0-1.4 1.4 7.5 7.5 0 0 1 0 10.6 1 1 0 1 0 1.4 1.4 9.5 9.5 0 0 0 0-13.4Z"/></svg>
+              <button
+                class="detail-speaker"
+                id="detail-speaker"
+                type="button"
+                title="播放当前单词"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M4 9v6h4l5 4V5L8 9H4Zm12.4-.9a1 1 0 0 0-1.4 1.4 3.5 3.5 0 0 1 0 5 1 1 0 0 0 1.4 1.4 5.5 5.5 0 0 0 0-7.8Zm2.8-2.8a1 1 0 1 0-1.4 1.4 7.5 7.5 0 0 1 0 10.6 1 1 0 1 0 1.4 1.4 9.5 9.5 0 0 0 0-13.4Z"
+                  />
+                </svg>
               </button>
               <div>
                 <div>
                   <span class="detail-word" id="detail-word">curiosity</span>
-                  <span class="detail-phonetic" id="detail-phonetic">/ˌkjʊriˈɒsəti/</span>
+                  <span class="detail-phonetic" id="detail-phonetic"
+                    >/ˌkjʊriˈɒsəti/</span
+                  >
                 </div>
-                <div class="detail-meaning" id="detail-meaning">n. 好奇心；求知欲</div>
+                <div class="detail-meaning" id="detail-meaning">
+                  n. 好奇心；求知欲
+                </div>
               </div>
             </div>
             <div class="play-state" id="play-state">点击单词发音</div>
@@ -852,81 +906,105 @@
     <script>
       const samples = {
         curiosity: {
-          text: "Curiosity turns ordinary moments into opportunities for discovery. When we ask thoughtful questions, even familiar ideas can reveal something new.",
-          translation: "好奇心能把平凡的时刻变成探索的机会。当我们提出有思考的问题时，即使是熟悉的想法也能展现出新的一面。",
+          text: 'Curiosity turns ordinary moments into opportunities for discovery. When we ask thoughtful questions, even familiar ideas can reveal something new.',
+          translation:
+            '好奇心能把平凡的时刻变成探索的机会。当我们提出有思考的问题时，即使是熟悉的想法也能展现出新的一面。',
           words: [
-            ["Curiosity", "/ˌkjʊriˈɒsəti/", "n. 好奇心；求知欲"],
-            ["turns", "/tɜːnz/", "v. 使变成；转变"],
-            ["ordinary", "/ˈɔːdənri/", "adj. 普通的；平常的"],
-            ["moments", "/ˈməʊmənts/", "n. 时刻；片刻"],
-            ["into", "/ˈɪntuː/", "prep. 到……里面；成为"],
-            ["opportunities", "/ˌɒpəˈtjuːnətiz/", "n. 机会；时机"],
-            ["for", "/fɔːr/", "prep. 为了；对于"],
-            ["discovery.", "/dɪˈskʌvəri/", "n. 发现；探索成果"],
-            ["When", "/wen/", "conj. 当……时"],
-            ["we", "/wiː/", "pron. 我们"],
-            ["ask", "/ɑːsk/", "v. 询问；提出"],
-            ["thoughtful", "/ˈθɔːtfl/", "adj. 深思熟虑的"],
-            ["questions,", "/ˈkwestʃənz/", "n. 问题"],
-            ["even", "/ˈiːvən/", "adv. 甚至；即使"],
-            ["familiar", "/fəˈmɪliə/", "adj. 熟悉的"],
-            ["ideas", "/aɪˈdɪəz/", "n. 想法；观念"],
-            ["can", "/kæn/", "modal v. 能够"],
-            ["reveal", "/rɪˈviːl/", "v. 揭示；展现"],
-            ["something", "/ˈsʌmθɪŋ/", "pron. 某事；某物"],
-            ["new.", "/njuː/", "adj. 新的"],
+            ['Curiosity', '/ˌkjʊriˈɒsəti/', 'n. 好奇心；求知欲'],
+            ['turns', '/tɜːnz/', 'v. 使变成；转变'],
+            ['ordinary', '/ˈɔːdənri/', 'adj. 普通的；平常的'],
+            ['moments', '/ˈməʊmənts/', 'n. 时刻；片刻'],
+            ['into', '/ˈɪntuː/', 'prep. 到……里面；成为'],
+            ['opportunities', '/ˌɒpəˈtjuːnətiz/', 'n. 机会；时机'],
+            ['for', '/fɔːr/', 'prep. 为了；对于'],
+            ['discovery.', '/dɪˈskʌvəri/', 'n. 发现；探索成果'],
+            ['When', '/wen/', 'conj. 当……时'],
+            ['we', '/wiː/', 'pron. 我们'],
+            ['ask', '/ɑːsk/', 'v. 询问；提出'],
+            ['thoughtful', '/ˈθɔːtfl/', 'adj. 深思熟虑的'],
+            ['questions,', '/ˈkwestʃənz/', 'n. 问题'],
+            ['even', '/ˈiːvən/', 'adv. 甚至；即使'],
+            ['familiar', '/fəˈmɪliə/', 'adj. 熟悉的'],
+            ['ideas', '/aɪˈdɪəz/', 'n. 想法；观念'],
+            ['can', '/kæn/', 'modal v. 能够'],
+            ['reveal', '/rɪˈviːl/', 'v. 揭示；展现'],
+            ['something', '/ˈsʌmθɪŋ/', 'pron. 某事；某物'],
+            ['new.', '/njuː/', 'adj. 新的'],
           ],
         },
         morning: {
-          text: "The city wakes slowly in the early light. Bakers open their doors, buses begin their routes, and the first cups of coffee warm tired hands.",
-          translation: "城市在晨光中缓缓苏醒。面包师打开店门，公交车开始行驶，而第一杯咖啡温暖了疲惫的双手。",
+          text: 'The city wakes slowly in the early light. Bakers open their doors, buses begin their routes, and the first cups of coffee warm tired hands.',
+          translation:
+            '城市在晨光中缓缓苏醒。面包师打开店门，公交车开始行驶，而第一杯咖啡温暖了疲惫的双手。',
           words: [
-            ["The", "/ðə/", "art. 这；该"], ["city", "/ˈsɪti/", "n. 城市"],
-            ["wakes", "/weɪks/", "v. 醒来"], ["slowly", "/ˈsləʊli/", "adv. 缓慢地"],
-            ["in", "/ɪn/", "prep. 在……中"], ["the", "/ðə/", "art. 这；该"],
-            ["early", "/ˈɜːli/", "adj. 早期的"], ["light.", "/laɪt/", "n. 光线"],
-            ["Bakers", "/ˈbeɪkəz/", "n. 面包师"], ["open", "/ˈəʊpən/", "v. 打开"],
-            ["their", "/ðeə/", "det. 他们的"], ["doors,", "/dɔːz/", "n. 门"],
-            ["buses", "/ˈbʌsɪz/", "n. 公交车"], ["begin", "/bɪˈɡɪn/", "v. 开始"],
-            ["their", "/ðeə/", "det. 他们的"], ["routes,", "/ruːts/", "n. 路线"],
-            ["and", "/ænd/", "conj. 和；并且"], ["the", "/ðə/", "art. 这；该"],
-            ["first", "/fɜːst/", "adj. 第一的"], ["cups", "/kʌps/", "n. 杯"],
-            ["of", "/əv/", "prep. ……的"], ["coffee", "/ˈkɒfi/", "n. 咖啡"],
-            ["warm", "/wɔːm/", "v. 使温暖"], ["tired", "/ˈtaɪəd/", "adj. 疲惫的"],
-            ["hands.", "/hændz/", "n. 手"],
+            ['The', '/ðə/', 'art. 这；该'],
+            ['city', '/ˈsɪti/', 'n. 城市'],
+            ['wakes', '/weɪks/', 'v. 醒来'],
+            ['slowly', '/ˈsləʊli/', 'adv. 缓慢地'],
+            ['in', '/ɪn/', 'prep. 在……中'],
+            ['the', '/ðə/', 'art. 这；该'],
+            ['early', '/ˈɜːli/', 'adj. 早期的'],
+            ['light.', '/laɪt/', 'n. 光线'],
+            ['Bakers', '/ˈbeɪkəz/', 'n. 面包师'],
+            ['open', '/ˈəʊpən/', 'v. 打开'],
+            ['their', '/ðeə/', 'det. 他们的'],
+            ['doors,', '/dɔːz/', 'n. 门'],
+            ['buses', '/ˈbʌsɪz/', 'n. 公交车'],
+            ['begin', '/bɪˈɡɪn/', 'v. 开始'],
+            ['their', '/ðeə/', 'det. 他们的'],
+            ['routes,', '/ruːts/', 'n. 路线'],
+            ['and', '/ænd/', 'conj. 和；并且'],
+            ['the', '/ðə/', 'art. 这；该'],
+            ['first', '/fɜːst/', 'adj. 第一的'],
+            ['cups', '/kʌps/', 'n. 杯'],
+            ['of', '/əv/', 'prep. ……的'],
+            ['coffee', '/ˈkɒfi/', 'n. 咖啡'],
+            ['warm', '/wɔːm/', 'v. 使温暖'],
+            ['tired', '/ˈtaɪəd/', 'adj. 疲惫的'],
+            ['hands.', '/hændz/', 'n. 手'],
           ],
         },
         ocean: {
-          text: "Healthy oceans support countless forms of life. Protecting them requires patient research, responsible choices, and cooperation across borders.",
-          translation: "健康的海洋养育着无数生命。保护海洋需要耐心的研究、负责任的选择，以及跨越国界的合作。",
+          text: 'Healthy oceans support countless forms of life. Protecting them requires patient research, responsible choices, and cooperation across borders.',
+          translation:
+            '健康的海洋养育着无数生命。保护海洋需要耐心的研究、负责任的选择，以及跨越国界的合作。',
           words: [
-            ["Healthy", "/ˈhelθi/", "adj. 健康的"], ["oceans", "/ˈəʊʃənz/", "n. 海洋"],
-            ["support", "/səˈpɔːt/", "v. 支持；供养"], ["countless", "/ˈkaʊntləs/", "adj. 无数的"],
-            ["forms", "/fɔːmz/", "n. 形式；种类"], ["of", "/əv/", "prep. ……的"],
-            ["life.", "/laɪf/", "n. 生命"], ["Protecting", "/prəˈtektɪŋ/", "v. 保护"],
-            ["them", "/ðem/", "pron. 它们"], ["requires", "/rɪˈkwaɪəz/", "v. 需要"],
-            ["patient", "/ˈpeɪʃənt/", "adj. 有耐心的"], ["research,", "/rɪˈsɜːtʃ/", "n. 研究"],
-            ["responsible", "/rɪˈspɒnsəbl/", "adj. 负责任的"], ["choices,", "/ˈtʃɔɪsɪz/", "n. 选择"],
-            ["and", "/ænd/", "conj. 和；并且"], ["cooperation", "/kəʊˌɒpəˈreɪʃn/", "n. 合作"],
-            ["across", "/əˈkrɒs/", "prep. 跨越"], ["borders.", "/ˈbɔːdəz/", "n. 边界；国界"],
+            ['Healthy', '/ˈhelθi/', 'adj. 健康的'],
+            ['oceans', '/ˈəʊʃənz/', 'n. 海洋'],
+            ['support', '/səˈpɔːt/', 'v. 支持；供养'],
+            ['countless', '/ˈkaʊntləs/', 'adj. 无数的'],
+            ['forms', '/fɔːmz/', 'n. 形式；种类'],
+            ['of', '/əv/', 'prep. ……的'],
+            ['life.', '/laɪf/', 'n. 生命'],
+            ['Protecting', '/prəˈtektɪŋ/', 'v. 保护'],
+            ['them', '/ðem/', 'pron. 它们'],
+            ['requires', '/rɪˈkwaɪəz/', 'v. 需要'],
+            ['patient', '/ˈpeɪʃənt/', 'adj. 有耐心的'],
+            ['research,', '/rɪˈsɜːtʃ/', 'n. 研究'],
+            ['responsible', '/rɪˈspɒnsəbl/', 'adj. 负责任的'],
+            ['choices,', '/ˈtʃɔɪsɪz/', 'n. 选择'],
+            ['and', '/ænd/', 'conj. 和；并且'],
+            ['cooperation', '/kəʊˌɒpəˈreɪʃn/', 'n. 合作'],
+            ['across', '/əˈkrɒs/', 'prep. 跨越'],
+            ['borders.', '/ˈbɔːdəz/', 'n. 边界；国界'],
           ],
         },
       };
 
-      const sourceInput = document.querySelector("#source-input");
-      const sampleSelect = document.querySelector("#sample-select");
-      const charCount = document.querySelector("#char-count");
-      const wordStream = document.querySelector("#word-stream");
-      const translation = document.querySelector("#translation");
-      const wordCount = document.querySelector("#word-count");
-      const detailWord = document.querySelector("#detail-word");
-      const detailPhonetic = document.querySelector("#detail-phonetic");
-      const detailMeaning = document.querySelector("#detail-meaning");
-      const playState = document.querySelector("#play-state");
-      const toast = document.querySelector("#toast");
-      const voiceSelect = document.querySelector("#voice-select");
-      const modelStatus = document.querySelector("#model-status");
-      const statusDot = document.querySelector("#status-dot");
+      // const sourceInput = document.querySelector('#source-input');
+      // const sampleSelect = document.querySelector('#sample-select');
+      const charCount = document.querySelector('#char-count');
+      const wordStream = document.querySelector('#word-stream');
+      const translation = document.querySelector('#translation');
+      const wordCount = document.querySelector('#word-count');
+      const detailWord = document.querySelector('#detail-word');
+      const detailPhonetic = document.querySelector('#detail-phonetic');
+      const detailMeaning = document.querySelector('#detail-meaning');
+      const playState = document.querySelector('#play-state');
+      const toast = document.querySelector('#toast');
+      const voiceSelect = document.querySelector('#voice-select');
+      const modelStatus = document.querySelector('#model-status');
+      const statusDot = document.querySelector('#status-dot');
       let activeSample = samples.curiosity;
       let activeWordIndex = 0;
       let activeVoice = null;
@@ -943,7 +1021,7 @@
         /^Daniel$/i,
       ];
 
-      const cleanWord = (word) => word.replace(/[^a-zA-Z'-]/g, "");
+      const cleanWord = (word) => word.replace(/[^a-zA-Z'-]/g, '');
 
       function updateCount() {
         charCount.textContent = `${sourceInput.value.length} / 800`;
@@ -951,12 +1029,12 @@
 
       function showToast(message) {
         toast.textContent = message;
-        toast.classList.add("show");
+        toast.classList.add('show');
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
       }
 
-      function updateModelStatus(text, state = "") {
+      function updateModelStatus(text, state = '') {
         modelStatus.textContent = text;
         statusDot.className = `status-dot ${state}`.trim();
       }
@@ -970,78 +1048,85 @@
           const match = voices.find((voice) => pattern.test(voice.name));
           if (match) return match;
         }
-        return voices.find((voice) => voice.default && voice.lang === "en-US")
-          || voices.find((voice) => voice.lang === "en-US")
-          || voices.find((voice) => voice.default)
-          || voices[0]
-          || null;
+        return (
+          voices.find((voice) => voice.default && voice.lang === 'en-US') ||
+          voices.find((voice) => voice.lang === 'en-US') ||
+          voices.find((voice) => voice.default) ||
+          voices[0] ||
+          null
+        );
       }
 
       function loadSystemVoices() {
-        if (!("speechSynthesis" in window)) {
+        if (!('speechSynthesis' in window)) {
           voiceSelect.disabled = true;
-          updateModelStatus("系统音色 · 浏览器不支持", "error");
+          updateModelStatus('系统音色 · 浏览器不支持', 'error');
           return;
         }
 
         const voices = window.speechSynthesis.getVoices();
-        englishVoices = voices.filter((voice) => voice.lang.toLowerCase().startsWith("en"));
+        englishVoices = voices.filter((voice) =>
+          voice.lang.toLowerCase().startsWith('en'),
+        );
         if (!englishVoices.length) {
-          updateModelStatus("系统音色 · 使用浏览器默认", "loading");
+          updateModelStatus('系统音色 · 使用浏览器默认', 'loading');
           return;
         }
 
-        const previousKey = activeVoice ? voiceKey(activeVoice) : "";
-        activeVoice = englishVoices.find((voice) => voiceKey(voice) === previousKey)
-          || choosePreferredVoice(englishVoices);
+        const previousKey = activeVoice ? voiceKey(activeVoice) : '';
+        activeVoice =
+          englishVoices.find((voice) => voiceKey(voice) === previousKey) ||
+          choosePreferredVoice(englishVoices);
 
         voiceSelect.replaceChildren();
         englishVoices.forEach((voice) => {
-          const option = document.createElement("option");
+          const option = document.createElement('option');
           option.value = voiceKey(voice);
           option.textContent = `${voice.name} · ${voice.lang}`;
           voiceSelect.appendChild(option);
         });
         voiceSelect.value = voiceKey(activeVoice);
-        updateModelStatus(`系统音色 · ${activeVoice.name}`, "ready");
+        updateModelStatus(`系统音色 · ${activeVoice.name}`, 'ready');
       }
 
       function clearSpeakingState() {
-        document.querySelectorAll(".word-token.active").forEach((item) => item.classList.remove("active"));
-        playState.textContent = "点击单词发音";
-        playState.classList.remove("speaking");
+        document
+          .querySelectorAll('.word-token.active')
+          .forEach((item) => item.classList.remove('active'));
+        playState.textContent = '点击单词发音';
+        playState.classList.remove('speaking');
       }
 
       function stopSpeech() {
-        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         clearSpeakingState();
       }
 
       function speak(text, index = null) {
-        if (!("speechSynthesis" in window)) {
-          showToast("当前浏览器不支持系统语音");
+        if (!('speechSynthesis' in window)) {
+          showToast('当前浏览器不支持系统语音');
           return;
         }
 
         stopSpeech();
         if (index !== null) {
           const token = wordStream.children[index];
-          token?.classList.add("active");
+          token?.classList.add('active');
         }
 
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = activeVoice?.lang || "en-US";
+        utterance.lang = activeVoice?.lang || 'en-US';
         utterance.rate = rate;
         if (activeVoice) utterance.voice = activeVoice;
         utterance.onstart = () => {
-          playState.textContent = index === null ? "正在朗读整段" : "正在播放";
-          playState.classList.add("speaking");
+          playState.textContent = index === null ? '正在朗读整段' : '正在播放';
+          playState.classList.add('speaking');
         };
         utterance.onend = clearSpeakingState;
         utterance.onerror = (event) => {
           clearSpeakingState();
-          if (event.error !== "canceled" && event.error !== "interrupted") {
-            showToast("系统语音播放失败，请切换音色后重试");
+          if (event.error !== 'canceled' && event.error !== 'interrupted') {
+            showToast('系统语音播放失败，请切换音色后重试');
           }
         };
         window.speechSynthesis.speak(utterance);
@@ -1062,13 +1147,16 @@
         wordStream.replaceChildren();
 
         sample.words.forEach((item, index) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "word-token";
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'word-token';
           button.title = `播放 ${cleanWord(item[0])}`;
-          button.setAttribute("aria-label", `${item[0]}，音标 ${item[1]}，点击发音`);
+          button.setAttribute(
+            'aria-label',
+            `${item[0]}，音标 ${item[1]}，点击发音`,
+          );
           button.innerHTML = `<span class="phonetic">${item[1]}</span><span class="word">${item[0]}</span>`;
-          button.addEventListener("click", () => selectWord(index));
+          button.addEventListener('click', () => selectWord(index));
           wordStream.appendChild(button);
         });
 
@@ -1080,51 +1168,71 @@
       function loadSample(key) {
         stopSpeech();
         const sample = samples[key];
-        sourceInput.value = sample.text;
-        updateCount();
+        // sourceInput.value = sample.text;
+        // updateCount();
         renderResult(sample);
       }
 
-      sampleSelect.addEventListener("change", (event) => loadSample(event.target.value));
-      sourceInput.addEventListener("input", updateCount);
+      // sampleSelect.addEventListener('change', (event) =>
+      //   loadSample(event.target.value),
+      // );
+      // sourceInput.addEventListener('input', updateCount);
 
-      document.querySelector("#translate-button").addEventListener("click", () => {
-        const normalized = sourceInput.value.trim().replace(/\s+/g, " ");
-        const match = Object.values(samples).find((sample) => sample.text === normalized);
-        if (match) {
-          renderResult(match);
-          showToast("翻译与音标解析已更新");
-          return;
-        }
-        showToast("当前原型仅演示内置段落，请选择示例体验完整流程");
-      });
+      // document
+      //   .querySelector('#translate-button')
+      //   .addEventListener('click', () => {
+      //     const normalized = sourceInput.value.trim().replace(/\s+/g, ' ');
+      //     const match = Object.values(samples).find(
+      //       (sample) => sample.text === normalized,
+      //     );
+      //     if (match) {
+      //       renderResult(match);
+      //       showToast('翻译与音标解析已更新');
+      //       return;
+      //     }
+      //     showToast('当前原型仅演示内置段落，请选择示例体验完整流程');
+      //   });
 
-      document.querySelector("#play-all").addEventListener("click", () => speak(activeSample.text));
-      document.querySelector("#stop-all").addEventListener("click", stopSpeech);
-      document.querySelector("#detail-speaker").addEventListener("click", () => selectWord(activeWordIndex));
-      voiceSelect.addEventListener("change", (event) => {
-        activeVoice = englishVoices.find((voice) => voiceKey(voice) === event.target.value) || null;
+      document
+        .querySelector('#play-all')
+        .addEventListener('click', () => speak(activeSample.text));
+      document.querySelector('#stop-all').addEventListener('click', stopSpeech);
+      document
+        .querySelector('#detail-speaker')
+        .addEventListener('click', () => selectWord(activeWordIndex));
+      voiceSelect.addEventListener('change', (event) => {
+        activeVoice =
+          englishVoices.find(
+            (voice) => voiceKey(voice) === event.target.value,
+          ) || null;
         stopSpeech();
         updateModelStatus(
-          activeVoice ? `系统音色 · ${activeVoice.name}` : "系统音色 · 浏览器默认",
-          "ready",
+          activeVoice
+            ? `系统音色 · ${activeVoice.name}`
+            : '系统音色 · 浏览器默认',
+          'ready',
         );
       });
 
-      document.querySelectorAll(".segment-button").forEach((button) => {
-        button.addEventListener("click", () => {
-          document.querySelectorAll(".segment-button").forEach((item) => item.classList.remove("active"));
-          button.classList.add("active");
+      document.querySelectorAll('.segment-button').forEach((button) => {
+        button.addEventListener('click', () => {
+          document
+            .querySelectorAll('.segment-button')
+            .forEach((item) => item.classList.remove('active'));
+          button.classList.add('active');
           rate = Number(button.dataset.rate);
           stopSpeech();
         });
       });
 
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.addEventListener("voiceschanged", loadSystemVoices);
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.addEventListener(
+          'voiceschanged',
+          loadSystemVoices,
+        );
       }
-      window.addEventListener("beforeunload", stopSpeech);
-      loadSample("curiosity");
+      window.addEventListener('beforeunload', stopSpeech);
+      loadSample('curiosity');
       loadSystemVoices();
     </script>
   </body>
