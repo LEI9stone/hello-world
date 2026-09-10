@@ -1,9 +1,9 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState } from 'react';
 
-import { useSpeech } from "./speech-context";
-import { cleanWord, isSpeakable, wordAriaLabel } from "./speech-utils";
-import { HEADING_POSITION } from "./types";
-import type { ChapterData, WordEntry } from "./types";
+import { useSpeech } from './speech-context';
+import { cleanWord, isSpeakable, wordAriaLabel } from './speech-utils';
+import { HEADING_POSITION } from './types';
+import type { ChapterData, WordEntry } from './types';
 
 export interface ChapterProps {
   /** 段落数据（段内可含多句） */
@@ -22,15 +22,18 @@ export interface ChapterProps {
   className?: string;
 }
 
+const WORD_FONT = "Georgia, 'Times New Roman', serif";
+const PHONETIC_FONT = "'Arial Unicode MS', Arial, sans-serif";
+
 const tokenClass = [
-  "grid cursor-pointer grid-rows-[16px_26px] place-items-center rounded-[5px]",
-  "border-0 bg-transparent px-1 py-0.5 transition",
-].join(" ");
+  'grid cursor-pointer grid-rows-[16px_26px] place-items-center rounded-[5px]',
+  'border-0 bg-transparent px-1 py-0.5 transition',
+].join(' ');
 
 const activeClass =
-  "bg-[#fff4dc] text-[#79520c] shadow-[inset_0_-2px_0_#d59625]";
+  'bg-[#fff4dc] text-[#79520c] shadow-[inset_0_-2px_0_#d59625]';
 const idleClass =
-  "hover:-translate-y-px hover:bg-[#e8f3ed] hover:text-[#0f5036]";
+  'hover:-translate-y-px hover:bg-[#e8f3ed] hover:text-[#0f5036]';
 
 /** 段标题在 (sentenceIndex, wordIndex) 上的定位键 */
 const HEADING_KEY = `${HEADING_POSITION}-${HEADING_POSITION}`;
@@ -65,7 +68,7 @@ export function Chapter({
     : null;
   // 全文朗读期间只显示跟读高亮，避免之前点选的词在别处一直亮着造成两个高亮
   const highlightedKey =
-    speakingKey ?? (speech.status === "idle" ? selectedKey : null);
+    speakingKey ?? (speech.status === 'idle' ? selectedKey : null);
 
   const handleTokenClick = useCallback(
     (word: WordEntry, wordIndex: number, sentenceIndex: number) => {
@@ -91,7 +94,7 @@ export function Chapter({
               type="button"
               title={`播放 ${heading.word.word}`}
               aria-label={wordAriaLabel(heading.word)}
-              aria-current={highlightedKey === HEADING_KEY ? "true" : undefined}
+              aria-current={highlightedKey === HEADING_KEY ? 'true' : undefined}
               onClick={() =>
                 handleTokenClick(
                   heading.word,
@@ -100,15 +103,21 @@ export function Chapter({
                 )
               }
               className={[
-                "-mx-1 cursor-pointer rounded-[5px] border-0 bg-transparent px-1 py-0.5 transition",
+                '-mx-1 cursor-pointer rounded-[5px] border-0 bg-transparent px-1 py-0.5 transition',
                 highlightedKey === HEADING_KEY ? activeClass : idleClass,
-              ].join(" ")}
+              ].join(' ')}
             >
-              <span className="text-[20px] font-bold">
+              <span
+                className="text-[20px] font-bold"
+                style={{ fontFamily: WORD_FONT }}
+              >
                 {heading.word.word}
               </span>
             </button>
-            <span className="text-[11px] text-[#7b8580]">
+            <span
+              className="text-[11px] text-[#7b8580]"
+              style={{ fontFamily: PHONETIC_FONT }}
+            >
               {heading.word.phonetic}
             </span>
             <span className="text-[12px] text-[#69736d]">
@@ -141,7 +150,10 @@ export function Chapter({
                       className={`${tokenClass} hover:bg-[#e8f3ed]`}
                     >
                       <span aria-hidden="true" />
-                      <span className="text-[15px] leading-none text-[#176b48] underline decoration-dotted underline-offset-[5px]">
+                      <span
+                        className="text-[15px] leading-none text-[#176b48] underline decoration-dotted underline-offset-[5px]"
+                        style={{ fontFamily: PHONETIC_FONT }}
+                      >
                         {word.word}
                       </span>
                     </a>
@@ -154,18 +166,25 @@ export function Chapter({
                     type="button"
                     title={`播放 ${cleanWord(word.word)}`}
                     aria-label={wordAriaLabel(word)}
-                    aria-current={active ? "true" : undefined}
+                    aria-current={active ? 'true' : undefined}
                     onClick={() =>
                       handleTokenClick(word, wordIndex, sentenceIndex)
                     }
-                    className={[tokenClass, active ? activeClass : idleClass].join(
-                      " ",
-                    )}
+                    className={[
+                      tokenClass,
+                      active ? activeClass : idleClass,
+                    ].join(' ')}
                   >
-                    <span className="text-[10px] leading-none whitespace-nowrap text-[#7b8580]">
+                    <span
+                      className="text-[10px] leading-none whitespace-nowrap text-[#7b8580]"
+                      style={{ fontFamily: PHONETIC_FONT }}
+                    >
                       {word.phonetic}
                     </span>
-                    <span className="text-[19px] leading-none whitespace-nowrap sm:text-[20px]">
+                    <span
+                      className="text-[19px] leading-none whitespace-nowrap sm:text-[20px]"
+                      style={{ fontFamily: WORD_FONT }}
+                    >
                       {word.word}
                     </span>
                   </button>
@@ -174,18 +193,9 @@ export function Chapter({
             </div>
 
             {showTranslation && (
-              <div className="mt-3 border-t border-[#dfe4e1] pt-2.5">
-                <div className="mb-1.5 flex items-center gap-2 text-[11px] font-bold text-[#69736d]">
-                  <span
-                    aria-hidden="true"
-                    className="h-0.5 w-[18px] bg-[#d59625]"
-                  />
-                  中文翻译
-                </div>
-                <p className="m-0 text-[15px] leading-[1.75] text-[#26342d] sm:text-[16px]">
-                  {sentence.translation}
-                </p>
-              </div>
+              <p className="m-0 text-[15px] leading-[1.75] text-[#26342d] sm:text-[16px]">
+                {sentence.translation}
+              </p>
             )}
           </div>
         ))}

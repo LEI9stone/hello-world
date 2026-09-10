@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-import type { Route } from "./+types/home";
-import { ArticleControls, Chapter, SpeechProvider, WordDetailBar } from "../components";
-import type { WordSelection } from "../components";
-import { sampleArticle } from "../data/sample-article";
+import type { Route } from './+types/home';
+import {
+  ArticleControls,
+  Chapter,
+  SpeechProvider,
+  WordDetailBar,
+} from '../components';
+import type { WordSelection } from '../components';
+import { sampleArticle } from '../data/sample-article';
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "WordFlow · 英文精读翻译" },
-    { name: "description", content: "逐词音标 + 中文翻译的英文精读阅读器" },
+    { title: 'WordFlow · 英文精读翻译' },
+    { name: 'description', content: '逐词音标 + 中文翻译的英文精读阅读器' },
   ];
 }
 
@@ -36,11 +41,11 @@ function ArticleView() {
   });
 
   return (
-    <div className="min-h-screen bg-[#f5f7f5] p-4 sm:p-7">
+    <div className="min-h-screen bg-white p-4 sm:p-7">
       <main className="mx-auto w-full max-w-[1440px]">
         <section
           aria-label="逐词精读"
-          className="flex min-h-[calc(100vh-120px)] flex-col overflow-clip rounded-lg border border-[#dfe4e1] bg-white shadow-[0_14px_36px_rgba(31,50,39,0.08)]"
+          className="flex min-h-[calc(100vh-120px)] flex-col"
         >
           <ArticleControls
             article={sampleArticle}
