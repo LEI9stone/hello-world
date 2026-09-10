@@ -50,6 +50,11 @@ export interface Sentence {
    * 渲染在该句的中文翻译之后。代码块只做展示，不参与朗读。
    */
   code?: string;
+  /**
+   * 代码块语言，如 "go" / "python" / "bash"。
+   * 服务端用 Shiki 高亮；不认识的语言（如 EBNF）按纯文本渲染。
+   */
+  codeLang?: string;
 }
 
 /** 段标题，如 Introduction / ˌɪntrəˈdʌʃn / n. 引言；简介 + 中文「简介」 */

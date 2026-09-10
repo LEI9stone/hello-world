@@ -18,6 +18,11 @@ export interface ChapterProps {
     wordIndex: number,
     sentenceIndex: number,
   ) => void;
+  /**
+   * 服务端高亮好的代码块 HTML，key 为 sentence.id（由 loader 生成）。
+   * 缺省时该句的代码块按纯文本渲染。
+   */
+  codeHtml?: Record<string, string>;
   /** 外层 className 扩展 */
   className?: string;
 }
@@ -50,6 +55,7 @@ export function Chapter({
   index,
   showTranslation = true,
   onWordSelect,
+  codeHtml,
   className,
 }: ChapterProps) {
   const speech = useSpeech();
@@ -218,9 +224,16 @@ export function Chapter({
             )}
 
             {sentence.code && (
-              <pre className="mt-3 overflow-x-auto rounded-md border border-[#dfe4e1] bg-[#f7faf8] px-3.5 py-3 font-mono text-[13px] leading-[1.7] text-[#26342d]">
-                {sentence.code}
-              </pre>
+              <div className="mt-3 overflow-x-auto rounded-md border border-[#dfe4e1] bg-[#f7faf8] px-3.5 py-3 font-mono text-[13px] leading-[1.7] text-[#26342d]">
+                {codeHtml?.[sentence.id] ? (
+                  // eslint-disable-next-line react/no-danger -- 内容来自服务端 Shiki，代码在渲染前已转义
+                  <div
+                    dangerouslySetInnerHTML={{ __html: codeHtml[sentence.id] }}
+                  />
+                ) : (
+                  <pre className="m-0">{sentence.code}</pre>
+                )}
+              </div>
             )}
           </div>
         ))}
