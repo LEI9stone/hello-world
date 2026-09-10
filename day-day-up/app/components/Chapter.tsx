@@ -22,9 +22,6 @@ export interface ChapterProps {
   className?: string;
 }
 
-const WORD_FONT = "Georgia, 'Times New Roman', serif";
-const PHONETIC_FONT = "'Arial Unicode MS', Arial, sans-serif";
-
 const tokenClass = [
   "grid cursor-pointer grid-rows-[16px_26px] place-items-center rounded-[5px]",
   "border-0 bg-transparent px-1 py-0.5 transition",
@@ -107,17 +104,11 @@ export function Chapter({
                 highlightedKey === HEADING_KEY ? activeClass : idleClass,
               ].join(" ")}
             >
-              <span
-                className="text-[20px] font-bold"
-                style={{ fontFamily: WORD_FONT }}
-              >
+              <span className="text-[20px] font-bold">
                 {heading.word.word}
               </span>
             </button>
-            <span
-              className="text-[11px] text-[#7b8580]"
-              style={{ fontFamily: PHONETIC_FONT }}
-            >
+            <span className="text-[11px] text-[#7b8580]">
               {heading.word.phonetic}
             </span>
             <span className="text-[12px] text-[#69736d]">
@@ -150,10 +141,7 @@ export function Chapter({
                       className={`${tokenClass} hover:bg-[#e8f3ed]`}
                     >
                       <span aria-hidden="true" />
-                      <span
-                        className="text-[15px] leading-none text-[#176b48] underline decoration-dotted underline-offset-[5px]"
-                        style={{ fontFamily: PHONETIC_FONT }}
-                      >
+                      <span className="text-[15px] leading-none text-[#176b48] underline decoration-dotted underline-offset-[5px]">
                         {word.word}
                       </span>
                     </a>
@@ -174,16 +162,10 @@ export function Chapter({
                       " ",
                     )}
                   >
-                    <span
-                      className="text-[10px] leading-none whitespace-nowrap text-[#7b8580]"
-                      style={{ fontFamily: PHONETIC_FONT }}
-                    >
+                    <span className="text-[10px] leading-none whitespace-nowrap text-[#7b8580]">
                       {word.phonetic}
                     </span>
-                    <span
-                      className="text-[19px] leading-none whitespace-nowrap sm:text-[20px]"
-                      style={{ fontFamily: WORD_FONT }}
-                    >
+                    <span className="text-[19px] leading-none whitespace-nowrap sm:text-[20px]">
                       {word.word}
                     </span>
                   </button>

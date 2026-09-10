@@ -58,10 +58,7 @@ export function WordDetailBar({ selection, className }: WordDetailBarProps) {
           </button>
           <div className="min-w-0">
             <div className="truncate">
-              <span
-                className="mr-2 text-[18px] font-bold"
-                style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-              >
+              <span className="mr-2 text-[18px] font-bold">
                 {word.word}
               </span>
               <span className="text-[12px] text-[#176b48]">
