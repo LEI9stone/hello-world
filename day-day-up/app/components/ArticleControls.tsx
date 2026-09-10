@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import { useMemo } from 'react';
 
-import { useSpeech } from "./speech-context";
-import { HEADING_POSITION, SPEECH_RATES } from "./types";
-import type { ChapterData, SpeechRate } from "./types";
+import { useSpeech } from './speech-context';
+import { HEADING_POSITION, SPEECH_RATES } from './types';
+import type { ChapterData, SpeechRate } from './types';
 
 export interface ArticleControlsProps {
   /** 全文数据：点「朗读全文」时按段、按句连续朗读 */
@@ -12,20 +12,20 @@ export interface ArticleControlsProps {
 }
 
 const toolButtonClass = [
-  "inline-flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-md",
-  "border border-[#dfe4e1] bg-white px-2.5 text-[12px] font-semibold text-[#314139]",
-  "transition hover:border-[#a8c5b5] hover:text-[#176b48]",
-  "disabled:cursor-not-allowed disabled:opacity-45",
-  "disabled:hover:border-[#dfe4e1] disabled:hover:text-[#314139]",
-].join(" ");
+  'inline-flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-md',
+  'border border-[#dfe4e1] bg-white px-2.5 text-[12px] font-semibold text-[#314139]',
+  'transition hover:border-[#a8c5b5] hover:text-[#176b48]',
+  'disabled:cursor-not-allowed disabled:opacity-45',
+  'disabled:hover:border-[#dfe4e1] disabled:hover:text-[#314139]',
+].join(' ');
 
 function segmentClass(active: boolean): string {
   return [
-    "h-[22px] w-[38px] cursor-pointer rounded-[4px] border-0 text-[11px] font-bold transition",
+    'h-[22px] w-[38px] cursor-pointer rounded-[4px] border-0 text-[11px] font-bold transition',
     active
-      ? "bg-white text-[#0f5036] shadow-[0_1px_4px_rgba(24,42,32,0.12)]"
-      : "bg-transparent text-[#69736d] hover:text-[#0f5036]",
-  ].join(" ");
+      ? 'bg-white text-[#0f5036] shadow-[0_1px_4px_rgba(24,42,32,0.12)]'
+      : 'bg-transparent text-[#69736d] hover:text-[#0f5036]',
+  ].join(' ');
 }
 
 /**
@@ -35,8 +35,8 @@ function segmentClass(active: boolean): string {
  */
 export function ArticleControls({ article, className }: ArticleControlsProps) {
   const speech = useSpeech();
-  const isPlaying = speech.status === "playing";
-  const isPaused = speech.status === "paused";
+  const isPlaying = speech.status === 'playing';
+  const isPaused = speech.status === 'paused';
 
   const progress = useMemo(
     () => describeProgress(article, speech.chapterId, speech.sentenceIndex),
@@ -46,11 +46,11 @@ export function ArticleControls({ article, className }: ArticleControlsProps) {
   return (
     <div
       className={[
-        "border-b border-[#ecefed] bg-[#fafbfa] px-4 py-2 sm:px-5",
+        'border-b border-[#ecefed] bg-[#fafbfa] px-4 py-2 sm:px-5',
         className,
       ]
         .filter(Boolean)
-        .join(" ")}
+        .join(' ')}
     >
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
@@ -67,15 +67,15 @@ export function ArticleControls({ article, className }: ArticleControlsProps) {
           <button
             type="button"
             className={toolButtonClass}
-            title={isPaused ? "从暂停处继续" : "暂停朗读"}
+            title={isPaused ? '从暂停处继续' : '暂停朗读'}
             disabled={speech.supported !== true || (!isPlaying && !isPaused)}
             onClick={() => (isPaused ? speech.resume() : speech.pause())}
           >
             {isPaused ? <PlayIcon /> : <PauseIcon />}
-            <span>{isPaused ? "继续" : "暂停"}</span>
+            <span>{isPaused ? '继续' : '暂停'}</span>
           </button>
 
-          {progress && (
+          {/* {progress && (
             <span
               className={[
                 "text-[11px]",
@@ -85,7 +85,7 @@ export function ArticleControls({ article, className }: ArticleControlsProps) {
             >
               {isPaused ? "已暂停" : "正在朗读"} · {progress}
             </span>
-          )}
+          )} */}
         </div>
 
         <div className="flex items-center gap-1.5">
@@ -132,11 +132,11 @@ function describeProgress(
   if (index < 0) return null;
 
   const parts = [`第 ${index + 1} 段`];
-  if (sentenceIndex === HEADING_POSITION) parts.push("标题");
+  if (sentenceIndex === HEADING_POSITION) parts.push('标题');
   else if (sentenceIndex !== null && sentenceIndex >= 0) {
     parts.push(`第 ${sentenceIndex + 1} 句`);
   }
-  return parts.join(" · ");
+  return parts.join(' · ');
 }
 
 function PlayIcon() {
