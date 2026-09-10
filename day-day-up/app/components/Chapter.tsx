@@ -25,10 +25,11 @@ export interface ChapterProps {
 const WORD_FONT = "Georgia, 'Times New Roman', serif";
 const PHONETIC_FONT = "'Arial Unicode MS', Arial, sans-serif";
 
-const tokenClass = [
-  'grid cursor-pointer grid-rows-[16px_26px] place-items-center rounded-[5px]',
+const tokenBase = [
+  'grid grid-rows-[16px_26px] place-items-center rounded-[5px]',
   'border-0 bg-transparent px-1 py-0.5 transition',
 ].join(' ');
+const tokenClass = `${tokenBase} cursor-pointer`;
 
 const activeClass =
   'bg-[#fff4dc] text-[#79520c] shadow-[inset_0_-2px_0_#d59625]';
@@ -138,7 +139,7 @@ export function Chapter({
                 const active =
                   highlightedKey === `${sentenceIndex}-${wordIndex}`;
 
-                if (!isSpeakable(word)) {
+                if (word.kind === 'link') {
                   return (
                     <a
                       key={`${sentence.id}-${wordIndex}-${word.word}`}
@@ -157,6 +158,24 @@ export function Chapter({
                         {word.word}
                       </span>
                     </a>
+                  );
+                }
+
+                // 标点/代码类符号：与词同样式但不拦截点击，保持句子阅读连贯
+                if (!isSpeakable(word)) {
+                  return (
+                    <span
+                      key={`${sentence.id}-${wordIndex}-${word.word}`}
+                      className={tokenBase}
+                    >
+                      <span aria-hidden="true" />
+                      <span
+                        className="text-[19px] leading-none whitespace-nowrap sm:text-[20px]"
+                        style={{ fontFamily: WORD_FONT }}
+                      >
+                        {word.word}
+                      </span>
+                    </span>
                   );
                 }
 
@@ -192,10 +211,16 @@ export function Chapter({
               })}
             </div>
 
-            {showTranslation && (
+            {showTranslation && sentence.translation && (
               <p className="m-0 text-[15px] leading-[1.75] text-[#26342d] sm:text-[16px]">
                 {sentence.translation}
               </p>
+            )}
+
+            {sentence.code && (
+              <pre className="mt-3 overflow-x-auto rounded-md border border-[#dfe4e1] bg-[#f7faf8] px-3.5 py-3 font-mono text-[13px] leading-[1.7] text-[#26342d]">
+                {sentence.code}
+              </pre>
             )}
           </div>
         ))}

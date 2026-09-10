@@ -41,7 +41,7 @@ function ArticleView() {
   });
 
   return (
-    <div className="min-h-screen bg-white sm:p-7">
+    <div className="min-h-screen bg-white">
       <main className="mx-auto w-full max-w-[1440px]">
         <section
           aria-label="逐词精读"

@@ -5,7 +5,7 @@ import { HEADING_POSITION } from "./types";
 export const VOICE_NAME = "Samantha";
 export const VOICE_LANG = "en-US";
 
-/** 是否为可朗读的词（链接等特殊 token 不朗读） */
+/** 是否为可朗读的词（链接、符号等特殊 token 不朗读） */
 export function isSpeakable(word: WordEntry): boolean {
   return (word.kind ?? "word") === "word";
 }
@@ -60,23 +60,23 @@ export function buildChapterQueue(chapter: ChapterData): SpeechStep[] {
   }
 
   chapter.sentences.forEach((sentence, sentenceIndex) => {
+    // 优先念原句：保留逗号、句号等标点，TTS 的停顿与语调才自然
+    const text = spokenText(sentence);
+    // 没有句子文本的单元（如代码块后面的词表）不进朗读队列，它的词仍可单独点读
+    if (!text) return;
+
     const speakable = sentence.words
       .map((word, wordIndex) => ({ word, wordIndex }))
       .filter(({ word }) => isSpeakable(word) && cleanWord(word.word).length > 0);
 
-    // 优先念原句：保留逗号、句号等标点，TTS 的停顿与语调才自然
-    const text = spokenText(sentence);
-
     if (speakable.length === 0) {
-      if (text) {
-        steps.push({
-          chapterId: chapter.id,
-          sentenceIndex,
-          wordIndex: -1,
-          text,
-          wordOffsets: [],
-        });
-      }
+      steps.push({
+        chapterId: chapter.id,
+        sentenceIndex,
+        wordIndex: -1,
+        text,
+        wordOffsets: [],
+      });
       return;
     }
 
@@ -119,17 +119,18 @@ export function buildArticleQueue(
   return article.flatMap((chapter) => buildChapterQueue(chapter));
 }
 
-/** 朗读文本：原句去掉链接等不可朗读 token，并收拾多余空格 */
+/** 朗读文本：原句去掉链接（URL 不朗读），其余标点/符号照原样念 */
 function spokenText(sentence: Sentence): string {
   let text = sentence.text;
+  let removedLink = false;
   for (const word of sentence.words) {
-    if (isSpeakable(word)) continue;
+    if (word.kind !== "link") continue;
     text = text.split(word.word).join(" ");
+    removedLink = true;
   }
-  return text
-    .replace(/\s+([.,;:!?])/g, "$1")
-    .replace(/\s+/g, " ")
-    .trim();
+  // 只有真的删了链接才需要收拾 "see ." 这类残留空格，避免动到 "a ... b" 本身
+  if (removedLink) text = text.replace(/\s+([.,;:!?])/g, "$1");
+  return text.replace(/\s+/g, " ").trim();
 }
 
 /** 把可朗读 token 按顺序对齐到朗读文本中的位置；对不齐返回 null */
@@ -205,6 +206,7 @@ function isEnUs(voice: SpeechSynthesisVoice): boolean {
 
 /** 词按钮的无障碍标签 */
 export function wordAriaLabel(word: WordEntry): string {
-  if (!isSpeakable(word)) return `链接 ${word.word}`;
+  if (word.kind === "link") return `链接 ${word.word}`;
+  if (word.kind === "symbol") return word.word;
   return `${word.word}，音标 ${word.phonetic}，点击发音`;
 }

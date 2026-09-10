@@ -14,8 +14,14 @@ export const SPEECH_RATES: readonly SpeechRate[] = [0.8, 1, 1.2];
  */
 export const HEADING_POSITION = -1;
 
-/** token 类型：word=可点读的词；link=链接（不参与朗读与跟读高亮） */
-export type WordKind = "word" | "link";
+/**
+ * token 类型：
+ * - word：可点读的词
+ * - link：链接，渲染成可跳转链接
+ * - symbol：标点/代码类符号（如 ","、"a ... b"、"``."），只展示，不可点读
+ * link 与 symbol 都不参与朗读与跟读高亮。
+ */
+export type WordKind = "word" | "link" | "symbol";
 
 /** 词流里的一个 token（普通单词，或链接等特殊 token） */
 export interface WordEntry {
@@ -33,12 +39,17 @@ export interface WordEntry {
 export interface Sentence {
   /** 句子唯一 id，如 "p1-s1" */
   id: string;
-  /** 英文原句 */
+  /** 英文原句；代码块词表这类没有句子的单元留空字符串 */
   text: string;
-  /** 该句的中文翻译 */
+  /** 该句的中文翻译；留空则不渲染翻译段落 */
   translation: string;
   /** 逐词 token，数组顺序即朗读顺序 */
   words: WordEntry[];
+  /**
+   * 可选的代码块原文（多行，保留空格与换行），
+   * 渲染在该句的中文翻译之后。代码块只做展示，不参与朗读。
+   */
+  code?: string;
 }
 
 /** 段标题，如 Introduction / ˌɪntrəˈdʌʃn / n. 引言；简介 + 中文「简介」 */
