@@ -1,5 +1,5 @@
-import { useSpeech } from "./speech-context";
-import type { WordSelection } from "./types";
+import { useSpeech } from './speech-context';
+import type { WordSelection } from './types';
 
 export interface WordDetailBarProps {
   /** 当前选中的词；null 时展示空态 */
@@ -20,18 +20,18 @@ export function WordDetailBar({ selection, className }: WordDetailBarProps) {
     speech.chapterId === selection.chapterId &&
     speech.sentenceIndex === selection.sentenceIndex &&
     speech.wordIndex === selection.wordIndex &&
-    speech.status === "playing";
+    speech.status === 'playing';
 
   return (
     <div
       aria-live="polite"
       className={[
-        "flex min-h-[78px] items-center justify-between gap-4",
-        "border-t border-[#dfe4e1] bg-[#f7faf8] px-5 py-3.5",
+        'flex min-h-[78px] items-center justify-between gap-4',
+        'border-t border-[#dfe4e1] bg-[#f7faf8] px-5 py-3.5',
         className,
       ]
         .filter(Boolean)
-        .join(" ")}
+        .join(' ')}
     >
       {word && selection ? (
         <div className="flex min-w-0 items-center gap-3.5">
@@ -39,10 +39,10 @@ export function WordDetailBar({ selection, className }: WordDetailBarProps) {
             type="button"
             title="播放当前单词"
             className={[
-              "grid h-9 w-9 flex-none cursor-pointer place-items-center rounded-full",
-              "border-0 bg-[#e8f3ed] text-[#0f5036] transition",
-              "hover:bg-[#d7e9df] disabled:cursor-not-allowed disabled:opacity-45",
-            ].join(" ")}
+              'grid h-9 w-9 flex-none cursor-pointer place-items-center rounded-full',
+              'border-0 bg-[#e8f3ed] text-[#0f5036] transition',
+              'hover:bg-[#d7e9df] disabled:cursor-not-allowed disabled:opacity-45',
+            ].join(' ')}
             disabled={speech.supported !== true}
             onClick={() =>
               speech.speakWord(
@@ -79,11 +79,11 @@ export function WordDetailBar({ selection, className }: WordDetailBarProps) {
 
       <div
         className={[
-          "min-w-[76px] text-right text-[11px]",
-          isSpeaking ? "font-bold text-[#176b48]" : "text-[#69736d]",
-        ].join(" ")}
+          'min-w-[76px] text-right text-[11px]',
+          isSpeaking ? 'font-bold text-[#176b48]' : 'text-[#69736d]',
+        ].join(' ')}
       >
-        {isSpeaking ? "正在播放" : "点击单词发音"}
+        {isSpeaking ? '正在播放' : '点击单词发音'}
       </div>
     </div>
   );

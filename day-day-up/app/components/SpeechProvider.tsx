@@ -1,28 +1,22 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import type { ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 
-import { SpeechContext } from "./speech-context";
+import { SpeechContext } from './speech-context';
 import type {
   SpeechContextValue,
   SpeechError,
   SpeechStatus,
-} from "./speech-context";
+} from './speech-context';
 import {
   buildArticleQueue,
   cleanWord,
   pickEnglishVoice,
   VOICE_LANG,
   wordIndexAt,
-} from "./speech-utils";
-import type { SpeechStep } from "./speech-utils";
-import { SPEECH_RATES } from "./types";
-import type { ChapterData, SpeechRate } from "./types";
+} from './speech-utils';
+import type { SpeechStep } from './speech-utils';
+import { SPEECH_RATES } from './types';
+import type { ChapterData, SpeechRate } from './types';
 
 interface SpeechProviderProps {
   children: ReactNode;
@@ -42,7 +36,7 @@ export function SpeechProvider({
 }: SpeechProviderProps) {
   // SSR 与客户端首帧都渲染 false，避免 hydration 不一致；探测放到 effect 里。
   const [supported, setSupported] = useState<boolean | null>(null);
-  const [status, setStatus] = useState<SpeechStatus>("idle");
+  const [status, setStatus] = useState<SpeechStatus>('idle');
   const [chapterId, setChapterId] = useState<string | null>(null);
   const [sentenceIndex, setSentenceIndex] = useState<number | null>(null);
   const [wordIndex, setWordIndex] = useState<number | null>(null);
@@ -55,12 +49,12 @@ export function SpeechProvider({
   /** 当前正在朗读的步骤下标，暂停后从这里继续 */
   const cursorRef = useRef(0);
   const chapterIdRef = useRef<string | null>(null);
-  const statusRef = useRef<SpeechStatus>("idle");
+  const statusRef = useRef<SpeechStatus>('idle');
   /** 每次打断 +1，旧的 utterance 回调据此失效 */
   const tokenRef = useRef(0);
 
   const cancelSpeech = useCallback(() => {
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
   }, []);
@@ -70,16 +64,16 @@ export function SpeechProvider({
     queueRef.current = [];
     cursorRef.current = 0;
     chapterIdRef.current = null;
-    statusRef.current = "idle";
+    statusRef.current = 'idle';
     setChapterId(null);
     setSentenceIndex(null);
     setWordIndex(null);
-    setStatus("idle");
+    setStatus('idle');
   }, []);
 
   /** 探测支持情况 + 固定 Samantha · en-US 音色 */
   useEffect(() => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       setSupported(false);
       return;
     }
@@ -89,23 +83,23 @@ export function SpeechProvider({
       voiceRef.current = pickEnglishVoice(synth.getVoices());
     };
     loadVoice();
-    synth.addEventListener("voiceschanged", loadVoice);
+    synth.addEventListener('voiceschanged', loadVoice);
     return () => {
-      synth.removeEventListener("voiceschanged", loadVoice);
+      synth.removeEventListener('voiceschanged', loadVoice);
       synth.cancel();
     };
   }, []);
 
   useEffect(() => {
     const handleUnload = () => cancelSpeech();
-    window.addEventListener("beforeunload", handleUnload);
-    return () => window.removeEventListener("beforeunload", handleUnload);
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
   }, [cancelSpeech]);
 
   /** 播放队列第 cursor 步；到末尾自动收尾 */
   const runQueue = useCallback(
     (cursor: number) => {
-      if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
         return;
       }
       const queue = queueRef.current;
@@ -125,11 +119,11 @@ export function SpeechProvider({
         if (token !== tokenRef.current) return;
         cursorRef.current = cursor;
         chapterIdRef.current = step.chapterId;
-        statusRef.current = "playing";
+        statusRef.current = 'playing';
         setChapterId(step.chapterId);
         setSentenceIndex(step.sentenceIndex);
         setWordIndex(step.wordIndex);
-        setStatus("playing");
+        setStatus('playing');
       };
       utterance.onend = () => {
         if (token !== tokenRef.current) return;
@@ -144,10 +138,10 @@ export function SpeechProvider({
       utterance.onerror = (event) => {
         if (token !== tokenRef.current) return;
         const error = event.error;
-        if (error === "canceled" || error === "interrupted") return;
+        if (error === 'canceled' || error === 'interrupted') return;
         setError({
           chapterId: step.chapterId,
-          message: "系统语音播放失败，请重试",
+          message: '系统语音播放失败，请重试',
         });
         resetState();
       };
@@ -159,7 +153,7 @@ export function SpeechProvider({
 
   const playArticle = useCallback(
     (article: readonly ChapterData[]) => {
-      if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
         return;
       }
       const queue = buildArticleQueue(article);
@@ -171,11 +165,11 @@ export function SpeechProvider({
       queueRef.current = queue;
       cursorRef.current = 0;
       chapterIdRef.current = queue[0].chapterId;
-      statusRef.current = "playing";
+      statusRef.current = 'playing';
       setChapterId(queue[0].chapterId);
       setSentenceIndex(queue[0].sentenceIndex);
       setWordIndex(queue[0].wordIndex);
-      setStatus("playing");
+      setStatus('playing');
       runQueue(0);
     },
     [runQueue],
@@ -188,7 +182,7 @@ export function SpeechProvider({
       ownerWord: number,
       text: string,
     ) => {
-      if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
         return;
       }
       const cleaned = cleanWord(text) || text.trim();
@@ -208,31 +202,31 @@ export function SpeechProvider({
       ];
       cursorRef.current = 0;
       chapterIdRef.current = ownerId;
-      statusRef.current = "playing";
+      statusRef.current = 'playing';
       setChapterId(ownerId);
       setSentenceIndex(ownerSentence);
       setWordIndex(ownerWord);
-      setStatus("playing");
+      setStatus('playing');
       runQueue(0);
     },
     [runQueue],
   );
 
   const pause = useCallback(() => {
-    if (statusRef.current !== "playing") return;
+    if (statusRef.current !== 'playing') return;
     tokenRef.current += 1;
     cancelSpeech();
-    statusRef.current = "paused";
-    setStatus("paused");
+    statusRef.current = 'paused';
+    setStatus('paused');
   }, [cancelSpeech]);
 
   const resume = useCallback(() => {
-    if (statusRef.current !== "paused") return;
+    if (statusRef.current !== 'paused') return;
     if (!chapterIdRef.current) return;
     tokenRef.current += 1;
     cancelSpeech();
-    statusRef.current = "playing";
-    setStatus("playing");
+    statusRef.current = 'playing';
+    setStatus('playing');
     runQueue(cursorRef.current);
   }, [cancelSpeech, runQueue]);
 
@@ -251,7 +245,7 @@ export function SpeechProvider({
       setRateState(next);
       if (unchanged) return; // 语速没变就不打断当前朗读
       // 朗读中以新语速从当前词继续
-      if (statusRef.current === "playing" && chapterIdRef.current) {
+      if (statusRef.current === 'playing' && chapterIdRef.current) {
         tokenRef.current += 1;
         cancelSpeech();
         runQueue(cursorRef.current);

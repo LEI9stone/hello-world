@@ -1,8 +1,8 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext } from 'react';
 
-import type { ChapterData, SpeechRate } from "./types";
+import type { ChapterData, SpeechRate } from './types';
 /** idle=未朗读；playing=朗读中；paused=已暂停（可继续） */
-export type SpeechStatus = "idle" | "playing" | "paused";
+export type SpeechStatus = 'idle' | 'playing' | 'paused';
 
 /** 朗读失败信息 */
 export interface SpeechError {
@@ -61,7 +61,7 @@ export const SpeechContext = createContext<SpeechContextValue | null>(null);
 export function useSpeech(): SpeechContextValue {
   const context = useContext(SpeechContext);
   if (!context) {
-    throw new Error("useSpeech 必须在 <SpeechProvider> 内使用");
+    throw new Error('useSpeech 必须在 <SpeechProvider> 内使用');
   }
   return context;
 }

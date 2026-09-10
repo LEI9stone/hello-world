@@ -1,10 +1,10 @@
-import githubLight from "@shikijs/themes/github-light";
-import { createHighlighterCore } from "shiki/core";
-import { createOnigurumaEngine } from "shiki/engine/oniguruma";
-import type { HighlighterCore } from "shiki/core";
-import type { ShikiTransformer } from "shiki/core";
+import githubLight from '@shikijs/themes/github-light';
+import { createHighlighterCore } from 'shiki/core';
+import { createOnigurumaEngine } from 'shiki/engine/oniguruma';
+import type { HighlighterCore } from 'shiki/core';
+import type { ShikiTransformer } from 'shiki/core';
 
-import type { ChapterData } from "../components/types";
+import type { ChapterData } from '../components/types';
 
 /**
  * 服务端代码高亮（Shiki 细粒度）。
@@ -16,28 +16,28 @@ import type { ChapterData } from "../components/types";
 
 /** 支持的语言：key 为 Shiki 语言 id，值为按需加载的语法模块 */
 const LANG_LOADERS = {
-  go: () => import("@shikijs/langs/go"),
-  javascript: () => import("@shikijs/langs/javascript"),
-  typescript: () => import("@shikijs/langs/typescript"),
-  jsx: () => import("@shikijs/langs/jsx"),
-  tsx: () => import("@shikijs/langs/tsx"),
-  python: () => import("@shikijs/langs/python"),
-  java: () => import("@shikijs/langs/java"),
-  rust: () => import("@shikijs/langs/rust"),
-  c: () => import("@shikijs/langs/c"),
-  cpp: () => import("@shikijs/langs/cpp"),
-  csharp: () => import("@shikijs/langs/csharp"),
-  bash: () => import("@shikijs/langs/bash"),
-  shellscript: () => import("@shikijs/langs/shellscript"),
-  json: () => import("@shikijs/langs/json"),
-  yaml: () => import("@shikijs/langs/yaml"),
-  toml: () => import("@shikijs/langs/toml"),
-  sql: () => import("@shikijs/langs/sql"),
-  html: () => import("@shikijs/langs/html"),
-  css: () => import("@shikijs/langs/css"),
-  xml: () => import("@shikijs/langs/xml"),
-  markdown: () => import("@shikijs/langs/markdown"),
-  diff: () => import("@shikijs/langs/diff"),
+  go: () => import('@shikijs/langs/go'),
+  javascript: () => import('@shikijs/langs/javascript'),
+  typescript: () => import('@shikijs/langs/typescript'),
+  jsx: () => import('@shikijs/langs/jsx'),
+  tsx: () => import('@shikijs/langs/tsx'),
+  python: () => import('@shikijs/langs/python'),
+  java: () => import('@shikijs/langs/java'),
+  rust: () => import('@shikijs/langs/rust'),
+  c: () => import('@shikijs/langs/c'),
+  cpp: () => import('@shikijs/langs/cpp'),
+  csharp: () => import('@shikijs/langs/csharp'),
+  bash: () => import('@shikijs/langs/bash'),
+  shellscript: () => import('@shikijs/langs/shellscript'),
+  json: () => import('@shikijs/langs/json'),
+  yaml: () => import('@shikijs/langs/yaml'),
+  toml: () => import('@shikijs/langs/toml'),
+  sql: () => import('@shikijs/langs/sql'),
+  html: () => import('@shikijs/langs/html'),
+  css: () => import('@shikijs/langs/css'),
+  xml: () => import('@shikijs/langs/xml'),
+  markdown: () => import('@shikijs/langs/markdown'),
+  diff: () => import('@shikijs/langs/diff'),
 };
 
 type LangId = keyof typeof LANG_LOADERS;
@@ -45,31 +45,31 @@ const isKnownLang = (id: string): id is LangId => id in LANG_LOADERS;
 
 /** 常见别名 → Shiki 语言 id（markdown 围栏里习惯写 js/ts/py…） */
 const LANG_ALIASES: Record<string, string> = {
-  golang: "go",
-  js: "javascript",
-  mjs: "javascript",
-  cjs: "javascript",
-  ts: "typescript",
-  mts: "typescript",
-  py: "python",
-  "c++": "cpp",
-  cc: "cpp",
-  cs: "csharp",
-  "c#": "csharp",
-  sh: "bash",
-  shell: "bash",
-  zsh: "bash",
-  console: "bash",
-  yml: "yaml",
-  md: "markdown",
-  svg: "xml",
-  htm: "html",
+  golang: 'go',
+  js: 'javascript',
+  mjs: 'javascript',
+  cjs: 'javascript',
+  ts: 'typescript',
+  mts: 'typescript',
+  py: 'python',
+  'c++': 'cpp',
+  cc: 'cpp',
+  cs: 'csharp',
+  'c#': 'csharp',
+  sh: 'bash',
+  shell: 'bash',
+  zsh: 'bash',
+  console: 'bash',
+  yml: 'yaml',
+  md: 'markdown',
+  svg: 'xml',
+  htm: 'html',
 };
 
 /** Shiki 内置的纯文本语言，无需加载语法 */
-const PLAIN_TEXT = "text";
+const PLAIN_TEXT = 'text';
 
-const THEME = "github-light";
+const THEME = 'github-light';
 
 let highlighterPromise: Promise<HighlighterCore> | null = null;
 
@@ -77,7 +77,7 @@ function getHighlighter(): Promise<HighlighterCore> {
   highlighterPromise ??= createHighlighterCore({
     themes: [githubLight],
     langs: [],
-    engine: createOnigurumaEngine(import("shiki/wasm")),
+    engine: createOnigurumaEngine(import('shiki/wasm')),
   });
   return highlighterPromise;
 }
@@ -111,7 +111,7 @@ function resolveLang(lang?: string): string {
 
 /** 去掉 Shiki 自带背景色，配色交给外层容器统一控制 */
 const stripShikiBackground: ShikiTransformer = {
-  name: "strip-shiki-background",
+  name: 'strip-shiki-background',
   pre(node) {
     node.properties.style = undefined;
   },

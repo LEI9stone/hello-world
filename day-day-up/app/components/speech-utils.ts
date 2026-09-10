@@ -1,18 +1,18 @@
-import type { ChapterData, Sentence, WordEntry } from "./types";
-import { HEADING_POSITION } from "./types";
+import type { ChapterData, Sentence, WordEntry } from './types';
+import { HEADING_POSITION } from './types';
 
 /** 固定音色：Samantha · en-US（不提供选择器） */
-export const VOICE_NAME = "Samantha";
-export const VOICE_LANG = "en-US";
+export const VOICE_NAME = 'Samantha';
+export const VOICE_LANG = 'en-US';
 
 /** 是否为可朗读的词（链接、符号等特殊 token 不朗读） */
 export function isSpeakable(word: WordEntry): boolean {
-  return (word.kind ?? "word") === "word";
+  return (word.kind ?? 'word') === 'word';
 }
 
 /** 去掉标点，只保留能朗读的字符（字母、连字符、撇号） */
 export function cleanWord(word: string): string {
-  return word.replace(/[^a-zA-Z'-]/g, "");
+  return word.replace(/[^a-zA-Z'-]/g, '');
 }
 
 /** 整段原文：由各句 text 拼接 */
@@ -20,7 +20,7 @@ export function chapterText(chapter: ChapterData): string {
   return chapter.sentences
     .map((sentence) => sentence.text.trim())
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 }
 
 /** 朗读队列中的一步（一步 = 一个段标题，或一个整句） */
@@ -67,7 +67,9 @@ export function buildChapterQueue(chapter: ChapterData): SpeechStep[] {
 
     const speakable = sentence.words
       .map((word, wordIndex) => ({ word, wordIndex }))
-      .filter(({ word }) => isSpeakable(word) && cleanWord(word.word).length > 0);
+      .filter(
+        ({ word }) => isSpeakable(word) && cleanWord(word.word).length > 0,
+      );
 
     if (speakable.length === 0) {
       steps.push({
@@ -93,10 +95,10 @@ export function buildChapterQueue(chapter: ChapterData): SpeechStep[] {
     }
 
     // 兜底：原句与词表对不齐时，退回按 token 拼接
-    let joined = "";
+    let joined = '';
     const wordOffsets: { wordIndex: number; start: number }[] = [];
     speakable.forEach(({ word, wordIndex }, position) => {
-      if (position > 0) joined += " ";
+      if (position > 0) joined += ' ';
       wordOffsets.push({ wordIndex, start: joined.length });
       joined += word.word;
     });
@@ -124,13 +126,13 @@ function spokenText(sentence: Sentence): string {
   let text = sentence.text;
   let removedLink = false;
   for (const word of sentence.words) {
-    if (word.kind !== "link") continue;
-    text = text.split(word.word).join(" ");
+    if (word.kind !== 'link') continue;
+    text = text.split(word.word).join(' ');
     removedLink = true;
   }
   // 只有真的删了链接才需要收拾 "see ." 这类残留空格，避免动到 "a ... b" 本身
-  if (removedLink) text = text.replace(/\s+([.,;:!?])/g, "$1");
-  return text.replace(/\s+/g, " ").trim();
+  if (removedLink) text = text.replace(/\s+([.,;:!?])/g, '$1');
+  return text.replace(/\s+/g, ' ').trim();
 }
 
 /** 把可朗读 token 按顺序对齐到朗读文本中的位置；对不齐返回 null */
@@ -144,7 +146,7 @@ function alignWords(
   for (const { word, wordIndex } of tokens) {
     const target = cleanWord(word.word);
     if (!target) return null;
-    const match = new RegExp(`\\b${escapeRegExp(target)}\\b`, "i").exec(
+    const match = new RegExp(`\\b${escapeRegExp(target)}\\b`, 'i').exec(
       text.slice(cursor),
     );
     if (!match) return null;
@@ -156,14 +158,17 @@ function alignWords(
 }
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
  * 根据 onboundary 的 charIndex 定位当前朗读到哪个词。
  * 浏览器不派发 boundary 事件时返回 null，此时保留句首词高亮。
  */
-export function wordIndexAt(step: SpeechStep, charIndex: number): number | null {
+export function wordIndexAt(
+  step: SpeechStep,
+  charIndex: number,
+): number | null {
   let found: number | null = null;
   for (const item of step.wordOffsets) {
     if (item.start <= charIndex) found = item.wordIndex;
@@ -181,7 +186,7 @@ export function pickEnglishVoice(
 ): SpeechSynthesisVoice | null {
   if (voices.length === 0) return null;
   const english = voices.filter((voice) =>
-    voice.lang?.toLowerCase().startsWith("en"),
+    voice.lang?.toLowerCase().startsWith('en'),
   );
   const pool = english.length > 0 ? english : voices;
 
@@ -201,12 +206,12 @@ export function pickEnglishVoice(
 }
 
 function isEnUs(voice: SpeechSynthesisVoice): boolean {
-  return voice.lang?.toLowerCase().startsWith("en-us") ?? false;
+  return voice.lang?.toLowerCase().startsWith('en-us') ?? false;
 }
 
 /** 词按钮的无障碍标签 */
 export function wordAriaLabel(word: WordEntry): string {
-  if (word.kind === "link") return `链接 ${word.word}`;
-  if (word.kind === "symbol") return word.word;
+  if (word.kind === 'link') return `链接 ${word.word}`;
+  if (word.kind === 'symbol') return word.word;
   return `${word.word}，音标 ${word.phonetic}，点击发音`;
 }

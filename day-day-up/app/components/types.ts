@@ -21,7 +21,7 @@ export const HEADING_POSITION = -1;
  * - symbol：标点/代码类符号（如 ","、"a ... b"、"``."），只展示，不可点读
  * link 与 symbol 都不参与朗读与跟读高亮。
  */
-export type WordKind = "word" | "link" | "symbol";
+export type WordKind = 'word' | 'link' | 'symbol';
 
 /** 词流里的一个 token（普通单词，或链接等特殊 token） */
 export interface WordEntry {
