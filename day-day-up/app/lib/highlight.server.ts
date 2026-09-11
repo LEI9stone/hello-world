@@ -141,12 +141,14 @@ export async function highlightArticle(
   article: readonly ChapterData[],
 ): Promise<Record<string, string>> {
   const jobs = article.flatMap((chapter) =>
-    chapter.sentences
-      .filter((sentence) => sentence.code && sentence.codeLang)
-      .map(async (sentence) => {
-        const html = await highlightCode(sentence.code!, sentence.codeLang);
-        return [sentence.id, html] as const;
-      }),
+    chapter.paragraphs.flatMap((paragraph) =>
+      paragraph.sentences
+        .filter((sentence) => sentence.code && sentence.codeLang)
+        .map(async (sentence) => {
+          const html = await highlightCode(sentence.code!, sentence.codeLang);
+          return [sentence.id, html] as const;
+        }),
+    ),
   );
 
   return Object.fromEntries(await Promise.all(jobs));

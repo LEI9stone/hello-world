@@ -28,7 +28,7 @@ interface SpeechProviderProps {
  * 文章级朗读上下文。
  *
  * 整个页面只保留一个朗读实例：点 B 段朗读会自动取消 A 段，
- * 各段落的 Chapter 通过比较 chapterId 判断按钮状态，无需互相通信。
+ * 各章节的 Chapter 通过比较 chapterId 判断按钮状态，无需互相通信。
  */
 export function SpeechProvider({
   children,

@@ -24,7 +24,6 @@ export function meta({}: Route.MetaArgs) {
  * 客户端拿到的是高亮好的 HTML，且不会把任何语法包打进客户端 bundle。
  */
 export async function loader() {
-  console.log('loader: highlightArticle');
   return { codeHtml: await highlightArticle(sampleArticle) };
 }
 
@@ -38,11 +37,11 @@ export default function Home() {
   );
 }
 
-/** 文章页：每个段落复用 <Chapter />，共用一条底部词详情栏 */
+/** 文章页：每个章节复用 <Chapter />，共用一条底部词详情栏 */
 function ArticleView({ codeHtml }: { codeHtml: Record<string, string> }) {
   const [selection, setSelection] = useState<WordSelection | null>(() => {
     const first = sampleArticle[0];
-    const word = first?.sentences[0]?.words[0];
+    const word = first?.paragraphs[0]?.sentences[0]?.words[0];
     return first && word
       ? {
           chapterId: first.id,

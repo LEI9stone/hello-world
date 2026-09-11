@@ -15,19 +15,20 @@ export function cleanWord(word: string): string {
   return word.replace(/[^a-zA-Z'-]/g, '');
 }
 
-/** 整段原文：由各句 text 拼接 */
+/** 整个章节原文：由各自然段中的句子 text 拼接 */
 export function chapterText(chapter: ChapterData): string {
-  return chapter.sentences
+  return chapter.paragraphs
+    .flatMap((paragraph) => paragraph.sentences)
     .map((sentence) => sentence.text.trim())
     .filter(Boolean)
     .join(' ');
 }
 
-/** 朗读队列中的一步（一步 = 一个段标题，或一个整句） */
+/** 朗读队列中的一步（一步 = 一个章节标题，或一个整句） */
 export interface SpeechStep {
-  /** 所属段落 id：全文朗读时队列会跨段，每步自带归属 */
+  /** 所属章节 id：全文朗读时队列会跨章节，每步自带归属 */
   chapterId: string;
-  /** 所属句子下标；HEADING_POSITION 表示这是段标题 */
+  /** 所属句子下标；HEADING_POSITION 表示这是章节标题 */
   sentenceIndex: number;
   /** 该句第一个可读词的下标；HEADING_POSITION 表示标题；-1 表示整句兜底 */
   wordIndex: number;
@@ -38,7 +39,7 @@ export interface SpeechStep {
 }
 
 /**
- * 构建一个段落的朗读队列：段标题（若有）+ 逐句。
+ * 构建一个章节的朗读队列：章节标题（若有）+ 按自然段顺序逐句。
  * **一句一条 utterance**，由 TTS 按整句朗读，语调、连读、停顿都是正常念文章的听感
  * （逐词念会变成一个个单词往外蹦）。
  *
@@ -59,62 +60,71 @@ export function buildChapterQueue(chapter: ChapterData): SpeechStep[] {
     });
   }
 
-  chapter.sentences.forEach((sentence, sentenceIndex) => {
-    // 优先念原句：保留逗号、句号等标点，TTS 的停顿与语调才自然
-    const text = spokenText(sentence);
-    // 没有句子文本的单元（如代码块后面的词表）不进朗读队列，它的词仍可单独点读
-    if (!text) return;
+  let sentenceIndex = 0;
+  chapter.paragraphs.forEach((paragraph) => {
+    paragraph.sentences.forEach((sentence) => {
+      // 优先念原句：保留逗号、句号等标点，TTS 的停顿与语调才自然
+      const text = spokenText(sentence);
+      // 没有句子文本的单元（如代码块后面的词表）不进朗读队列，它的词仍可单独点读
+      if (!text) {
+        sentenceIndex += 1;
+        return;
+      }
 
-    const speakable = sentence.words
-      .map((word, wordIndex) => ({ word, wordIndex }))
-      .filter(
-        ({ word }) => isSpeakable(word) && cleanWord(word.word).length > 0,
-      );
+      const speakable = sentence.words
+        .map((word, wordIndex) => ({ word, wordIndex }))
+        .filter(
+          ({ word }) => isSpeakable(word) && cleanWord(word.word).length > 0,
+        );
 
-    if (speakable.length === 0) {
-      steps.push({
-        chapterId: chapter.id,
-        sentenceIndex,
-        wordIndex: -1,
-        text,
-        wordOffsets: [],
+      if (speakable.length === 0) {
+        steps.push({
+          chapterId: chapter.id,
+          sentenceIndex,
+          wordIndex: -1,
+          text,
+          wordOffsets: [],
+        });
+        sentenceIndex += 1;
+        return;
+      }
+
+      const aligned = text ? alignWords(text, speakable) : null;
+      if (aligned) {
+        steps.push({
+          chapterId: chapter.id,
+          sentenceIndex,
+          wordIndex: speakable[0].wordIndex,
+          text,
+          wordOffsets: aligned,
+        });
+        sentenceIndex += 1;
+        return;
+      }
+
+      // 兜底：原句与词表对不齐时，退回按 token 拼接
+      let joined = '';
+      const wordOffsets: { wordIndex: number; start: number }[] = [];
+      speakable.forEach(({ word, wordIndex }, position) => {
+        if (position > 0) joined += ' ';
+        wordOffsets.push({ wordIndex, start: joined.length });
+        joined += word.word;
       });
-      return;
-    }
-
-    const aligned = text ? alignWords(text, speakable) : null;
-    if (aligned) {
       steps.push({
         chapterId: chapter.id,
         sentenceIndex,
         wordIndex: speakable[0].wordIndex,
-        text,
-        wordOffsets: aligned,
+        text: joined,
+        wordOffsets,
       });
-      return;
-    }
-
-    // 兜底：原句与词表对不齐时，退回按 token 拼接
-    let joined = '';
-    const wordOffsets: { wordIndex: number; start: number }[] = [];
-    speakable.forEach(({ word, wordIndex }, position) => {
-      if (position > 0) joined += ' ';
-      wordOffsets.push({ wordIndex, start: joined.length });
-      joined += word.word;
-    });
-    steps.push({
-      chapterId: chapter.id,
-      sentenceIndex,
-      wordIndex: speakable[0].wordIndex,
-      text: joined,
-      wordOffsets,
+      sentenceIndex += 1;
     });
   });
 
   return steps;
 }
 
-/** 构建全文朗读队列：按文章顺序把各段的标题与句子串成一条队列 */
+/** 构建全文朗读队列：按文章顺序把各章节的标题与句子串成一条队列 */
 export function buildArticleQueue(
   article: readonly ChapterData[],
 ): SpeechStep[] {

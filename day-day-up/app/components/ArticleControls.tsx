@@ -5,7 +5,7 @@ import { HEADING_POSITION, SPEECH_RATES } from './types';
 import type { ChapterData, SpeechRate } from './types';
 
 export interface ArticleControlsProps {
-  /** 全文数据：点「朗读全文」时按段、按句连续朗读 */
+  /** 全文数据：点「朗读全文」时按章节、自然段和句子连续朗读 */
   article: readonly ChapterData[];
   /** 外层 className 扩展 */
   className?: string;
@@ -131,7 +131,7 @@ function describeProgress(
   const index = article.findIndex((chapter) => chapter.id === chapterId);
   if (index < 0) return null;
 
-  const parts = [`第 ${index + 1} 段`];
+  const parts = [`第 ${index + 1} 章`];
   if (sentenceIndex === HEADING_POSITION) parts.push('标题');
   else if (sentenceIndex !== null && sentenceIndex >= 0) {
     parts.push(`第 ${sentenceIndex + 1} 句`);

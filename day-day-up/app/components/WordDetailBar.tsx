@@ -10,7 +10,7 @@ export interface WordDetailBarProps {
 
 /**
  * 文章级词详情栏：整篇文章共用一个，固定在阅读面板底部。
- * 点击喇叭用 Samantha · en-US 重播当前词，并让对应 Chapter 的该词保持高亮。
+ * 点击喇叭用 Samantha · en-US 重播当前词，并让对应章节的该词保持高亮。
  */
 export function WordDetailBar({ selection, className }: WordDetailBarProps) {
   const speech = useSpeech();

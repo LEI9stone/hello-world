@@ -6,7 +6,7 @@ export type SpeechStatus = 'idle' | 'playing' | 'paused';
 
 /** 朗读失败信息 */
 export interface SpeechError {
-  /** 出错时所属段落 id，便于只在对应段落提示 */
+  /** 出错时所属章节 id，便于只在对应章节提示 */
   chapterId: string;
   message: string;
 }
@@ -18,23 +18,23 @@ export interface SpeechContextValue {
    */
   supported: boolean | null;
   status: SpeechStatus;
-  /** 当前正在朗读/暂停的段落 id，其它段落据此保持静默 */
+  /** 当前正在朗读/暂停的章节 id，其它章节据此保持静默 */
   chapterId: string | null;
-  /** 当前朗读到的句子下标（chapterId 为 null 时无意义） */
+  /** 当前章节内展平后的句子下标（chapterId 为 null 时无意义） */
   sentenceIndex: number | null;
   /** 当前朗读到的词下标，-1 表示整句兜底（无对应词） */
   wordIndex: number | null;
   /** 全局语速档位 */
   rate: SpeechRate;
-  /** 最近一次朗读失败的信息（含所属段落），成功后自动清除 */
+  /** 最近一次朗读失败的信息（含所属章节），成功后自动清除 */
   error: SpeechError | null;
   /** 切换语速；若正在朗读则以新语速从当前词继续 */
   setRate: (rate: SpeechRate) => void;
-  /** 朗读全文：按段、按句连续朗读整篇文章 */
+  /** 朗读全文：按章节、自然段和句子顺序连续朗读整篇文章 */
   playArticle: (article: readonly ChapterData[]) => void;
   /**
-   * 只朗读某个词或段标题。
-   * 段标题用 HEADING_POSITION 作为 sentenceIndex / wordIndex。
+   * 只朗读某个词或章节标题。
+   * 章节标题用 HEADING_POSITION 作为 sentenceIndex / wordIndex。
    */
   speakWord: (
     chapterId: string,

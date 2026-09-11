@@ -9,8 +9,8 @@ export type SpeechRate = 0.8 | 1 | 1.2;
 export const SPEECH_RATES: readonly SpeechRate[] = [0.8, 1, 1.2];
 
 /**
- * (sentenceIndex, wordIndex) 中的哨兵值：表示"段标题"这个位置，
- * 而不是正文里的第几句/第几个词。点击标题发音、全文朗读的第 0 步都用它定位。
+ * (sentenceIndex, wordIndex) 中的哨兵值：表示"章节标题"这个位置，
+ * 而不是正文里的第几句/第几个词。点击章节标题发音、全文朗读的第 0 步都用它定位。
  */
 export const HEADING_POSITION = -1;
 
@@ -57,7 +57,15 @@ export interface Sentence {
   codeLang?: string;
 }
 
-/** 段标题，如 Introduction / ˌɪntrəˈdʌʃn / n. 引言；简介 + 中文「简介」 */
+/** 一个自然段：按原文段落组织一个或多个句子 */
+export interface ParagraphData {
+  /** 自然段唯一 id */
+  id: string;
+  /** 自然段内句子，数组顺序即原文顺序 */
+  sentences: Sentence[];
+}
+
+/** 章节标题，如 Introduction / ˌɪntrəˈdʌʃn / n. 引言；简介 + 中文「简介」 */
 export interface ChapterHeading {
   word: WordEntry;
   /** 标题的中文翻译 */
@@ -65,23 +73,23 @@ export interface ChapterHeading {
 }
 
 /**
- * 文章中的一个段落。
- * 文章页把每个段落映射成一个 <Chapter />；段内可含 1~N 个句子。
+ * 文章中的一个章节。
+ * 文章页把每个章节映射成一个 <Chapter />；章节内可含多个自然段。
  */
 export interface ChapterData {
-  /** 段落唯一 id：React key、锚点、朗读定位都用它 */
+  /** 章节唯一 id：React key、锚点、朗读定位都用它 */
   id: string;
-  /** 段标题（可选） */
+  /** 章节标题（可选） */
   heading?: ChapterHeading;
-  /** 段内句子，数组顺序即朗读顺序 */
-  sentences: Sentence[];
+  /** 章节内自然段，数组顺序即原文顺序 */
+  paragraphs: ParagraphData[];
 }
 
 /** 文章级词详情栏当前展示的选中词 */
 export interface WordSelection {
-  /** 所属段落 id，用于让对应 Chapter 高亮 */
+  /** 所属章节 id，用于让对应 Chapter 高亮 */
   chapterId: string;
-  /** 所属句子在段落 sentences 中的下标 */
+  /** 所属句子在章节所有自然段展平后的下标 */
   sentenceIndex: number;
   /** 该 token 在句子 words 中的下标 */
   wordIndex: number;

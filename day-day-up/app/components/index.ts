@@ -19,6 +19,7 @@ export type { WordDetailBarProps } from './WordDetailBar';
 export { HEADING_POSITION, SPEECH_RATES } from './types';
 export type {
   ChapterData,
+  ParagraphData,
   SpeechRate,
   WordEntry,
   WordSelection,
