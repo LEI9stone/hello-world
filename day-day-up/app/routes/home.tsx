@@ -24,6 +24,7 @@ export function meta({}: Route.MetaArgs) {
  * 客户端拿到的是高亮好的 HTML，且不会把任何语法包打进客户端 bundle。
  */
 export async function loader() {
+  console.log('loader: highlightArticle');
   return { codeHtml: await highlightArticle(sampleArticle) };
 }
 
