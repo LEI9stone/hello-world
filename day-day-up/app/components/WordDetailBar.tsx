@@ -1,5 +1,8 @@
+import { Notification } from './Notification/Notification';
 import { useSpeech } from './speech-context';
 import type { WordSelection } from './types';
+
+import './WordDetailBar.css';
 
 export interface WordDetailBarProps {
   /** 当前选中的词；null 时展示空态 */
@@ -23,69 +26,76 @@ export function WordDetailBar({ selection, className }: WordDetailBarProps) {
     speech.status === 'playing';
 
   return (
-    <div
-      aria-live="polite"
-      className={[
-        'flex min-h-[78px] items-center justify-between gap-4',
-        'border-t border-[#dfe4e1] bg-[#f7faf8] px-5 py-3.5',
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
+    <Notification
+      open
+      placement="bottom"
+      duration={false}
+      closable={false}
+      className="word-detail-bar-notification"
     >
-      {word && selection ? (
-        <div className="flex min-w-0 items-center gap-3.5">
-          <button
-            type="button"
-            title="播放当前单词"
-            className={[
-              'grid h-9 w-9 flex-none cursor-pointer place-items-center rounded-full',
-              'border-0 bg-[#e8f3ed] text-[#0f5036] transition',
-              'hover:bg-[#d7e9df] disabled:cursor-not-allowed disabled:opacity-45',
-            ].join(' ')}
-            disabled={speech.supported !== true}
-            onClick={() =>
-              speech.speakWord(
-                selection.chapterId,
-                selection.sentenceIndex,
-                selection.wordIndex,
-                word.word,
-              )
-            }
-          >
-            <SpeakerIcon />
-            <span className="sr-only">播放 {word.word}</span>
-          </button>
-          <div className="min-w-0">
-            <div className="truncate">
-              <span
-                className="mr-2 text-[18px] font-bold"
-                style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-              >
-                {word.word}
-              </span>
-              <span className="text-[12px] text-[#176b48]">
-                {word.phonetic}
-              </span>
-            </div>
-            <div className="mt-1 truncate text-[12px] text-[#69736d]">
-              {word.meaning}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="text-[12px] text-[#69736d]">点击上方单词查看释义</div>
-      )}
-
       <div
         className={[
-          'min-w-[76px] text-right text-[11px]',
-          isSpeaking ? 'font-bold text-[#176b48]' : 'text-[#69736d]',
-        ].join(' ')}
+          'flex min-h-[78px] items-center justify-between gap-4',
+          'border-t border-[#dfe4e1] bg-[#f7faf8] px-5 py-3.5',
+          className,
+        ]
+          .filter(Boolean)
+          .join(' ')}
       >
-        {isSpeaking ? '正在播放' : '点击单词发音'}
+        {word && selection ? (
+          <div className="flex min-w-0 items-center gap-3.5">
+            <button
+              type="button"
+              title="播放当前单词"
+              className={[
+                'grid h-9 w-9 flex-none cursor-pointer place-items-center rounded-full',
+                'border-0 bg-[#e8f3ed] text-[#0f5036] transition',
+                'hover:bg-[#d7e9df] disabled:cursor-not-allowed disabled:opacity-45',
+              ].join(' ')}
+              disabled={speech.supported !== true}
+              onClick={() =>
+                speech.speakWord(
+                  selection.chapterId,
+                  selection.sentenceIndex,
+                  selection.wordIndex,
+                  word.word,
+                )
+              }
+            >
+              <SpeakerIcon />
+              <span className="sr-only">播放 {word.word}</span>
+            </button>
+            <div className="min-w-0">
+              <div className="truncate">
+                <span
+                  className="mr-2 text-[18px] font-bold"
+                  style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+                >
+                  {word.word}
+                </span>
+                <span className="text-[12px] text-[#176b48]">
+                  {word.phonetic}
+                </span>
+              </div>
+              <div className="mt-1 truncate text-[12px] text-[#69736d]">
+                {word.meaning}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-[12px] text-[#69736d]">点击上方单词查看释义</div>
+        )}
+
+        <div
+          className={[
+            'min-w-[76px] text-right text-[11px]',
+            isSpeaking ? 'font-bold text-[#176b48]' : 'text-[#69736d]',
+          ].join(' ')}
+        >
+          {isSpeaking ? '正在播放' : '点击单词发音'}
+        </div>
       </div>
-    </div>
+    </Notification>
   );
 }
 

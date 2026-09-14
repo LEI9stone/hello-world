@@ -16,6 +16,12 @@ export type {
 export { WordDetailBar } from './WordDetailBar';
 export type { WordDetailBarProps } from './WordDetailBar';
 
+export { Notification } from './Notification/Notification';
+export type {
+  NotificationPlacement,
+  NotificationProps,
+} from './Notification/Notification';
+
 export { HEADING_POSITION, SPEECH_RATES } from './types';
 export type {
   ChapterData,

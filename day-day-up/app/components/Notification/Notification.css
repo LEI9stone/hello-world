@@ -1,0 +1,60 @@
+.notification {
+  position: fixed;
+  z-index: 1000;
+  max-width: calc(100vw - 32px);
+  pointer-events: auto;
+  opacity: 0;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.notification[data-placement='top'] {
+  top: 24px;
+  left: 50%;
+  transform: translate(-50%, -8px);
+}
+
+.notification[data-placement='topLeft'] {
+  top: 24px;
+  left: 24px;
+  transform: translateY(-8px);
+}
+
+.notification[data-placement='topRight'] {
+  top: 24px;
+  right: 24px;
+  transform: translateY(-8px);
+}
+
+.notification[data-placement='bottom'] {
+  bottom: 24px;
+  left: 50%;
+  transform: translate(-50%, 8px);
+}
+
+.notification[data-placement='bottomLeft'] {
+  bottom: 24px;
+  left: 24px;
+  transform: translateY(8px);
+}
+
+.notification[data-placement='bottomRight'] {
+  right: 24px;
+  bottom: 24px;
+  transform: translateY(8px);
+}
+
+.notification[data-state='open'] {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+.notification[data-placement='top'][data-state='open'],
+.notification[data-placement='bottom'][data-state='open'] {
+  transform: translateX(-50%);
+}
+
+.notification-close {
+  cursor: pointer;
+}

@@ -81,10 +81,7 @@ function ArticleView({ codeHtml }: { codeHtml: Record<string, string> }) {
               />
             ))}
           </div>
-          <WordDetailBar
-            selection={selection}
-            className="sticky bottom-0 z-20"
-          />
+          <WordDetailBar selection={selection} />
         </section>
       </main>
     </div>
