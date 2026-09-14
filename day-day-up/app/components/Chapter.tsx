@@ -5,6 +5,8 @@ import { cleanWord, isSpeakable, wordAriaLabel } from './speech-utils';
 import { HEADING_POSITION } from './types';
 import type { ChapterData, WordEntry } from './types';
 
+import './Chapter.css';
+
 export interface ChapterProps {
   /** 章节数据（章节内可含多个自然段） */
   chapter: ChapterData;
@@ -30,16 +32,11 @@ export interface ChapterProps {
 const WORD_FONT = "Georgia, 'Times New Roman', serif";
 const PHONETIC_FONT = "'Arial Unicode MS', Arial, sans-serif";
 
-const tokenBase = [
-  'inline-grid align-bottom grid-rows-[16px_26px] place-items-center rounded-[5px]',
-  'border-0 bg-transparent px-1 py-0.5 transition',
-].join(' ');
-const tokenClass = `${tokenBase} cursor-pointer`;
+const tokenBase = 'chapter-token';
+const tokenClass = `${tokenBase} chapter-token--interactive`;
 
-const activeClass =
-  'bg-[#fff4dc] text-[#79520c] shadow-[inset_0_-2px_0_#d59625]';
-const idleClass =
-  'hover:-translate-y-px hover:bg-[#e8f3ed] hover:text-[#0f5036]';
+const activeClass = 'chapter-token--active';
+const idleClass = 'chapter-token--idle';
 
 /** 章节标题在 (sentenceIndex, wordIndex) 上的定位键 */
 const HEADING_KEY = `${HEADING_POSITION}-${HEADING_POSITION}`;
@@ -97,13 +94,13 @@ export function Chapter({
 
   return (
     <section
-      className={className}
+      className={['chapter', className].filter(Boolean).join(' ')}
       data-chapter-id={chapter.id}
       aria-label={index ? `第 ${index} 章` : undefined}
     >
       {heading && (
-        <header className="mb-3">
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <header className="chapter__header">
+          <div className="chapter__heading-row">
             <button
               type="button"
               title={`播放 ${heading.word.word}`}
@@ -117,37 +114,35 @@ export function Chapter({
                 )
               }
               className={[
-                '-mx-1 cursor-pointer rounded-[5px] border-0 bg-transparent px-1 py-0.5 transition',
+                'chapter__heading-button',
                 highlightedKey === HEADING_KEY ? activeClass : idleClass,
               ].join(' ')}
             >
               <span
-                className="text-[20px] font-bold"
+                className="chapter__heading-word"
                 style={{ fontFamily: WORD_FONT }}
               >
                 {heading.word.word}
               </span>
             </button>
             <span
-              className="text-[11px] text-[#7b8580]"
+              className="chapter__heading-phonetic"
               style={{ fontFamily: PHONETIC_FONT }}
             >
               {heading.word.phonetic}
             </span>
-            <span className="text-[12px] text-[#69736d]">
+            <span className="chapter__heading-meaning">
               {heading.word.meaning}
             </span>
           </div>
-          <p className="mt-1 text-[13px] leading-[1.7] text-[#26342d]">
-            {heading.translation}
-          </p>
+          <p className="chapter__heading-translation">{heading.translation}</p>
         </header>
       )}
 
-      <div className="space-y-10">
+      <div className="chapter__paragraphs">
         {paragraphsWithOffsets.map(({ paragraph, sentenceOffset }) => (
-          <div key={paragraph.id} className="space-y-2">
-            <div className="leading-[1.35]">
+          <div key={paragraph.id} className="chapter__paragraph">
+            <div className="chapter__sentence-flow">
               {paragraph.sentences.map((sentence, localSentenceIndex) => {
                 const sentenceIndex = sentenceOffset + localSentenceIndex;
                 return (
@@ -166,11 +161,11 @@ export function Chapter({
                               rel="noreferrer"
                               title={`打开 ${word.word}`}
                               aria-label={wordAriaLabel(word)}
-                              className={`${tokenClass} hover:bg-[#e8f3ed]`}
+                              className={`${tokenClass} chapter-token--link`}
                             >
                               <span aria-hidden="true" />
                               <span
-                                className="text-[15px] leading-none text-[#176b48] underline decoration-dotted underline-offset-[5px]"
+                                className="chapter-token__link-text"
                                 style={{ fontFamily: PHONETIC_FONT }}
                               >
                                 {word.word}
@@ -188,7 +183,7 @@ export function Chapter({
                             >
                               <span aria-hidden="true" />
                               <span
-                                className="text-[19px] leading-none whitespace-nowrap sm:text-[20px]"
+                                className="chapter-token__word"
                                 style={{ fontFamily: WORD_FONT }}
                               >
                                 {word.word}
@@ -213,13 +208,13 @@ export function Chapter({
                             ].join(' ')}
                           >
                             <span
-                              className="text-[10px] leading-none whitespace-nowrap text-[#7b8580]"
+                              className="chapter-token__phonetic"
                               style={{ fontFamily: PHONETIC_FONT }}
                             >
                               {word.phonetic}
                             </span>
                             <span
-                              className="text-[19px] leading-none whitespace-nowrap sm:text-[20px]"
+                              className="chapter-token__word"
                               style={{ fontFamily: WORD_FONT }}
                             >
                               {word.word}
@@ -237,7 +232,7 @@ export function Chapter({
             </div>
             {(showTranslation ||
               paragraph.sentences.some((sentence) => sentence.code)) && (
-              <div className="text-[15px] leading-[1.75] text-[#26342d] sm:text-[16px]">
+              <div className="chapter__details">
                 {paragraph.sentences.map((sentence) => (
                   <Fragment key={`${sentence.id}-details`}>
                     {showTranslation && sentence.translation && (
@@ -245,7 +240,7 @@ export function Chapter({
                     )}
 
                     {sentence.code && (
-                      <div className="mt-3 overflow-x-auto rounded-md border border-[#dfe4e1] bg-[#f7faf8] px-3.5 py-3 font-mono text-[13px] leading-[1.7] text-[#26342d]">
+                      <div className="chapter__code-block">
                         {codeHtml?.[sentence.id] ? (
                           // eslint-disable-next-line react/no-danger -- 内容来自服务端 Shiki，代码在渲染前已转义
                           <div
@@ -254,7 +249,9 @@ export function Chapter({
                             }}
                           />
                         ) : (
-                          <pre className="m-0">{sentence.code}</pre>
+                          <pre className="chapter__code-pre">
+                            {sentence.code}
+                          </pre>
                         )}
                       </div>
                     )}

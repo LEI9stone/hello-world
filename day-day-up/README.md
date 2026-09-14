@@ -80,7 +80,7 @@ Make sure to deploy the output of `npm run build`
 
 ## Styling
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+Styles are written in plain CSS files colocated with their routes and components.
 
 ---
 

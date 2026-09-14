@@ -12,6 +12,8 @@ import type { WordSelection } from '../components';
 import { sampleArticle } from '../data/sample-article';
 import { highlightArticle } from '../lib/highlight.server';
 
+import './home.css';
+
 export function meta({}: Route.MetaArgs) {
   return [
     { title: 'WordFlow · 英文精读翻译' },
@@ -53,17 +55,14 @@ function ArticleView({ codeHtml }: { codeHtml: Record<string, string> }) {
   });
 
   return (
-    <div className="min-h-screen bg-white">
-      <main className="mx-auto w-full max-w-[1440px]">
-        <section
-          aria-label="逐词精读"
-          className="flex min-h-[calc(100vh-120px)] flex-col"
-        >
+    <div className="home-page">
+      <main className="home-page__main">
+        <section aria-label="逐词精读" className="home-page__reader">
           <ArticleControls
             article={sampleArticle}
-            className="sticky top-0 z-20"
+            className="home-page__controls"
           />
-          <div className="flex-1 space-y-10 px-5 py-5 sm:px-8">
+          <div className="home-page__chapters">
             {sampleArticle.map((chapter, i) => (
               <Chapter
                 key={chapter.id}

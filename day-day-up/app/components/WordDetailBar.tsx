@@ -33,25 +33,13 @@ export function WordDetailBar({ selection, className }: WordDetailBarProps) {
       closable={false}
       className="word-detail-bar-notification"
     >
-      <div
-        className={[
-          'flex min-h-[78px] items-center justify-between gap-4',
-          'border-t border-[#dfe4e1] bg-[#f7faf8] px-5 py-3.5',
-          className,
-        ]
-          .filter(Boolean)
-          .join(' ')}
-      >
+      <div className={['word-detail-bar', className].filter(Boolean).join(' ')}>
         {word && selection ? (
-          <div className="flex min-w-0 items-center gap-3.5">
+          <div className="word-detail-bar__selection">
             <button
               type="button"
               title="播放当前单词"
-              className={[
-                'grid h-9 w-9 flex-none cursor-pointer place-items-center rounded-full',
-                'border-0 bg-[#e8f3ed] text-[#0f5036] transition',
-                'hover:bg-[#d7e9df] disabled:cursor-not-allowed disabled:opacity-45',
-              ].join(' ')}
+              className="word-detail-bar__play-button"
               disabled={speech.supported !== true}
               onClick={() =>
                 speech.speakWord(
@@ -63,34 +51,34 @@ export function WordDetailBar({ selection, className }: WordDetailBarProps) {
               }
             >
               <SpeakerIcon />
-              <span className="sr-only">播放 {word.word}</span>
+              <span className="word-detail-bar__sr-only">播放 {word.word}</span>
             </button>
-            <div className="min-w-0">
-              <div className="truncate">
+            <div className="word-detail-bar__content">
+              <div className="word-detail-bar__word-line">
                 <span
-                  className="mr-2 text-[18px] font-bold"
+                  className="word-detail-bar__word"
                   style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
                 >
                   {word.word}
                 </span>
-                <span className="text-[12px] text-[#176b48]">
+                <span className="word-detail-bar__phonetic">
                   {word.phonetic}
                 </span>
               </div>
-              <div className="mt-1 truncate text-[12px] text-[#69736d]">
-                {word.meaning}
-              </div>
+              <div className="word-detail-bar__meaning">{word.meaning}</div>
             </div>
           </div>
         ) : (
-          <div className="text-[12px] text-[#69736d]">点击上方单词查看释义</div>
+          <div className="word-detail-bar__empty">点击上方单词查看释义</div>
         )}
 
         <div
           className={[
-            'min-w-[76px] text-right text-[11px]',
-            isSpeaking ? 'font-bold text-[#176b48]' : 'text-[#69736d]',
-          ].join(' ')}
+            'word-detail-bar__status',
+            isSpeaking ? 'word-detail-bar__status--speaking' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
         >
           {isSpeaking ? '正在播放' : '点击单词发音'}
         </div>
@@ -104,7 +92,7 @@ function SpeakerIcon() {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className="h-[17px] w-[17px] fill-current"
+      className="word-detail-bar__speaker-icon"
     >
       <path d="M4 9v6h4l5 4V5L8 9H4Zm12.4-.9a1 1 0 0 0-1.4 1.4 3.5 3.5 0 0 1 0 5 1 1 0 0 0 1.4 1.4 5.5 5.5 0 0 0 0-7.8Zm2.8-2.8a1 1 0 1 0-1.4 1.4 7.5 7.5 0 0 1 0 10.6 1 1 0 1 0 1.4 1.4 9.5 9.5 0 0 0 0-13.4Z" />
     </svg>

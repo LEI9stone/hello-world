@@ -1,0 +1,38 @@
+.home-page {
+  min-height: 100vh;
+  background: #fff;
+}
+
+.home-page__main {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.home-page__reader {
+  display: flex;
+  min-height: calc(100vh - 120px);
+  flex-direction: column;
+}
+
+.home-page__controls {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+}
+
+.home-page__chapters {
+  flex: 1;
+  padding: 20px;
+}
+
+.home-page__chapters > * + * {
+  margin-top: 40px;
+}
+
+@media (min-width: 640px) {
+  .home-page__chapters {
+    padding-right: 32px;
+    padding-left: 32px;
+  }
+}

@@ -4,6 +4,8 @@ import { useSpeech } from './speech-context';
 import { HEADING_POSITION, SPEECH_RATES } from './types';
 import type { ChapterData, SpeechRate } from './types';
 
+import './ArticleControls.css';
+
 export interface ArticleControlsProps {
   /** 全文数据：点「朗读全文」时按章节、自然段和句子连续朗读 */
   article: readonly ChapterData[];
@@ -11,21 +13,15 @@ export interface ArticleControlsProps {
   className?: string;
 }
 
-const toolButtonClass = [
-  'inline-flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-md',
-  'border border-[#dfe4e1] bg-white px-2.5 text-[12px] font-semibold text-[#314139]',
-  'transition hover:border-[#a8c5b5] hover:text-[#176b48]',
-  'disabled:cursor-not-allowed disabled:opacity-45',
-  'disabled:hover:border-[#dfe4e1] disabled:hover:text-[#314139]',
-].join(' ');
+const toolButtonClass = 'article-controls__tool-button';
 
 function segmentClass(active: boolean): string {
   return [
-    'h-[22px] w-[38px] cursor-pointer rounded-[4px] border-0 text-[11px] font-bold transition',
-    active
-      ? 'bg-white text-[#0f5036] shadow-[0_1px_4px_rgba(24,42,32,0.12)]'
-      : 'bg-transparent text-[#69736d] hover:text-[#0f5036]',
-  ].join(' ');
+    'article-controls__rate-option',
+    active ? 'article-controls__rate-option--active' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 }
 
 /**
@@ -44,16 +40,9 @@ export function ArticleControls({ article, className }: ArticleControlsProps) {
   );
 
   return (
-    <div
-      className={[
-        'border-b border-[#ecefed] bg-[#fafbfa] px-4 py-2 sm:px-5',
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
-    >
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+    <div className={['article-controls', className].filter(Boolean).join(' ')}>
+      <div className="article-controls__row">
+        <div className="article-controls__actions">
           <button
             type="button"
             className={toolButtonClass}
@@ -78,8 +67,8 @@ export function ArticleControls({ article, className }: ArticleControlsProps) {
           {/* {progress && (
             <span
               className={[
-                "text-[11px]",
-                isPlaying ? "text-[#176b48]" : "text-[#69736d]",
+                'article-controls__progress',
+                isPlaying ? 'article-controls__progress--playing' : '',
               ].join(" ")}
               role="status"
             >
@@ -88,9 +77,9 @@ export function ArticleControls({ article, className }: ArticleControlsProps) {
           )} */}
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] text-[#69736d]">语速</span>
-          <div className="flex rounded-md bg-[#edf0ee] p-[3px]">
+        <div className="article-controls__rate">
+          <span className="article-controls__rate-label">语速</span>
+          <div className="article-controls__rate-options">
             {SPEECH_RATES.map((value: SpeechRate) => (
               <button
                 key={value}
@@ -107,13 +96,13 @@ export function ArticleControls({ article, className }: ArticleControlsProps) {
       </div>
 
       {speech.supported === false && (
-        <p className="mt-1 text-[11px] text-[#a15c07]" role="status">
+        <p className="article-controls__message" role="status">
           当前浏览器不支持系统语音，朗读功能不可用
         </p>
       )}
 
       {speech.error && (
-        <p className="mt-1 text-[11px] text-[#a15c07]" role="status">
+        <p className="article-controls__message" role="status">
           {speech.error.message}
         </p>
       )}
@@ -144,7 +133,7 @@ function PlayIcon() {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className="h-[15px] w-[15px] fill-current"
+      className="article-controls__icon"
     >
       <path d="M8 5.6v12.8c0 .8.9 1.3 1.6.8l9.2-6.4a1 1 0 0 0 0-1.6L9.6 4.8A1 1 0 0 0 8 5.6Z" />
     </svg>
@@ -156,7 +145,7 @@ function PauseIcon() {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className="h-[15px] w-[15px] fill-current"
+      className="article-controls__icon"
     >
       <path d="M7 5.5h3.4v13H7zM13.6 5.5H17v13h-3.4z" />
     </svg>
