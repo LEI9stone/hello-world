@@ -34,11 +34,6 @@ export function ArticleControls({ article, className }: ArticleControlsProps) {
   const isPlaying = speech.status === 'playing';
   const isPaused = speech.status === 'paused';
 
-  const progress = useMemo(
-    () => describeProgress(article, speech.chapterId, speech.sentenceIndex),
-    [article, speech.chapterId, speech.sentenceIndex],
-  );
-
   return (
     <div className={['article-controls', className].filter(Boolean).join(' ')}>
       <div className="article-controls__row">
@@ -63,18 +58,6 @@ export function ArticleControls({ article, className }: ArticleControlsProps) {
             {isPaused ? <PlayIcon /> : <PauseIcon />}
             <span>{isPaused ? '继续' : '暂停'}</span>
           </button>
-
-          {/* {progress && (
-            <span
-              className={[
-                'article-controls__progress',
-                isPlaying ? 'article-controls__progress--playing' : '',
-              ].join(" ")}
-              role="status"
-            >
-              {isPaused ? "已暂停" : "正在朗读"} · {progress}
-            </span>
-          )} */}
         </div>
 
         <div className="article-controls__rate">
@@ -108,24 +91,6 @@ export function ArticleControls({ article, className }: ArticleControlsProps) {
       )}
     </div>
   );
-}
-
-/** 把「当前朗读到哪个段/哪一句」转成可读文案 */
-function describeProgress(
-  article: readonly ChapterData[],
-  chapterId: string | null,
-  sentenceIndex: number | null,
-): string | null {
-  if (!chapterId) return null;
-  const index = article.findIndex((chapter) => chapter.id === chapterId);
-  if (index < 0) return null;
-
-  const parts = [`第 ${index + 1} 章`];
-  if (sentenceIndex === HEADING_POSITION) parts.push('标题');
-  else if (sentenceIndex !== null && sentenceIndex >= 0) {
-    parts.push(`第 ${sentenceIndex + 1} 句`);
-  }
-  return parts.join(' · ');
 }
 
 function PlayIcon() {

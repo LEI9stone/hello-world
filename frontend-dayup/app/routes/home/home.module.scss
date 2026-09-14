@@ -1,0 +1,15 @@
+.page {
+  min-height: 100vh;
+  background: white;
+}
+
+.main {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.reader {
+  display: flex;
+  flex-direction: column;
+}
