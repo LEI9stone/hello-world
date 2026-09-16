@@ -62,6 +62,11 @@
   line-height: 1.35;
 }
 
+.sentence {
+  display: inline-flex;
+  flex-direction: column;
+}
+
 .token {
   display: inline-grid;
   grid-template-rows: 16px 26px;
@@ -89,6 +94,17 @@
     color: #0f5036;
     transform: translateY(-1px);
   }
+  &--link:hover {
+    background-color: #e8f3ed;
+  }
+  .link-text {
+    color: #176b48;
+    font-size: 15px;
+    line-height: 1;
+    text-decoration-line: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 5px;
+  }
 }
 
 .word {
@@ -100,4 +116,21 @@
 .details {
   color: #26342d;
   font-size: 15px;
+  line-height: 1.75;
+}
+
+.code-block {
+  margin-top: 12px;
+  overflow-x: auto;
+  padding: 12px 14px;
+  border: 1px solid #dfe4e1;
+  border-radius: 6px;
+  background: #f7faf8;
+  color: #26342d;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.code-pre {
+  margin: 0;
 }

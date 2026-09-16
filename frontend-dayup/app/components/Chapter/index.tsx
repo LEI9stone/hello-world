@@ -1,11 +1,16 @@
 import clsx from 'clsx';
 import styles from './index.module.scss';
 import { Fragment } from 'react/jsx-runtime';
+import { isSpeakable } from './speech-utils';
 interface ChapterProps {
   /** 是否显示各句子的中文翻译，默认true */
   showTranslation?: boolean;
   /** 点击单个单词时发音回调 */
-  onWordSelect?: () => void;
+  onWordSelect?: (
+    word: Chapter.WordEntry,
+    wordIndex: number,
+    sentenceIndex: number,
+  ) => void;
   className?: string;
   /**
    * 服务端高亮好的代码块 HTML，key 为 sentence.id（由 loader 生成）。
@@ -13,131 +18,132 @@ interface ChapterProps {
    */
   codeHtml?: Record<string, string>;
   /** 文章数据 */
-  chapter?: any;
+  chapter?: Chapter.Data;
 }
-export default function Chapter({ className }: ChapterProps) {
+export default function Chapter({
+  chapter,
+  showTranslation = true,
+  className,
+  codeHtml,
+}: ChapterProps) {
+  const heading = chapter?.heading;
+  let sentenceOffset = 0;
+  const paragraphsWithOffsets = chapter?.paragraphs?.map((paragraph) => {
+    const entry = { paragraph, sentenceOffset };
+    sentenceOffset += paragraph.sentences.length;
+    return entry;
+  });
   return (
     <section className={className}>
-      <header className={styles.header}>
-        <div className={styles['header-row']}>
-          <button type="button" className={styles['header-button']}>
-            <span className={styles['heading-word']}>Introduction</span>
-          </button>
-          <span className={styles['phonetic']}>/ˌɪntrəˈdʌʃn/</span>
-          <span className={styles['heading-meaning']}>n. 引言；简介</span>
-        </div>
-        <p className={styles['heading-translation']}>简介</p>
-      </header>
+      {heading && (
+        <header className={styles.header}>
+          <div className={styles['header-row']}>
+            <button type="button" className={styles['header-button']}>
+              <span className={styles['heading-word']}>
+                {heading.word.word}
+              </span>
+            </button>
+            <span className={styles['phonetic']}>{heading.word.phonetic}</span>
+            <span className={styles['heading-meaning']}>
+              {heading.word.meaning}
+            </span>
+          </div>
+          <p className={styles['heading-translation']}>{heading.translation}</p>
+        </header>
+      )}
       <div className={styles.paragraphs}>
-        <div className={styles.paragraph}>
-          <div className={styles.flow}>
-            <button
-              className={clsx(
-                styles.token,
-                styles['token--interactive'],
-                styles['token--idle'],
-              )}
-            >
-              <span className={styles.phonetic}>/ðɪs/</span>
-              <span className={styles.word}>This</span>
-            </button>
-            <button
-              className={clsx(
-                styles.token,
-                styles['token--interactive'],
-                styles['token--idle'],
-              )}
-            >
-              <span className={styles.phonetic}>/ɪz/</span>
-              <span className={styles.word}>is</span>
-            </button>
-            <button
-              className={clsx(
-                styles.token,
-                styles['token--interactive'],
-                styles['token--idle'],
-              )}
-            >
-              <span className={styles.phonetic}>/ðə/</span>
-              <span className={styles.word}>the</span>
-            </button>
-            <button
-              className={clsx(
-                styles.token,
-                styles['token--interactive'],
-                styles['token--idle'],
-              )}
-            >
-              <span className={styles.phonetic}>/ˈrefrəns/</span>
-              <span className={styles.word}>reference</span>
-            </button>
-            <button
-              className={clsx(
-                styles.token,
-                styles['token--interactive'],
-                styles['token--idle'],
-              )}
-            >
-              <span className={styles.phonetic}>/ˈmænjuəl/</span>
-              <span className={styles.word}>manual</span>
-            </button>
-            <button
-              className={clsx(
-                styles.token,
-                styles['token--interactive'],
-                styles['token--idle'],
-              )}
-            >
-              <span className={styles.phonetic}>/fɔːr/</span>
-              <span className={styles.word}>for</span>
-            </button>
-            <button
-              className={clsx(
-                styles.token,
-                styles['token--interactive'],
-                styles['token--idle'],
-              )}
-            >
-              <span className={styles.phonetic}>/ðə/</span>
-              <span className={styles.word}>the</span>
-            </button>
-            <button
-              className={clsx(
-                styles.token,
-                styles['token--interactive'],
-                styles['token--idle'],
-              )}
-            >
-              <span className={styles.phonetic}>/ɡoʊ/</span>
-              <span className={styles.word}>Go</span>
-            </button>
-            <button
-              className={clsx(
-                styles.token,
-                styles['token--interactive'],
-                styles['token--idle'],
-              )}
-            >
-              <span className={styles.phonetic}>/ˈproʊɡræmɪŋ/</span>
-              <span className={styles.word}>programming</span>
-            </button>
-            <button
-              className={clsx(
-                styles.token,
-                styles['token--interactive'],
-                styles['token--idle'],
-              )}
-            >
-              <span className={styles.phonetic}>/ˈlæŋɡwɪdʒ/</span>
-              <span className={styles.word}>language.</span>
-            </button>
-          </div>
-          <div className={styles.details}>
-            <Fragment>
-              <span>这是Go编程语言的参考手册。</span>
-            </Fragment>
-          </div>
-        </div>
+        {paragraphsWithOffsets?.map(({ paragraph, sentenceOffset }) => {
+          return (
+            <div key={paragraph.id} className={styles.paragraph}>
+              <div className={styles.flow}>
+                {paragraph.sentences.map((sentence, localSentenceIndex) => {
+                  // const sentenceIndex = sentenceOffset + localSentenceIndex;
+                  return (
+                    <div key={sentence.id} className={styles.sentence}>
+                      <div>
+                        {sentence.words.map((word, wordIndex) => {
+                          if (word.kind === 'link') {
+                            return (
+                              <a
+                                href={word.word}
+                                target="_blank"
+                                rel="noreferrer"
+                                className={clsx(
+                                  styles.token,
+                                  styles['token--interactive'],
+                                  styles['token--link'],
+                                )}
+                              >
+                                <span className={styles['link-text']}>
+                                  {word.word}
+                                </span>
+                              </a>
+                            );
+                          }
+                          // 标点/代码类符号：与词同样式但不拦截点击，保持句子阅读连贯
+                          if (!isSpeakable(word)) {
+                            return (
+                              <span
+                                className={clsx(
+                                  styles.token,
+                                  styles['token--interactive'],
+                                )}
+                              >
+                                {/* 占位使用 */}
+                                <span className={styles.phonetic} />
+                                <span className={styles.word}>{word.word}</span>
+                              </span>
+                            );
+                          }
+                          return (
+                            <button
+                              key={`${word.word}-${wordIndex}`}
+                              className={clsx(
+                                styles.token,
+                                styles['token--interactive'],
+                                styles['token--idle'],
+                              )}
+                            >
+                              <span className={styles.phonetic}>
+                                {word.phonetic}
+                              </span>
+                              <span className={styles.word}>{word.word}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {(showTranslation || sentence.code) && (
+                        <Fragment>
+                          {showTranslation && sentence.translation && (
+                            <span className={styles.details}>
+                              {sentence.translation}
+                            </span>
+                          )}
+                          {sentence.code && (
+                            <div className={styles['code-block']}>
+                              {codeHtml?.[sentence.id] ? (
+                                // eslint-disable-next-line react/no-danger -- 内容来自服务端 Shiki，代码在渲染前已转义
+                                <div
+                                  dangerouslySetInnerHTML={{
+                                    __html: codeHtml[sentence.id],
+                                  }}
+                                />
+                              ) : (
+                                <pre className={styles['code-pre']}>
+                                  {sentence.code}
+                                </pre>
+                              )}
+                            </div>
+                          )}
+                        </Fragment>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

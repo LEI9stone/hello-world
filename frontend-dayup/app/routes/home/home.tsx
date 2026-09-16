@@ -2,6 +2,7 @@ import Chapter from '~/components/Chapter';
 import type { Route } from './+types/home';
 import styles from './home.module.scss';
 import Controls from '~/components/Controls';
+import MockArticle from '~/data/go-language';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -17,7 +18,9 @@ export default function Home() {
         <section className={styles.reader}>
           <Controls className={styles.controls} />
           <div className={styles.chapters}>
-            <Chapter />
+            {MockArticle.map((chapter) => (
+              <Chapter key={chapter.id} chapter={chapter} />
+            ))}
           </div>
         </section>
       </main>

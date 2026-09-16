@@ -1,0 +1,62 @@
+declare namespace Chapter {
+  /**
+   * token 类型：
+   * - word：可点读的词
+   * - link：链接，渲染成可跳转链接
+   * - symbol：标点/代码类符号（如 ","、"a ... b"、"``."），只展示，不可点读
+   * link 与 symbol 都不参与朗读与跟读高亮。
+   */
+  type WordKind = 'word' | 'link' | 'symbol';
+  /** 词流里的一个 token （普通单词，或链接等特殊 token） */
+  interface WordEntry {
+    /** 展示原文，保留标点，如“discover.“; */
+    word: string;
+    /** 音标，"/dɪˈskʌvəri/"；link 时为空 */
+    phonetic?: string;
+    /** 中文释义，如 “n. 发现；探索成果;“ link 时为空 */
+    meaning?: string;
+    /** 默认 “word“ */
+    kind?: WordKind;
+  }
+  interface Heading {
+    word: WordEntry;
+    /** 标题的中文翻译 */
+    translation: string;
+  }
+
+  /** 一个句子：英文原句 + 中文翻译 + 逐词信息 */
+  export interface Sentence {
+    /** 句子唯一 id，如 "p1-s1" */
+    id: string;
+    /** 英文原句；代码块词表这类没有句子的单元留空字符串 */
+    text: string;
+    /** 该句的中文翻译；留空则不渲染翻译段落 */
+    translation: string;
+    /** 逐词 token，数组顺序即朗读顺序 */
+    words: WordEntry[];
+    /**
+     * 可选的代码块原文（多行，保留空格与换行），
+     * 渲染在该句的中文翻译之后。代码块只做展示，不参与朗读。
+     */
+    code?: string;
+    /**
+     * 代码块语言，如 "go" / "python" / "bash"。
+     * 服务端用 Shiki 高亮；不认识的语言（如 EBNF）按纯文本渲染。
+     */
+    codeLang?: string;
+  }
+  interface ParagraphData {
+    /** 自然段唯一 id */
+    id: string;
+    /** 自然段内句子，数组顺序即原文顺序 */
+    sentences: Sentence[];
+  }
+  interface Data {
+    /** 章节唯一 id: React Key、锚点、朗读定位都用它 */
+    id: string;
+    /** 章节标题（可选） */
+    heading?: Heading;
+    /** 章节内自然段，数组顺序即原文顺序 */
+    paragraphs: ParagraphData[];
+  }
+}
