@@ -1,3 +1,4 @@
+import Chapter from '~/components/Chapter';
 import type { Route } from './+types/home';
 import styles from './home.module.scss';
 import Controls from '~/components/Controls';
@@ -14,7 +15,10 @@ export default function Home() {
     <div className={styles.page}>
       <main className={styles.main}>
         <section className={styles.reader}>
-          <Controls />
+          <Controls className={styles.controls} />
+          <div className={styles.chapters}>
+            <Chapter />
+          </div>
         </section>
       </main>
     </div>
