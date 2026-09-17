@@ -5,6 +5,9 @@ import Controls from '~/components/Controls';
 import MockArticle from '~/data/go-language';
 import { highlightArticle } from '~/server/highlight.server';
 import { useLoaderData } from 'react-router';
+import { useState } from 'react';
+import { SpeechProvider } from '~/context/SpeechProvider';
+import WordDetailBar from '~/components/WordDetailBar';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -18,18 +21,48 @@ export async function loader() {
 
 export default function Home() {
   const { codeHtml } = useLoaderData<typeof loader>();
+  const [selection, setSelection] = useState<Chapter.WordSelection | null>(
+    () => {
+      const first = MockArticle[0];
+      const word = first?.paragraphs[0]?.sentences[0]?.words[0];
+      return first && word
+        ? {
+            chapterId: first.id,
+            sentenceIndex: 0,
+            wordIndex: 0,
+            word,
+          }
+        : null;
+    },
+  );
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <section className={styles.reader}>
-          <Controls className={styles.controls} />
-          <div className={styles.chapters}>
-            {MockArticle.map((chapter) => (
-              <Chapter codeHtml={codeHtml} key={chapter.id} chapter={chapter} />
-            ))}
-          </div>
-        </section>
-      </main>
-    </div>
+    <SpeechProvider>
+      <div className={styles.page}>
+        <main className={styles.main}>
+          <section className={styles.reader}>
+            <Controls article={MockArticle} className={styles.controls} />
+            <div className={styles.chapters}>
+              {MockArticle.map((chapter) => (
+                <Chapter
+                  codeHtml={codeHtml}
+                  key={chapter.id}
+                  chapter={chapter}
+                  onWordSelect={(word, wordIndex, sentenceIndex) =>
+                    setSelection({
+                      chapterId: chapter.id,
+                      sentenceIndex,
+                      wordIndex,
+                      word,
+                    })
+                  }
+                />
+              ))}
+            </div>
+            <WordDetailBar selection={selection} />
+          </section>
+        </main>
+      </div>
+    </SpeechProvider>
   );
 }

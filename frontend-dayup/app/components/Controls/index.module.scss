@@ -12,7 +12,8 @@
 }
 
 .row {
-  column-gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
 }
 
 .actions {
@@ -82,4 +83,16 @@
   transition:
     color 150ms ease,
     background-color 150ms ease;
+}
+
+.option--active {
+  background: #fff;
+  color: #176b48;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
+}
+
+.message {
+  margin: 8px 0 0;
+  color: #69736d;
+  font-size: 12px;
 }

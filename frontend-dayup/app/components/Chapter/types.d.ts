@@ -24,6 +24,16 @@ declare namespace Chapter {
     translation: string;
   }
 
+  /** 文章级词详情栏当前展示的选中词。 */
+  interface WordSelection {
+    chapterId: string;
+    /** 所属句子在章节所有自然段展平后的下标；-1 表示标题。 */
+    sentenceIndex: number;
+    /** 在句子 words 中的下标；-1 表示标题。 */
+    wordIndex: number;
+    word: WordEntry;
+  }
+
   /** 一个句子：英文原句 + 中文翻译 + 逐词信息 */
   export interface Sentence {
     /** 句子唯一 id，如 "p1-s1" */
