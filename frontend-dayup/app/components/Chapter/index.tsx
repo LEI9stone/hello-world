@@ -66,6 +66,7 @@ export default function Chapter({
                             return (
                               <a
                                 href={word.word}
+                                key={`${word.word}-${wordIndex}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className={clsx(
@@ -84,6 +85,7 @@ export default function Chapter({
                           if (!isSpeakable(word)) {
                             return (
                               <span
+                                key={`${word.word}-${wordIndex}`}
                                 className={clsx(
                                   styles.token,
                                   styles['token--interactive'],
