@@ -57,7 +57,6 @@ export default function Chapter({
             <div key={paragraph.id} className={styles.paragraph}>
               <div className={styles.flow}>
                 {paragraph.sentences.map((sentence, localSentenceIndex) => {
-                  // const sentenceIndex = sentenceOffset + localSentenceIndex;
                   return (
                     <div key={sentence.id} className={styles.sentence}>
                       <div>
