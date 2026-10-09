@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>英语国际音标 · 发音练习</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f6f2ea;
+    --card:#fffdf9;
+    --ink:#17171f;
+    --ink-2:#4b4b59;
+    --muted:#8b8b9a;
+    --line:rgba(23,23,31,.12);
+    --line-strong:rgba(23,23,31,.30);
+    --uk:#2749d8;
+    --uk-soft:#e7ebfd;
+    --uk-ink:#1c33a3;
+    --us:#c33b3b;
+    --us-soft:#fbe8e6;
+    --us-ink:#8f2727;
+    --g1:#4f6bd8; --g2:#35876a; --g3:#b07d2a; --g4:#7a5bd0;
+    --radius:16px;
+    --shadow:0 1px 2px rgba(23,23,31,.05), 0 10px 30px -18px rgba(23,23,31,.35);
+    --ipa-font:"Noto Serif","Gentium Plus","Charis SIL",ui-serif,Georgia,-apple-system,"Helvetica Neue",serif;
+    --ui-font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    font-family:var(--ui-font);
+    color:var(--ink);
+    background:
+      radial-gradient(1100px 520px at 12% -8%, #fffdf7 0%, rgba(255,253,247,0) 60%),
+      radial-gradient(900px 480px at 100% 0%, #f0ecff 0%, rgba(240,236,255,0) 55%),
+      var(--paper);
+    background-attachment:fixed;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+  /* ---------- hero ---------- */
+  .hero{padding:64px 0 34px}
+  .eyebrow{
+    margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--muted);
+  }
+  .hero h1{
+    margin:0;font-family:var(--ipa-font);font-weight:600;
+    font-size:clamp(30px,4.6vw,52px);line-height:1.08;letter-spacing:-.01em;
+  }
+  .hero h1 em{font-style:italic;color:var(--uk)}
+  .lede{margin:18px 0 0;max-width:660px;color:var(--ink-2);font-size:15px}
+  .lede b{color:var(--ink);font-weight:600}
+  .stat-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+  .stat{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.72);border:1px solid var(--line);
+    border-radius:999px;padding:6px 14px;font-size:13px;color:var(--ink-2);
+    backdrop-filter:blur(6px);
+  }
+  .stat i{width:8px;height:8px;border-radius:50%;background:var(--g1);display:block}
+  .stat.c2 i{background:var(--g2)} .stat.c3 i{background:var(--g3)} .stat.c4 i{background:var(--g4)}
+
+  /* ---------- toolbar ---------- */
+  .toolbar{
+    position:sticky;top:0;z-index:40;
+    background:rgba(246,242,234,.86);
+    backdrop-filter:saturate(1.4) blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .toolbar-inner{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:12px 0;
+  }
+  .loop-label{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+  .loop-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .loop-btn{
+    display:inline-flex;align-items:center;gap:8px;
+    font:inherit;font-size:14px;font-weight:600;cursor:pointer;
+    padding:9px 16px;border-radius:999px;border:1.5px solid var(--line-strong);
+    background:#fff;color:var(--ink);transition:.18s ease;
+  }
+  .loop-btn svg{width:16px;height:16px;flex:none}
+  .loop-btn:hover{border-color:var(--ink);transform:translateY(-1px)}
+  .loop-btn.uk:hover{border-color:var(--uk);color:var(--uk-ink)}
+  .loop-btn.us:hover{border-color:var(--us);color:var(--us-ink)}
+  .loop-btn.uk[aria-pressed="true"]{background:var(--uk);border-color:var(--uk);color:#fff;box-shadow:0 8px 20px -10px var(--uk)}
+  .loop-btn.us[aria-pressed="true"]{background:var(--us);border-color:var(--us);color:#fff;box-shadow:0 8px 20px -10px var(--us)}
+  .loop-btn .spin{animation:spin 2.4s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .status{
+    display:inline-flex;align-items:center;gap:9px;
+    font-size:13px;color:var(--ink-2);min-width:0;flex:0 1 auto;
+  }
+  .toolbar-right{
+    margin-left:auto;display:flex;align-items:center;gap:16px;
+    flex:1 1 auto;min-width:0;justify-content:flex-end;
+  }
+  .status-dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}
+  .status.is-live .status-dot{background:var(--uk);animation:pulse 1.2s ease-in-out infinite}
+  .status.is-live.us .status-dot{background:var(--us)}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.45);opacity:.5}}
+  .status-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44vw}
+  .status-text b{color:var(--ink);font-weight:600}
+  .stop-btn{
+    font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+    padding:9px 16px;border-radius:999px;border:1.5px solid var(--line-strong);
+    background:transparent;color:var(--ink);transition:.18s ease;
+  }
+  .stop-btn:hover:not(:disabled){border-color:var(--us);color:var(--us-ink)}
+  .stop-btn:disabled{opacity:.35;cursor:not-allowed}
+
+  /* ---------- sections ---------- */
+  main{padding:30px 0 90px}
+  .section{margin-top:46px;scroll-margin-top:96px}
+  .section-head{display:flex;align-items:baseline;gap:12px;margin-bottom:18px}
+  .section-head .dot{width:10px;height:10px;border-radius:3px;background:var(--g1);flex:none;transform:translateY(-1px)}
+  .section-head h2{margin:0;font-size:19px;font-weight:600;letter-spacing:-.01em}
+  .section-head .en{font-size:13px;color:var(--muted);font-family:var(--ipa-font);font-style:italic}
+  .section-head .rule{flex:1;height:1px;background:var(--line)}
+  .section-head .count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(232px,1fr))}
+
+  /* ---------- card ---------- */
+  .card{
+    position:relative;background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);padding:16px 16px 14px;
+    display:flex;flex-direction:column;gap:12px;
+    transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+  }
+  .card:hover{border-color:var(--line-strong);box-shadow:var(--shadow);transform:translateY(-2px)}
+  .card.is-playing{border-color:var(--line-strong);box-shadow:var(--shadow)}
+  .card.is-playing[data-playing="uk"]{box-shadow:inset 3px 0 0 var(--uk), var(--shadow)}
+  .card.is-playing[data-playing="us"]{box-shadow:inset 3px 0 0 var(--us), var(--shadow)}
+
+  .card-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;min-height:52px}
+  .ipa{
+    font-family:var(--ipa-font);font-size:34px;line-height:1.05;font-weight:600;
+    letter-spacing:.01em;color:var(--ink);white-space:nowrap;
+  }
+  .card.is-playing .ipa{color:var(--ink)}
+  .word{
+    font-family:var(--ipa-font);font-style:italic;font-size:15px;color:var(--ink-2);
+    text-align:right;overflow-wrap:anywhere;
+  }
+  .badge{
+    position:absolute;top:12px;right:12px;
+    font-size:10.5px;font-weight:600;letter-spacing:.04em;
+    padding:3px 8px;border-radius:999px;opacity:0;transition:opacity .2s ease;
+    background:var(--uk-soft);color:var(--uk-ink);
+  }
+  .card[data-fallback="us"] .badge{background:var(--us-soft);color:var(--us-ink)}
+  .card.is-fallback .badge{opacity:1}
+
+  .ctrl-row{display:flex;align-items:center;gap:7px}
+  .ctrl-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);width:30px;flex:none}
+  .pbtn{
+    font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;
+    padding:6px 12px;border-radius:8px;border:1.5px solid transparent;
+    background:var(--paper);color:var(--ink-2);transition:.16s ease;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .pbtn .play-ico{width:11px;height:11px;flex:none;opacity:.75}
+  .pbtn.uk{background:var(--uk-soft);color:var(--uk-ink)}
+  .pbtn.us{background:var(--us-soft);color:var(--us-ink)}
+  .pbtn:hover:not(:disabled){transform:translateY(-1px);border-color:currentColor}
+  .pbtn:disabled{opacity:.34;cursor:not-allowed;background:transparent;color:var(--muted);border:1.5px dashed var(--line)}
+  .pbtn.is-active{background:var(--uk);color:#fff;border-color:var(--uk)}
+  .pbtn.us.is-active{background:var(--us);border-color:var(--us);color:#fff}
+  .pbtn .pause-ico{display:none}
+  .pbtn.is-active .play-ico{display:none}
+  .pbtn.is-active .pause-ico{display:block}
+
+  :focus-visible{outline:none}
+  .pbtn:focus-visible,.loop-btn:focus-visible,.stop-btn:focus-visible{
+    outline:2px solid var(--ink);outline-offset:2px;
+  }
+
+  footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--muted);font-size:12.5px}
+  footer a{color:var(--ink-2)}
+
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .hero{padding:40px 0 22px}
+    .lede{font-size:14px}
+    .loop-label{display:none}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:11px}
+    .card{padding:13px 13px 12px;gap:10px}
+    .ipa{font-size:27px}
+    .word{font-size:13.5px}
+    .ctrl-row{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;align-items:center}
+    .ctrl-label{width:auto;font-size:10px;letter-spacing:.05em}
+    .pbtn{padding:6px 4px;font-size:11.5px;gap:4px;justify-content:center}
+    .status{margin-left:0;flex:1;min-width:0}
+    .toolbar-right{margin-left:0;flex-basis:100%;gap:12px}
+    .stop-btn{padding:8px 14px}
+    .status-text{max-width:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+    .card:hover{transform:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Cambridge Dictionary · Phonetics</p>
+    <h1>英语国际音标 <em>发音练习</em></h1>
+    <p class="lede">共 <b>63</b> 项音标与示例单词。每个音标、每个单词都可单独试听 <b>UK</b> / <b>US</b> 发音；也可以开启自动循环，按顺序依次播放每一项的<b>音标音频</b>与紧随其后的<b>单词音频</b>——某一项缺该口音时，会自动用另一口音兜底。</p>
+    <div class="stat-row">
+      <span class="stat c1"><i></i>元音 · 25</span>
+      <span class="stat c2"><i></i>辅音 · 25</span>
+      <span class="stat c3"><i></i>其他符号 · 10</span>
+      <span class="stat c4"><i></i>重音与连读 · 3</span>
+    </div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap toolbar-inner">
+    <span class="loop-label">自动循环</span>
+    <div class="loop-group">
+      <button id="loopUK" class="loop-btn uk" type="button" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+        循环 UK
+      </button>
+      <button id="loopUS" class="loop-btn us" type="button" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+        循环 US
+      </button>
+    </div>
+    <div class="toolbar-right">
+      <div class="status" id="status">
+        <span class="status-dot"></span>
+        <span class="status-text" id="statusText">未播放</span>
+      </div>
+      <button id="stopBtn" class="stop-btn" type="button" disabled>停止</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap" id="app"></main>
+
+<footer>
+  <div class="wrap">
+    音频资源来自 Cambridge Dictionary 音标帮助页，已本地化于 <code>phonetics_audio/</code>。页面为纯静态实现，可离线使用（在线字体不可用时自动回退到系统字体）。
+  </div>
+</footer>
+
+<script>
+/* ================= 数据（由 剑桥音标音频清单.csv 注入） ================= */
+const DATA = [{"ipa":"iː","ukS":"phonetics_audio/uk_phonetics_sound_sheep_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_sheep_2023feb.mp3","word":"sheep","ukW":"phonetics_audio/uk_phonetics_word_sheep_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_sheep_2023feb.mp3"},{"ipa":"ɪ","ukS":"phonetics_audio/uk_phonetics_sound_ship_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_ship_2023feb.mp3","word":"ship","ukW":"phonetics_audio/uk_phonetics_word_ship_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_ship_2023feb.mp3"},{"ipa":"ɑː","ukS":"phonetics_audio/uk_phonetics_sound_father_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_father_2023feb.mp3","word":"father","ukW":"phonetics_audio/uk_phonetics_word_father_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_father_2023feb.mp3"},{"ipa":"æ","ukS":"phonetics_audio/uk_phonetics_sound_hat_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_hat_2023feb.mp3","word":"hat","ukW":"phonetics_audio/uk_phonetics_word_hat_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_hat_2023feb.mp3"},{"ipa":"ʌ","ukS":"phonetics_audio/uk_phonetics_sound_cup_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_cup_2023feb.mp3","word":"cup","ukW":"phonetics_audio/uk_phonetics_word_cup_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_cup_2023feb.mp3"},{"ipa":"ɔː","ukS":"phonetics_audio/uk_phonetics_sound_horse_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_horse_2023feb.mp3","word":"horse","ukW":"phonetics_audio/uk_phonetics_word_horse_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_horse_2023feb.mp3"},{"ipa":"ɒ","ukS":"phonetics_audio/uk_phonetics_sound_sock_2023feb.mp3","usS":"","word":"sock","ukW":"phonetics_audio/uk_phonetics_word_sock_2023feb.mp3","usW":""},{"ipa":"uː","ukS":"phonetics_audio/uk_phonetics_sound_blue_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_blue_2023feb.mp3","word":"blue","ukW":"phonetics_audio/uk_phonetics_word_blue_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_blue_2023feb.mp3"},{"ipa":"ʊ","ukS":"phonetics_audio/uk_phonetics_sound_foot_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_foot_2023feb.mp3","word":"foot","ukW":"phonetics_audio/uk_phonetics_word_foot_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_foot_2023feb.mp3"},{"ipa":"e","ukS":"phonetics_audio/uk_phonetics_sound_head_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_head_2023feb.mp3","word":"head","ukW":"phonetics_audio/uk_phonetics_word_head_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_head_2023feb.mp3"},{"ipa":"ɜː","ukS":"phonetics_audio/uk_phonetics_sound_bird_2023feb.mp3","usS":"","word":"bird","ukW":"phonetics_audio/uk_phonetics_word_bird_2023feb.mp3","usW":""},{"ipa":"ɝː","ukS":"","usS":"phonetics_audio/us_phonetics_sound_bird_2023feb.mp3","word":"bird","ukW":"","usW":"phonetics_audio/us_phonetics_word_bird_2023feb.mp3"},{"ipa":"ə","ukS":"phonetics_audio/uk_phonetics_sound_above_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_above_2023feb.mp3","word":"above","ukW":"phonetics_audio/uk_phonetics_word_above_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_above_2023feb.mp3"},{"ipa":"ɚ","ukS":"","usS":"phonetics_audio/us_phonetics_sound_mother_2023feb.mp3","word":"mother","ukW":"","usW":"phonetics_audio/us_phonetics_word_mother_2023feb.mp3"},{"ipa":"eɪ","ukS":"phonetics_audio/uk_phonetics_sound_day_2023feb_002.mp3","usS":"phonetics_audio/us_phonetics_sound_day_2023feb_002.mp3","word":"day","ukW":"phonetics_audio/uk_phonetics_word_day_2023feb_002.mp3","usW":"phonetics_audio/us_phonetics_word_day_2023feb_002.mp3"},{"ipa":"aɪ","ukS":"phonetics_audio/uk_phonetics_sound_eye_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_eye_2023feb.mp3","word":"eye","ukW":"phonetics_audio/uk_phonetics_word_eye_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_eye_2023feb.mp3"},{"ipa":"ɔɪ","ukS":"phonetics_audio/uk_phonetics_sound_boy_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_boy_2023feb.mp3","word":"boy","ukW":"phonetics_audio/uk_phonetics_word_boy_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_boy_2023feb.mp3"},{"ipa":"əʊ","ukS":"phonetics_audio/uk_phonetics_sound_nose_2023feb.mp3","usS":"","word":"nose","ukW":"phonetics_audio/uk_phonetics_word_nose_2023feb.mp3","usW":""},{"ipa":"oʊ","ukS":"","usS":"phonetics_audio/us_phonetics_sound_nose_2023feb.mp3","word":"nose","ukW":"","usW":"phonetics_audio/us_phonetics_word_nose_2023feb.mp3"},{"ipa":"aʊ","ukS":"phonetics_audio/uk_phonetics_sound_mouth_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_mouth_2023feb.mp3","word":"mouth","ukW":"phonetics_audio/uk_phonetics_word_mouth_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_mouth_2023feb.mp3"},{"ipa":"ɪə","ukS":"phonetics_audio/uk_phonetics_sound_ear_2023feb.mp3","usS":"","word":"ear","ukW":"phonetics_audio/uk_phonetics_word_ear_2023feb.mp3","usW":""},{"ipa":"eə","ukS":"phonetics_audio/uk_phonetics_sound_hair_2023feb.mp3","usS":"","word":"hair","ukW":"phonetics_audio/uk_phonetics_word_hair_2023feb.mp3","usW":""},{"ipa":"ʊə","ukS":"phonetics_audio/uk_phonetics_sound_pure_2023feb.mp3","usS":"","word":"pure","ukW":"phonetics_audio/uk_phonetics_word_pure_2023feb.mp3","usW":""},{"ipa":"aɪə","ukS":"phonetics_audio/uk_phonetics_sound_fire_2023feb.mp3","usS":"","word":"fire","ukW":"phonetics_audio/uk_phonetics_word_fire_2023feb.mp3","usW":""},{"ipa":"aʊə","ukS":"phonetics_audio/uk_phonetics_sound_hour_2023feb.mp3","usS":"","word":"hour","ukW":"phonetics_audio/uk_phonetics_word_hour_2023feb.mp3","usW":""},{"ipa":"p","ukS":"phonetics_audio/uk_phonetics_sound_pen_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_pen_2023feb.mp3","word":"pen","ukW":"phonetics_audio/uk_phonetics_word_pen_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_pen_2023feb.mp3"},{"ipa":"b","ukS":"phonetics_audio/uk_phonetics_sound_book_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_book_2023feb.mp3","word":"book","ukW":"phonetics_audio/uk_phonetics_word_book_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_book_2023feb.mp3"},{"ipa":"t","ukS":"phonetics_audio/uk_phonetics_sound_town_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_town_2023feb.mp3","word":"town","ukW":"phonetics_audio/uk_phonetics_word_town_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_town_2023feb.mp3"},{"ipa":"t̬","ukS":"","usS":"phonetics_audio/us_phonetics_sound_cutting_2023feb.mp3","word":"cutting","ukW":"","usW":"phonetics_audio/us_phonetics_word_cutting_2023feb.mp3"},{"ipa":"d","ukS":"phonetics_audio/uk_phonetics_sound_day_2023feb_001.mp3","usS":"phonetics_audio/us_phonetics_sound_day_2023feb_001.mp3","word":"day","ukW":"phonetics_audio/uk_phonetics_word_day_2023feb_001.mp3","usW":"phonetics_audio/us_phonetics_word_day_2023feb_001.mp3"},{"ipa":"k","ukS":"phonetics_audio/uk_phonetics_sound_cat_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_cat_2023feb.mp3","word":"cat","ukW":"phonetics_audio/uk_phonetics_word_cat_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_cat_2023feb.mp3"},{"ipa":"g","ukS":"phonetics_audio/uk_phonetics_sound_give_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_give_2023feb.mp3","word":"give","ukW":"phonetics_audio/uk_phonetics_word_give_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_give_2023feb.mp3"},{"ipa":"f","ukS":"phonetics_audio/uk_phonetics_sound_fish_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_fish_2023feb.mp3","word":"fish","ukW":"phonetics_audio/uk_phonetics_word_fish_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_fish_2023feb.mp3"},{"ipa":"v","ukS":"phonetics_audio/uk_phonetics_sound_very_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_very_2023feb.mp3","word":"very","ukW":"phonetics_audio/uk_phonetics_word_very_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_very_2023feb.mp3"},{"ipa":"θ","ukS":"phonetics_audio/uk_phonetics_sound_think_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_think_2023feb.mp3","word":"think","ukW":"phonetics_audio/uk_phonetics_word_think_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_think_2023feb.mp3"},{"ipa":"ð","ukS":"phonetics_audio/uk_phonetics_sound_this_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_this_2023feb.mp3","word":"this","ukW":"phonetics_audio/uk_phonetics_word_this_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_this_2023feb.mp3"},{"ipa":"s","ukS":"phonetics_audio/uk_phonetics_sound_say_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_say_2023feb.mp3","word":"say","ukW":"phonetics_audio/uk_phonetics_word_say_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_say_2023feb.mp3"},{"ipa":"z","ukS":"phonetics_audio/uk_phonetics_sound_zoo_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_zoo_2023feb.mp3","word":"zoo","ukW":"phonetics_audio/uk_phonetics_word_zoo_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_zoo_2023feb.mp3"},{"ipa":"ʃ","ukS":"phonetics_audio/uk_phonetics_sound_she_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_she_2023feb.mp3","word":"she","ukW":"phonetics_audio/uk_phonetics_word_she_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_she_2023feb.mp3"},{"ipa":"ʒ","ukS":"phonetics_audio/uk_phonetics_sound_vision_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_vision_2023feb.mp3","word":"vision","ukW":"phonetics_audio/uk_phonetics_word_vision_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_vision_2023feb.mp3"},{"ipa":"tʃ","ukS":"phonetics_audio/uk_phonetics_sound_cheese_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_cheese_2023feb.mp3","word":"cheese","ukW":"phonetics_audio/uk_phonetics_word_cheese_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_cheese_2023feb.mp3"},{"ipa":"dʒ","ukS":"phonetics_audio/uk_phonetics_sound_jump_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_jump_2023feb.mp3","word":"jump","ukW":"phonetics_audio/uk_phonetics_word_jump_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_jump_2023feb.mp3"},{"ipa":"m","ukS":"phonetics_audio/uk_phonetics_sound_moon_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_moon_2023feb.mp3","word":"moon","ukW":"phonetics_audio/uk_phonetics_word_moon_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_moon_2023feb.mp3"},{"ipa":"n","ukS":"phonetics_audio/uk_phonetics_sound_name_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_name_2023feb.mp3","word":"name","ukW":"phonetics_audio/uk_phonetics_word_name_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_name_2023feb.mp3"},{"ipa":"ŋ","ukS":"phonetics_audio/uk_phonetics_sound_sing_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_sing_2023feb.mp3","word":"sing","ukW":"phonetics_audio/uk_phonetics_word_sing_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_sing_2023feb.mp3"},{"ipa":"l","ukS":"phonetics_audio/uk_phonetics_sound_look_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_look_2023feb.mp3","word":"look","ukW":"phonetics_audio/uk_phonetics_word_look_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_look_2023feb.mp3"},{"ipa":"r","ukS":"phonetics_audio/uk_phonetics_sound_run_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_run_2023feb.mp3","word":"run","ukW":"phonetics_audio/uk_phonetics_word_run_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_run_2023feb.mp3"},{"ipa":"w","ukS":"phonetics_audio/uk_phonetics_sound_we_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_we_2023feb.mp3","word":"we","ukW":"phonetics_audio/uk_phonetics_word_we_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_we_2023feb.mp3"},{"ipa":"j","ukS":"phonetics_audio/uk_phonetics_sound_yes_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_yes_2023feb.mp3","word":"yes","ukW":"phonetics_audio/uk_phonetics_word_yes_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_yes_2023feb.mp3"},{"ipa":"h","ukS":"phonetics_audio/uk_phonetics_sound_hand_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_hand_2023feb.mp3","word":"hand","ukW":"phonetics_audio/uk_phonetics_word_hand_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_hand_2023feb.mp3"},{"ipa":"i","ukS":"phonetics_audio/uk_phonetics_sound_happy_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_happy_2023feb.mp3","word":"happy","ukW":"phonetics_audio/uk_phonetics_word_happy_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_happy_2023feb.mp3"},{"ipa":"u","ukS":"phonetics_audio/uk_phonetics_sound_situation_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_situation_2023feb.mp3","word":"situation","ukW":"phonetics_audio/uk_phonetics_word_situation_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_situation_2023feb.mp3"},{"ipa":"ɒ̃","ukS":"phonetics_audio/uk_phonetics_sound_croissant_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_croissant_2023feb.mp3","word":"croissant","ukW":"phonetics_audio/uk_phonetics_word_croissant_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_croissant_2023feb.mp3"},{"ipa":"x","ukS":"phonetics_audio/uk_phonetics_sound_loch_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_loch_2023feb.mp3","word":"loch","ukW":"phonetics_audio/uk_phonetics_word_loch_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_loch_2023feb.mp3"},{"ipa":"əl","ukS":"phonetics_audio/uk_phonetics_sound_label_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_label_2023feb.mp3","word":"label","ukW":"phonetics_audio/uk_phonetics_word_label_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_label_2023feb.mp3"},{"ipa":"əm","ukS":"phonetics_audio/uk_phonetics_sound_criticism_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_criticism_2023feb.mp3","word":"criticism","ukW":"phonetics_audio/uk_phonetics_word_criticism_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_criticism_2023feb.mp3"},{"ipa":"ən","ukS":"phonetics_audio/uk_phonetics_sound_sudden_2023feb.mp3","usS":"phonetics_audio/us_phonetics_sound_sudden_2023feb.mp3","word":"sudden","ukW":"phonetics_audio/uk_phonetics_word_sudden_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_sudden_2023feb.mp3"},{"ipa":"ər","ukS":"phonetics_audio/uk_phonetics_sound_dictionary_2023jun.mp3","usS":"","word":"dictionary","ukW":"phonetics_audio/uk_phonetics_word_dictionary_2023jun.mp3","usW":""},{"ipa":"◌ʳ","ukS":"","usS":"","word":"four apples","ukW":"phonetics_audio/uk_phonetics_word_four_apples_2023feb.mp3","usW":""},{"ipa":"◌ʳ","ukS":"","usS":"","word":"four cars","ukW":"phonetics_audio/uk_phonetics_word_fourcars_2023jun.mp3","usW":""},{"ipa":".","ukS":"","usS":"","word":"system","ukW":"phonetics_audio/uk_phonetics_word_system_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_system_2023feb.mp3"},{"ipa":"ˈ","ukS":"","usS":"","word":"surprise","ukW":"phonetics_audio/uk_phonetics_word_surprise_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_surprise_2023feb.mp3"},{"ipa":"ˌ","ukS":"","usS":"","word":"retell","ukW":"phonetics_audio/uk_phonetics_word_retell_2023feb.mp3","usW":"phonetics_audio/us_phonetics_word_retell_2023feb.mp3"}];
+
+const GROUPS = [
+  {zh:"元音", en:"Vowels", from:0,  to:24, color:"var(--g1)"},
+  {zh:"辅音", en:"Consonants", from:25, to:49, color:"var(--g2)"},
+  {zh:"其他符号", en:"Other", from:50, to:59, color:"var(--g3)"},
+  {zh:"重音与连读", en:"Stress & Linking", from:60, to:62, color:"var(--g4)"},
+];
+
+/* ================= 渲染 ================= */
+const app = document.getElementById("app");
+
+const PLAY_ICO = '<svg class="play-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+const PAUSE_ICO = '<svg class="pause-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+GROUPS.forEach(g => {
+  const section = document.createElement("section");
+  section.className = "section";
+  section.id = "g-" + g.en.toLowerCase().replace(/\W+/g, "-");
+  section.innerHTML =
+    '<div class="section-head">' +
+      '<span class="dot" style="background:' + g.color + '"></span>' +
+      '<h2>' + g.zh + '</h2>' +
+      '<span class="en">' + g.en + '</span>' +
+      '<span class="rule"></span>' +
+      '<span class="count">' + (g.to - g.from + 1) + ' 项</span>' +
+    '</div><div class="grid"></div>';
+  const grid = section.querySelector(".grid");
+
+  for (let i = g.from; i <= g.to; i++){
+    const d = DATA[i];
+    const ukS = !!d.ukS, usS = !!d.usS, ukW = !!d.ukW, usW = !!d.usW;
+    const fallback = (!ukS && usS) ? "us" : (ukS && !usS) ? "uk" : "";
+    const card = document.createElement("article");
+    card.className = "card";
+    card.dataset.i = i;
+    if (fallback) card.dataset.fallback = fallback;
+    card.innerHTML =
+      '<span class="badge">' + (fallback ? fallback.toUpperCase() + " 兜底" : "") + '</span>' +
+      '<div class="card-head">' +
+        '<span class="ipa">' + esc(d.ipa) + '</span>' +
+        '<span class="word">' + esc(d.word) + '</span>' +
+      '</div>' +
+      '<div class="ctrl-row">' +
+        '<span class="ctrl-label">音标</span>' +
+        '<button class="pbtn uk" type="button" data-kind="sound" data-variant="uk"' + (ukS ? "" : " disabled") +
+          ' aria-label="播放音标 ' + esc(d.ipa) + ' 的英式发音">' + PLAY_ICO + PAUSE_ICO + 'UK</button>' +
+        '<button class="pbtn us" type="button" data-kind="sound" data-variant="us"' + (usS ? "" : " disabled") +
+          ' aria-label="播放音标 ' + esc(d.ipa) + ' 的美式发音">' + PLAY_ICO + PAUSE_ICO + 'US</button>' +
+      '</div>' +
+      '<div class="ctrl-row">' +
+        '<span class="ctrl-label">单词</span>' +
+        '<button class="pbtn uk" type="button" data-kind="word" data-variant="uk"' + (ukW ? "" : " disabled") +
+          ' aria-label="播放单词 ' + esc(d.word) + ' 的英式发音">' + PLAY_ICO + PAUSE_ICO + 'UK</button>' +
+        '<button class="pbtn us" type="button" data-kind="word" data-variant="us"' + (usW ? "" : " disabled") +
+          ' aria-label="播放单词 ' + esc(d.word) + ' 的美式发音">' + PLAY_ICO + PAUSE_ICO + 'US</button>' +
+      '</div>';
+    grid.appendChild(card);
+  }
+  app.appendChild(section);
+});
+
+/* ================= 音频逻辑 ================= */
+const cache = new Map();
+function audioFor(src){
+  if (!cache.has(src)){
+    const a = new Audio(src);
+    a.preload = "auto";
+    cache.set(src, a);
+  }
+  return cache.get(src);
+}
+
+const statusEl = document.getElementById("status");
+const statusText = document.getElementById("statusText");
+const stopBtn = document.getElementById("stopBtn");
+const loopUK = document.getElementById("loopUK");
+const loopUS = document.getElementById("loopUS");
+
+let single = null;   // {audio, btn, card, variant}
+let loop = null;     // {type, list, pos, audio, card, btn}
+
+function srcOf(d, kind, variant){
+  if (kind === "sound") return variant === "uk" ? d.ukS : d.usS;
+  return variant === "uk" ? d.ukW : d.usW;
+}
+
+function setStatus(text, live, variant){
+  statusText.innerHTML = text;
+  statusEl.classList.toggle("is-live", !!live);
+  statusEl.classList.toggle("us", !!live && variant === "us");
+  stopBtn.disabled = !live;
+}
+
+function clearCard(card){
+  if (!card) return;
+  card.classList.remove("is-playing");
+  card.classList.remove("is-fallback");
+  delete card.dataset.playing;
+  card.querySelectorAll(".pbtn.is-active").forEach(b => b.classList.remove("is-active"));
+}
+
+function stopSingle(){
+  if (!single) return;
+  single.audio.onended = null;
+  single.audio.pause();
+  try { single.audio.currentTime = 0; } catch(e){}
+  clearCard(single.card);
+  single = null;
+}
+
+function stopLoop(){
+  if (!loop) return;
+  loop.audio.onended = null;
+  loop.audio.pause();
+  try { loop.audio.currentTime = 0; } catch(e){}
+  clearCard(loop.card);
+  loop = null;
+  loopUK.setAttribute("aria-pressed", "false");
+  loopUS.setAttribute("aria-pressed", "false");
+  loopUK.querySelector("svg").classList.remove("spin");
+  loopUS.querySelector("svg").classList.remove("spin");
+  setStatus("未播放", false);
+}
+
+function stopAll(){
+  stopLoop();
+  stopSingle();
+}
+
+/* ---- 单点播放（可再次点击暂停） ---- */
+function playSingle(card, btn, kind, variant){
+  const d = DATA[+card.dataset.i];
+  const src = srcOf(d, kind, variant);
+  if (!src) return;
+
+  // 同一个按钮：再次点击 = 停止
+  if (single && single.btn === btn){
+    const wasPlaying = !single.audio.paused;
+    stopSingle();
+    if (wasPlaying) setStatus("未播放", false);
+    return;
+  }
+  stopAll();
+
+  const audio = audioFor(src);
+  try { audio.currentTime = 0; } catch(e){}
+  audio.onended = () => {
+    clearCard(card);
+    if (single && single.audio === audio) single = null;
+    setStatus("未播放", false);
+  };
+  single = {audio, btn, card, variant};
+
+  card.classList.add("is-playing");
+  card.dataset.playing = variant;
+  btn.classList.add("is-active");
+  setStatus(
+    (kind === "sound" ? "音标 " : "单词 ") + "<b>" + esc(kind === "sound" ? d.ipa : d.word) + "</b> · " +
+    variant.toUpperCase(),
+    true, variant
+  );
+
+  audio.play().catch(() => { clearCard(card); single = null; setStatus("未播放", false); });
+}
+
+/* ---- 循环播放：每条目 =「音标 → 单词」，均按当前口音优先、缺失用另一口音兜底 ---- */
+function buildLoop(type){
+  const other = type === "uk" ? "us" : "uk";
+  const list = [];
+  DATA.forEach((d, i) => {
+    const sPrimary = type === "uk" ? d.ukS : d.usS;
+    const sOther   = type === "uk" ? d.usS : d.ukS;
+    const soundSrc = sPrimary || sOther;
+    if (!soundSrc) return;                       // 无音标音频的条目（连读/重音）不参与循环
+    const wPrimary = type === "uk" ? d.ukW : d.usW;
+    const wOther   = type === "uk" ? d.usW : d.ukW;
+    const wordSrc  = wPrimary || wOther;
+    list.push({
+      i,
+      sound: {src: soundSrc, used: sPrimary ? type : other, fellBack: !sPrimary},
+      word:  wordSrc ? {src: wordSrc, used: wPrimary ? type : other, fellBack: !wPrimary} : null,
+    });
+  });
+  return list;
+}
+
+function playSegment(item, phase, onDone){
+  const seg = item[phase];
+  const card = app.querySelector('.card[data-i="' + item.i + '"]');
+  const d = DATA[item.i];
+
+  clearCard(loop.card);
+  loop.card = card;
+  loop.audio = audioFor(seg.src);
+
+  const btn = card.querySelector('.pbtn[data-kind="' + phase + '"][data-variant="' + seg.used + '"]');
+  card.classList.add("is-playing");
+  card.dataset.playing = seg.used;
+  if (seg.fellBack) card.classList.add("is-fallback");
+  if (btn) btn.classList.add("is-active");
+
+  const name = seg.used === "uk" ? "UK" : "US";
+  const note = seg.fellBack ? " · 另一口音兜底" : "";
+  setStatus(
+    "循环 " + loop.type.toUpperCase() + " · <b>" + (loop.pos + 1) + "/" + loop.list.length + "</b> · " +
+    esc(phase === "sound" ? d.ipa : d.word) + " · " + (phase === "sound" ? "音标" : "单词") + " " + name + note,
+    true, seg.used
+  );
+
+  if (card.getBoundingClientRect().bottom > innerHeight || card.getBoundingClientRect().top < 0){
+    card.scrollIntoView({block:"nearest", inline:"nearest"});
+  }
+
+  loop.audio.onended = () => { if (loop) onDone(); };
+  loop.audio.play().catch(() => { if (loop) onDone(); });
+}
+
+function stepLoop(){
+  if (!loop) return;
+  if (loop.pos >= loop.list.length) loop.pos = 0;
+
+  const item = loop.list[loop.pos];
+  playSegment(item, "sound", () => {
+    if (!loop) return;
+    if (item.word) playSegment(item, "word", nextEntry);
+    else nextEntry();
+  });
+}
+
+function nextEntry(){
+  if (!loop) return;
+  loop.pos += 1;
+  stepLoop();
+}
+
+function startLoop(type){
+  const wasSame = loop && loop.type === type;
+  stopAll();
+  if (wasSame) return;
+
+  const list = buildLoop(type);
+  if (!list.length) return;
+
+  loop = {type, list, pos:0, audio:null, card:null, btn:null};
+  const btnEl = type === "uk" ? loopUK : loopUS;
+  btnEl.setAttribute("aria-pressed", "true");
+  btnEl.querySelector("svg").classList.add("spin");
+  stepLoop();
+}
+
+/* ---- 事件绑定 ---- */
+app.addEventListener("click", e => {
+  const btn = e.target.closest(".pbtn");
+  if (!btn || btn.disabled) return;
+  const card = btn.closest(".card");
+  playSingle(card, btn, btn.dataset.kind, btn.dataset.variant);
+});
+
+loopUK.addEventListener("click", () => startLoop("uk"));
+loopUS.addEventListener("click", () => startLoop("us"));
+stopBtn.addEventListener("click", stopAll);
+document.addEventListener("visibilitychange", () => { if (document.hidden) stopAll(); });
+
+setStatus("未播放", false);
+</script>
+</body>
+</html>
