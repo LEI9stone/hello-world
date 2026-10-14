@@ -345,6 +345,30 @@ const loopUS = document.getElementById("loopUS");
 let single = null;   // {audio, btn, card, variant}
 let loop = null;     // {type, list, pos, audio, card, btn}
 
+/* ---- 媒体会话：让安卓把本页识别为媒体播放，切后台/息屏不被系统暂停，并显示锁屏与通知栏控制条 ---- */
+const hasMS = "mediaSession" in navigator;
+function msMeta(title, sub){
+  if (!hasMS || typeof MediaMetadata === "undefined") return;
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: title, artist: sub, album: "英语国际音标 · 发音练习"
+    });
+    navigator.mediaSession.playbackState = "playing";
+  } catch(e){}
+}
+function msState(state){
+  if (!hasMS) return;
+  try { navigator.mediaSession.playbackState = state; } catch(e){}
+}
+function msClear(){
+  if (!hasMS) return;
+  try { navigator.mediaSession.metadata = null; } catch(e){}
+  msState("none");
+}
+function activeAudio(){
+  return (loop && loop.audio) || (single && single.audio) || null;
+}
+
 function srcOf(d, kind, variant){
   if (kind === "sound") return variant === "uk" ? d.ukS : d.usS;
   return variant === "uk" ? d.ukW : d.usW;
@@ -391,6 +415,7 @@ function stopLoop(){
 function stopAll(){
   stopLoop();
   stopSingle();
+  msClear();
 }
 
 /* ---- 单点播放（可再次点击暂停） ---- */
@@ -402,7 +427,7 @@ function playSingle(card, btn, kind, variant){
   // 同一个按钮：再次点击 = 停止
   if (single && single.btn === btn){
     const wasPlaying = !single.audio.paused;
-    stopSingle();
+    stopAll();
     if (wasPlaying) setStatus("未播放", false);
     return;
   }
@@ -414,6 +439,7 @@ function playSingle(card, btn, kind, variant){
     clearCard(card);
     if (single && single.audio === audio) single = null;
     setStatus("未播放", false);
+    msClear();
   };
   single = {audio, btn, card, variant};
 
@@ -425,8 +451,9 @@ function playSingle(card, btn, kind, variant){
     variant.toUpperCase(),
     true, variant
   );
+  msMeta(kind === "sound" ? d.ipa : d.word, variant.toUpperCase());
 
-  audio.play().catch(() => { clearCard(card); single = null; setStatus("未播放", false); });
+  audio.play().catch(() => { clearCard(card); single = null; setStatus("未播放", false); msClear(); });
 }
 
 /* ---- 循环播放：每条目 =「音标 → 单词」，均按当前口音优先、缺失用另一口音兜底 ---- */
@@ -472,6 +499,7 @@ function playSegment(item, phase, onDone){
     esc(phase === "sound" ? d.ipa : d.word) + " · " + (phase === "sound" ? "音标" : "单词") + " " + name + note,
     true, seg.used
   );
+  msMeta(phase === "sound" ? d.ipa : d.word, "循环 " + loop.type.toUpperCase() + " · " + name + (seg.fellBack ? "（兜底）" : ""));
 
   if (card.getBoundingClientRect().bottom > innerHeight || card.getBoundingClientRect().top < 0){
     card.scrollIntoView({block:"nearest", inline:"nearest"});
@@ -496,6 +524,15 @@ function stepLoop(){
 function nextEntry(){
   if (!loop) return;
   loop.pos += 1;
+  stepLoop();
+}
+
+/* 锁屏 / 通知栏的上一首·下一首：在循环队列里跳条目 */
+function loopJump(delta){
+  if (!loop) return;
+  loop.audio.onended = null;
+  loop.audio.pause();
+  loop.pos = (loop.pos + delta + loop.list.length) % loop.list.length;
   stepLoop();
 }
 
@@ -525,7 +562,23 @@ app.addEventListener("click", e => {
 loopUK.addEventListener("click", () => startLoop("uk"));
 loopUS.addEventListener("click", () => startLoop("us"));
 stopBtn.addEventListener("click", stopAll);
-document.addEventListener("visibilitychange", () => { if (document.hidden) stopAll(); });
+
+/* 媒体会话按键：锁屏 / 通知栏 / 耳机线控。
+   注意：这里刻意不再监听 visibilitychange 去暂停——切后台或息屏时由系统媒体会话继续持有播放。 */
+if (hasMS){
+  const onMS = (name, fn) => { try { navigator.mediaSession.setActionHandler(name, fn); } catch(e){} };
+  onMS("play", () => {
+    const a = activeAudio();
+    if (a) a.play().then(() => msState("playing")).catch(() => {});
+  });
+  onMS("pause", () => {
+    const a = activeAudio();
+    if (a && !a.paused){ a.pause(); msState("paused"); }
+  });
+  onMS("stop", () => stopAll());
+  onMS("nexttrack", () => loopJump(1));
+  onMS("previoustrack", () => loopJump(-1));
+}
 
 setStatus("未播放", false);
 </script>
