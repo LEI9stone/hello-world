@@ -59,7 +59,7 @@ func main() {
 	if !ready {
 		log.Fatal("数据库初始化失败，请检查配置和数据库状态")
 	}
-	server := &http.Server{Addr: net.JoinHostPort("", env("PORT", "8080")), Handler: handler(s), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
+	server := &http.Server{Addr: net.JoinHostPort("", env("PORT", "8081")), Handler: handler(s), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
 	go func() {
 		<-ctx.Done()
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

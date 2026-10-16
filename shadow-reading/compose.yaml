@@ -1,3 +1,4 @@
+# 只负责数据库服务；Go 后端与前端在本机直接启动。
 services:
   mysql:
     image: mysql:8.4
@@ -17,17 +18,5 @@ services:
       timeout: 5s
       retries: 20
       start_period: 30s
-  backend:
-    build:
-      context: ./backend
-    restart: unless-stopped
-    environment:
-      PORT: "8080"
-      MYSQL_DSN: "${MYSQL_USER:-shadow}:${MYSQL_PASSWORD:-shadow_dev}@tcp(mysql:3306)/${MYSQL_DATABASE:-shadow_reading}?charset=utf8mb4&parseTime=true"
-    ports:
-      - "127.0.0.1:${PORT:-8081}:8080"
-    depends_on:
-      mysql:
-        condition: service_healthy
 volumes:
   mysql_data:
