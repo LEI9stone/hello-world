@@ -2,6 +2,7 @@
   "name": "shadow-reading-frontend",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@12.3.4",
   "scripts": {
     "dev": "react-router dev",
     "build": "react-router build",
