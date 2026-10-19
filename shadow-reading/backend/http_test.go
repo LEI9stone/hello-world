@@ -10,7 +10,7 @@ import (
 )
 
 func TestInvalidRequests(t *testing.T) {
-	h := handler(&store{})
+	h := handler(&store{}, newTestTTS(t, t.TempDir()))
 	cases := []struct {
 		method, path, body string
 		status             int
@@ -25,6 +25,10 @@ func TestInvalidRequests(t *testing.T) {
 		{"GET", "/api/books/not-a-number", "", 400},
 		{"GET", "/api/articles/0", "", 400},
 		{"GET", "/api/articles/9223372036854775808", "", 400},
+		{"GET", "/api/articles/1/audio/x", "", 400},
+		{"GET", "/api/articles/1/audio/-1", "", 400},
+		{"GET", "/api/articles/1/audio/0?voice=evil", "", 400},
+		{"GET", "/api/articles/-1/audio/0", "", 400},
 		{"POST", "/api/books", `{"name":" "}`, 400},
 		{"POST", "/api/books/1/articles", `{"unitName":"Unit 1","title":{"en":"Title","zh":"标题"},"segments":[]}`, 400},
 		{"PUT", "/api/books/1/order", `{"articleIds":null}`, 400},
@@ -51,7 +55,7 @@ func TestInvalidRequests(t *testing.T) {
 func TestParseHTTP(t *testing.T) {
 	payload, _ := json.Marshal(map[string]string{"text": planningSample})
 	w := httptest.NewRecorder()
-	handler(&store{}).ServeHTTP(w, httptest.NewRequest("POST", "/api/parse", strings.NewReader(string(payload))))
+	handler(&store{}, newTestTTS(t, t.TempDir())).ServeHTTP(w, httptest.NewRequest("POST", "/api/parse", strings.NewReader(string(payload))))
 	var r ParseResult
 	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &r) != nil || len(r.Segments) != 10 {
 		t.Fatalf("解析契约: %d %s", w.Code, w.Body.String())
@@ -63,8 +67,8 @@ func TestUnavailableDatabase(t *testing.T) {
 		t.Fatal(err)
 	}
 	_ = db.Close()
-	h := handler(&store{db: db})
-	for _, path := range []string{"/api/health", "/api/books", "/api/books/1", "/api/articles/1"} {
+	h := handler(&store{db: db}, newTestTTS(t, t.TempDir()))
+	for _, path := range []string{"/api/health", "/api/books", "/api/books/1", "/api/articles/1", "/api/articles/1/audio/0?voice=en-US-AriaNeural"} {
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, httptest.NewRequest("GET", path, nil))
 		if w.Code != 503 {

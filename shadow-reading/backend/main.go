@@ -39,6 +39,12 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	s := &store{db}
+	synth := newTTS(env("AUDIO_DIR", "./storage/audio"))
+	if synth.bin == "" {
+		log.Print("警告：未找到 edge-tts 可执行文件，朗读音频接口将返回503，书籍与阅读功能不受影响；可通过 EDGE_TTS_BIN 指定路径")
+	} else {
+		log.Printf("朗读音频由 edge-tts 生成：%s", synth.bin)
+	}
 	// 启动时重试且不暴露凭据，长时间无法连接时由 Docker 重启。
 	ready := false
 	for attempt := 0; attempt < 30; attempt++ {
@@ -59,7 +65,8 @@ func main() {
 	if !ready {
 		log.Fatal("数据库初始化失败，请检查配置和数据库状态")
 	}
-	server := &http.Server{Addr: net.JoinHostPort("", env("PORT", "8081")), Handler: handler(s), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
+	// WriteTimeout 需覆盖首次生成音频的最长耗时（CLI 单次超时60秒），否则长响应会被截断。
+	server := &http.Server{Addr: net.JoinHostPort("", env("PORT", "8081")), Handler: handler(s, synth), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 90 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
 	go func() {
 		<-ctx.Done()
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

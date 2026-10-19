@@ -66,7 +66,7 @@ func dbError(w http.ResponseWriter, err error) {
 		fail(w, 503, "数据库暂时不可用，请稍后重试")
 	}
 }
-func handler(s *store) http.Handler {
+func handler(s *store, t *tts) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
 		if err := s.db.PingContext(r.Context()); err != nil {
@@ -75,6 +75,7 @@ func handler(s *store) http.Handler {
 		}
 		writeJSON(w, 200, map[string]string{"status": "ok"})
 	})
+	mux.HandleFunc("GET /api/voices", voicesHandler)
 	mux.HandleFunc("POST /api/parse", func(w http.ResponseWriter, r *http.Request) {
 		var in struct {
 			Text string `json:"text"`
@@ -166,6 +167,8 @@ func handler(s *store) http.Handler {
 		}
 		writeJSON(w, 200, a)
 	})
+	mux.HandleFunc("GET /api/articles/{id}/audio/{index}", audioHandler(s, t))
+	mux.HandleFunc("GET /api/articles/{id}/audio-status", audioStatusHandler(s, t))
 	saveArticle := func(w http.ResponseWriter, r *http.Request) {
 		id, ok := pathID(w, r)
 		if !ok {
@@ -192,6 +195,12 @@ func handler(s *store) http.Handler {
 			dbError(w, err)
 			return
 		}
+		// 保存后立即返回，默认音色的整篇音频在后台预热；生成失败不影响文章数据。
+		warmCtx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), 10*time.Minute)
+		go func() {
+			defer cancel()
+			t.warm(warmCtx, a)
+		}()
 		writeJSON(w, status, a)
 	}
 	mux.HandleFunc("POST /api/books/{id}/articles", saveArticle)

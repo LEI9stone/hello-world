@@ -2,6 +2,8 @@
 .env.*
 !.env.example
 backend/server
+# go build ./... 的产物（模块名末段）
+backend/backend
 backend/coverage.out
 node_modules/
 build/

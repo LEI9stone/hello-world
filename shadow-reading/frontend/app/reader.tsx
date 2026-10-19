@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import type { Article } from "./api";
 import { LoadState, useResource } from "./shared";
-import { useSpeech } from "./speech";
+import { usePlayer } from "./player";
 export default function Reader() {
   const { articleId } = useParams();
   const { data, error, reload } = useResource<Article>(
@@ -19,13 +19,16 @@ export default function Reader() {
 }
 function Reading({ article }: { article: Article }) {
   const [chinese, setChinese] = useState(true);
-  const speech = useSpeech([
-    article.title.en,
-    ...article.segments.map((s) => s.en),
-  ]);
+  const player = usePlayer({
+    articleId: article.id,
+    count: 1 + article.segments.length,
+    title: article.title.en,
+    subtitle: article.title.zh,
+    album: article.unitName,
+  });
   const reading = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (speech.status !== "playing" || speech.current < 0) return;
+    if (player.status !== "playing" || player.current < 0) return;
     reading.current?.querySelector(".reading-block.active")?.scrollIntoView({
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
         ? "instant"
@@ -33,15 +36,15 @@ function Reading({ article }: { article: Article }) {
       block: "center",
       inline: "nearest",
     });
-  }, [speech.current, speech.status, chinese]);
+  }, [player.current, player.status, chinese]);
   const labels = {
     idle: "待播放",
     playing: "播放中",
     paused: "已暂停",
     ended: "已结束",
-    error: "朗读失败",
+    error: "播放失败",
   };
-  const unavailable = speech.supported !== true || !speech.voices.length;
+  const unavailable = !player.voices.length;
   return (
     <div className="reading-layout">
       <div className="reading" ref={reading}>
@@ -49,17 +52,17 @@ function Reading({ article }: { article: Article }) {
           <Link to={`/books/${article.bookId}`}>返回书籍 /</Link>
           <Link
             to={`/articles/${article.id}/edit`}
-            onClick={() => speech.stop()}
+            onClick={() => player.stop()}
           >
             编辑文章
           </Link>
         </div>
         <p className="eyebrow">{article.unitName}</p>
         <header
-          className={`reading-block ${speech.current === 0 ? "active" : ""}`}
+          className={`reading-block ${player.current === 0 ? "active" : ""}`}
         >
           <span className="play-marker">
-            {speech.current === 0 ? "当前朗读 · 标题" : "文章标题"}
+            {player.current === 0 ? "当前朗读 · 标题" : "文章标题"}
           </span>
           <h1 className="serif" lang="en">
             {article.title.en}
@@ -71,10 +74,10 @@ function Reading({ article }: { article: Article }) {
         {article.segments.map((s, i) => (
           <section
             key={s.id ?? i}
-            className={`reading-block ${speech.current === i + 1 ? "active" : ""}`}
+            className={`reading-block ${player.current === i + 1 ? "active" : ""}`}
           >
             <span className="play-marker">
-              {speech.current === i + 1 ? "当前朗读 · " : ""}
+              {player.current === i + 1 ? "当前朗读 · " : ""}
               {String(i + 1).padStart(2, "0")}
             </span>
             <p className="english" lang="en">
@@ -101,119 +104,118 @@ function Reading({ article }: { article: Article }) {
           英语音色
           <select
             disabled={unavailable}
-            value={speech.voice}
-            onChange={(e) => speech.configure(e.target.value, speech.rate)}
+            value={player.voice}
+            onChange={(e) => player.configure(e.target.value, player.rate)}
           >
-            <option value="" disabled>
-              请选择英语音色
-            </option>
-            {speech.voices.map((v) => (
-              <option key={v.voiceURI} value={v.voiceURI}>
-                {v.name} · {v.lang}
+            {!player.voices.length && <option value="">暂无可用音色</option>}
+            {player.voices.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.label}
+                {player.total > 0 &&
+                  (v.ready >= player.total
+                    ? "（已生成）"
+                    : `（${v.ready}/${player.total}）`)}
               </option>
             ))}
           </select>
         </label>
-        {speech.supported === false ? (
-          <p className="notice">
-            浏览器不支持语音合成，可继续阅读。请使用支持 speechSynthesis
-            的浏览器。
+        {player.voicesError ? (
+          <p className="notice" role="alert">
+            {player.voicesError}
           </p>
-        ) : !speech.voices.length ? (
-          <p role="status">
-            {speech.loaded
-              ? "没有可用英语音色，请检查浏览器或系统语音设置。"
-              : "正在等待浏览器加载英语音色…"}
+        ) : player.voicesLoading ? (
+          <p role="status">正在加载音色…</p>
+        ) : player.total > 0 ? (
+          <p className="player-hint" role="status">
+            {player.readySegments >= player.total
+              ? `该音色已生成全部 ${player.total} 段，可直接播放。`
+              : `该音色已生成 ${player.readySegments} / ${player.total} 段，未生成的段落播放时自动补齐。`}
           </p>
         ) : null}
         <label>
-          语速 · {speech.rate.toFixed(2)} 倍
+          语速 · {player.rate.toFixed(2)} 倍
           <input
             type="range"
             min="0.5"
             max="1.5"
             step="0.05"
-            value={speech.rate}
+            value={player.rate}
             onChange={(e) =>
-              speech.configure(speech.voice, Number(e.target.value))
+              player.configure(player.voice, Number(e.target.value))
             }
           />
         </label>
         <label>
           播放方式
           <select
-            value={speech.loop ? "loop" : "once"}
-            onChange={(e) => speech.setLoop(e.target.value === "loop")}
+            value={player.loop ? "loop" : "once"}
+            onChange={(e) => player.setLoop(e.target.value === "loop")}
           >
             <option value="once">单次全文</option>
             <option value="loop">循环全文</option>
           </select>
         </label>
         <div className="play-status" role="status">
-          <strong>{labels[speech.status]}</strong>
+          <strong>{labels[player.status]}</strong>
           <p>
-            {speech.current < 0
+            {player.current < 0
               ? "英语标题 → 全部英语正文"
-              : speech.current === 0
+              : player.current === 0
                 ? "标题"
-                : `正文第 ${speech.current} / ${article.segments.length} 段`}
+                : `正文第 ${player.current} / ${article.segments.length} 段`}
           </p>
         </div>
-        {speech.error && (
+        {player.error && (
           <p className="notice" role="alert">
-            {speech.error}
+            {player.error}
           </p>
         )}
         <div className="play-buttons">
           <button
-            className={!speech.loop ? "primary" : ""}
+            className={!player.loop ? "primary" : ""}
             disabled={unavailable}
-            aria-pressed={!speech.loop}
-            onClick={speech.playOnce}
+            aria-pressed={!player.loop}
+            onClick={player.playOnce}
           >
             单次播放
           </button>
           <button
-            className={speech.loop ? "primary" : ""}
+            className={player.loop ? "primary" : ""}
             disabled={unavailable}
-            aria-pressed={speech.loop}
-            onClick={speech.playLoop}
+            aria-pressed={player.loop}
+            onClick={player.playLoop}
           >
             循环播放
           </button>
           <button aria-pressed={!chinese} onClick={() => setChinese(!chinese)}>
             {chinese ? "隐藏译文" : "显示译文"}
           </button>
-          {speech.status === "playing" ? (
-            <button className="primary" onClick={speech.pause}>
+          {player.status === "playing" ? (
+            <button className="primary" onClick={player.pause}>
               暂停
             </button>
-          ) : speech.status === "paused" ? (
+          ) : player.status === "paused" ? (
             <button
               className="primary"
               disabled={unavailable}
-              onClick={speech.resume}
+              onClick={player.resume}
             >
               继续
             </button>
-          ) : speech.status === "error" ? (
-            <button
-              disabled={unavailable}
-              onClick={speech.play}
-            >
+          ) : player.status === "error" ? (
+            <button disabled={unavailable} onClick={player.retry}>
               从当前段重试
             </button>
           ) : null}
-          <button disabled={speech.status === "idle"} onClick={speech.stop}>
+          <button disabled={player.status === "idle"} onClick={player.stop}>
             停止
           </button>
         </div>
         <p className="player-hint">
-          更换音色或语速会从当前段开头重播。暂停时修改设置，继续后应用。
+          保存文章时已用默认音色预生成整篇；切换到其他音色后按需即时生成。
         </p>
         <p className="player-hint">
-          切换到后台或息屏时，页面不会主动暂停。手机系统可能中断浏览器朗读，
-          返回页面后会尝试恢复；当前音色模式无法保证持续息屏播放。
+          语速即时生效。可切到后台或息屏继续播放，锁屏与通知栏会显示媒体控制条。
         </p>
       </aside>
     </div>
