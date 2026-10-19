@@ -8,8 +8,12 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "react-router";
+import type { LinksFunction } from "react-router";
 import type { ReactNode } from "react";
 import "./style.css";
+export const links: LinksFunction = () => [
+  { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+];
 export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="zh-CN">
