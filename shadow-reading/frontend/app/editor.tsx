@@ -286,8 +286,11 @@ export default function Editor() {
     sourceTouched && (parsedSource === null || parsedSource !== source);
   return (
     <>
-      <Link className="back" to={`/books/${parent}`}>
-        返回书籍 /
+      <Link
+        className="back"
+        to={articleId ? `/articles/${articleId}` : "/"}
+      >
+        {articleId ? "返回文章 /" : "返回首页 /"}
       </Link>
       <header>
         <p className="eyebrow">PREPARE YOUR READING</p>

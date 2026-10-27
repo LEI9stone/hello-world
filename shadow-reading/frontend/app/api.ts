@@ -1,4 +1,9 @@
-export type Book = { id: number; name: string; articleCount: number };
+export type Book = {
+  id: number;
+  name: string;
+  articleCount: number;
+  firstArticleId: number | null;
+};
 export type Segment = {
   id?: number;
   position?: number;

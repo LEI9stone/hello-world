@@ -11,9 +11,10 @@ type Title struct {
 	Zh string `json:"zh"`
 }
 type Book struct {
-	ID           int64  `json:"id"`
-	Name         string `json:"name"`
-	ArticleCount int    `json:"articleCount"`
+	ID             int64  `json:"id"`
+	Name           string `json:"name"`
+	ArticleCount   int    `json:"articleCount"`
+	FirstArticleID *int64 `json:"firstArticleId"`
 }
 type Segment struct {
 	ID       int64  `json:"id"`

@@ -45,14 +45,22 @@ func (s *store) migrate(ctx context.Context) error {
 }
 func bookByID(ctx context.Context, q queryer, id int64) (Book, error) {
 	var b Book
-	err := q.QueryRowContext(ctx, `SELECT b.id,b.name,(SELECT COUNT(*) FROM articles a WHERE a.book_id=b.id) FROM books b WHERE b.id=?`, id).Scan(&b.ID, &b.Name, &b.ArticleCount)
+	var first sql.NullInt64
+	err := q.QueryRowContext(ctx, `SELECT b.id,b.name,(SELECT COUNT(*) FROM articles a WHERE a.book_id=b.id),
+		(SELECT a2.id FROM articles a2 WHERE a2.book_id=b.id ORDER BY a2.position,a2.id LIMIT 1)
+		FROM books b WHERE b.id=?`, id).Scan(&b.ID, &b.Name, &b.ArticleCount, &first)
 	if errors.Is(err, sql.ErrNoRows) {
 		err = errNotFound
+	}
+	if first.Valid {
+		b.FirstArticleID = &first.Int64
 	}
 	return b, err
 }
 func (s *store) books(ctx context.Context) ([]Book, error) {
-	rows, err := s.db.QueryContext(ctx, `SELECT b.id,b.name,COUNT(a.id) FROM books b LEFT JOIN articles a ON a.book_id=b.id GROUP BY b.id,b.name ORDER BY b.id`)
+	rows, err := s.db.QueryContext(ctx, `SELECT b.id,b.name,COUNT(a.id),
+		(SELECT a2.id FROM articles a2 WHERE a2.book_id=b.id ORDER BY a2.position,a2.id LIMIT 1)
+		FROM books b LEFT JOIN articles a ON a.book_id=b.id GROUP BY b.id,b.name ORDER BY b.id`)
 	if err != nil {
 		return nil, err
 	}
@@ -60,8 +68,12 @@ func (s *store) books(ctx context.Context) ([]Book, error) {
 	result := []Book{}
 	for rows.Next() {
 		var b Book
-		if err = rows.Scan(&b.ID, &b.Name, &b.ArticleCount); err != nil {
+		var first sql.NullInt64
+		if err = rows.Scan(&b.ID, &b.Name, &b.ArticleCount, &first); err != nil {
 			return nil, err
+		}
+		if first.Valid {
+			b.FirstArticleID = &first.Int64
 		}
 		result = append(result, b)
 	}

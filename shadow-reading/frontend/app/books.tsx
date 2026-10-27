@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { api, type Book } from "./api";
 import { ErrorNote, LoadState, message, useResource } from "./shared";
 export default function Books() {
@@ -9,7 +9,6 @@ export default function Books() {
   const [rename, setRename] = useState("");
   const [failure, setFailure] = useState("");
   const [busy, setBusy] = useState(false);
-  const navigate = useNavigate();
   async function create(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
@@ -17,7 +16,8 @@ export default function Books() {
     setFailure("");
     try {
       const book = await api<Book>("/books", "POST", { name: name.trim() });
-      navigate(`/books/${book.id}`);
+      setData([...(data ?? []), book]);
+      setName("");
     } catch (e) {
       setFailure(message(e));
     } finally {
@@ -125,13 +125,24 @@ export default function Books() {
                 ) : (
                   <>
                     <h2>
-                      <Link to={`/books/${book.id}`}>{book.name}</Link>
+                      <Link
+                        to={
+                          book.firstArticleId
+                            ? `/articles/${book.firstArticleId}`
+                            : `/books/${book.id}/new`
+                        }
+                      >
+                        {book.name}
+                      </Link>
                     </h2>
                     <p className="muted">{book.articleCount} 篇单元文章</p>
                   </>
                 )}
               </div>
               <div className="actions">
+                <Link className="button" to={`/books/${book.id}/new`}>
+                  新增文章
+                </Link>
                 <button
                   disabled={busy}
                   onClick={() => {
