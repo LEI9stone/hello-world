@@ -2,6 +2,7 @@ export type Book = { id: number; name: string; articleCount: number };
 export type Segment = {
   id?: number;
   position?: number;
+  kind?: "text" | "code";
   en: string;
   zh: string;
 };

@@ -1,8 +1,136 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type SyntheticEvent,
+} from "react";
 import { Link, useParams } from "react-router";
-import type { Article } from "./api";
+import type { Article, Book } from "./api";
 import { LoadState, useResource } from "./shared";
 import { usePlayer } from "./player";
+
+// 句中出现的代码术语渲染成行内等宽：只认带点限定名、含 / 的路径、含下划线的标识符。
+const TERM =
+  /(^|[^A-Za-z0-9_])((?:[A-Za-z_][A-Za-z0-9_]{1,}(?:\.[A-Za-z_][A-Za-z0-9_]{1,})+)|(?:[A-Za-z_][A-Za-z0-9_]*(?:\/[A-Za-z0-9_.\-]+)+)|(?:[A-Za-z_][A-Za-z0-9_]*_[A-Za-z0-9_]+))/g;
+
+function Inline({ text }: { text: string }) {
+  const nodes: ReactNode[] = [];
+  let last = 0;
+  for (const match of text.matchAll(TERM)) {
+    const at = (match.index ?? 0) + match[1].length;
+    if (at > last) nodes.push(text.slice(last, at));
+    nodes.push(
+      <code key={at} className="inline-code">
+        {match[2]}
+      </code>,
+    );
+    last = at + match[2].length;
+  }
+  if (last < text.length) nodes.push(text.slice(last));
+  return <>{nodes}</>;
+}
+
+function BookContents({
+  article,
+  stop,
+}: {
+  article: Article;
+  stop: () => void;
+}) {
+  const { data, error, reload } = useResource<{
+    book: Book;
+    articles: Article[];
+  }>(`/books/${article.bookId}`);
+  const [open, setOpen] = useState(false);
+  const scroll = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const wide = window.matchMedia("(min-width: 801px)");
+    const sync = () => setOpen(wide.matches);
+    sync();
+    wide.addEventListener("change", sync);
+    return () => wide.removeEventListener("change", sync);
+  }, []);
+  useEffect(() => {
+    if (!open) return;
+    const container = scroll.current;
+    const current = container?.querySelector<HTMLElement>(
+      '[aria-current="page"]',
+    );
+    if (!container || !current) return;
+    const bounds = container.getBoundingClientRect();
+    const item = current.getBoundingClientRect();
+    if (item.top < bounds.top || item.bottom > bounds.bottom) {
+      container.scrollTop += item.top - bounds.top - bounds.height / 2 + item.height / 2;
+    }
+  }, [data, article.id, open]);
+  const groups: { name: string; articles: { article: Article; number: number }[] }[] = [];
+  data?.articles.forEach((entry, index) => {
+    let group = groups[groups.length - 1];
+    if (!group || group.name !== entry.unitName) {
+      group = { name: entry.unitName, articles: [] };
+      groups.push(group);
+    }
+    group.articles.push({ article: entry, number: index + 1 });
+  });
+  function toggle(event: SyntheticEvent<HTMLDetailsElement>) {
+    const expanded = window.matchMedia("(min-width: 801px)").matches || event.currentTarget.open;
+    event.currentTarget.open = expanded;
+    setOpen(expanded);
+  }
+  return (
+    <aside className="book-contents" aria-label="书籍目录">
+      <div className="contents-heading">
+        <Link className="contents-home" to="/" onClick={stop}>
+          <span aria-hidden="true">←</span> 返回首页
+        </Link>
+        {data && <p className="contents-book-name">{data.book.name}</p>}
+      </div>
+      <details className="contents-details" open={open} onToggle={toggle}>
+        <summary>
+          本书目录
+          <span>{article.title.en || article.title.zh || "未命名文章"}</span>
+        </summary>
+        <div className="contents-scroll" ref={scroll}>
+          <nav aria-label="本书目录">
+            <p className="contents-label">本书目录</p>
+            {!data ? (
+              <LoadState error={error} retry={reload} />
+            ) : !data.articles.length ? (
+              <p className="muted">本书暂无文章</p>
+            ) : (
+              <ul className="contents-groups">
+                {groups.map((group, index) => (
+                  <li key={index}>
+                    {group.name && <p className="contents-unit">{group.name}</p>}
+                    <ol className={group.name ? "contents-articles grouped" : "contents-articles"}>
+                      {group.articles.map(({ article: entry, number }) => (
+                        <li key={entry.id}>
+                          <Link
+                            to={`/articles/${entry.id}`}
+                            aria-current={entry.id === article.id ? "page" : undefined}
+                            onClick={(event) => {
+                              if (entry.id === article.id) event.preventDefault();
+                              else stop();
+                            }}
+                          >
+                            <span className="contents-number">{number}.</span>
+                            <span>{entry.title.en || entry.title.zh || "未命名文章"}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ol>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </nav>
+        </div>
+      </details>
+    </aside>
+  );
+}
+
 export default function Reader() {
   const { articleId } = useParams();
   const { data, error, reload } = useResource<Article>(
@@ -19,9 +147,11 @@ export default function Reader() {
 }
 function Reading({ article }: { article: Article }) {
   const [chinese, setChinese] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const player = usePlayer({
     articleId: article.id,
     count: 1 + article.segments.length,
+    readable: [true, ...article.segments.map((s) => s.kind !== "code")],
     title: article.title.en,
     subtitle: article.title.zh,
     album: article.unitName,
@@ -37,19 +167,13 @@ function Reading({ article }: { article: Article }) {
       inline: "nearest",
     });
   }, [player.current, player.status, chinese]);
-  const labels = {
-    idle: "待播放",
-    playing: "播放中",
-    paused: "已暂停",
-    ended: "已结束",
-    error: "播放失败",
-  };
   const unavailable = !player.voices.length;
   return (
-    <div className="reading-layout">
+    <div className="reader-page">
+      <BookContents article={article} stop={player.stop} />
+      <div className="reading-layout">
       <div className="reading" ref={reading}>
         <div className="reading-nav">
-          <Link to={`/books/${article.bookId}`}>返回书籍 /</Link>
           <Link
             to={`/articles/${article.id}/edit`}
             onClick={() => player.stop()}
@@ -57,114 +181,107 @@ function Reading({ article }: { article: Article }) {
             编辑文章
           </Link>
         </div>
-        <p className="eyebrow">{article.unitName}</p>
         <header
           className={`reading-block ${player.current === 0 ? "active" : ""}`}
+          aria-current={player.current === 0 ? "true" : undefined}
         >
-          <span className="play-marker">
-            {player.current === 0 ? "当前朗读 · 标题" : "文章标题"}
-          </span>
           <h1 className="serif" lang="en">
-            {article.title.en}
+            <Inline text={article.title.en} />
           </h1>
           {chinese && (
-            <p className="translation title-translation">{article.title.zh}</p>
+            <p className="translation title-translation">
+              <Inline text={article.title.zh} />
+            </p>
           )}
         </header>
         {article.segments.map((s, i) => (
           <section
             key={s.id ?? i}
             className={`reading-block ${player.current === i + 1 ? "active" : ""}`}
+            aria-current={player.current === i + 1 ? "true" : undefined}
           >
-            <span className="play-marker">
-              {player.current === i + 1 ? "当前朗读 · " : ""}
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <p className="english" lang="en">
-              {s.en}
-            </p>
-            {chinese && <p className="translation">{s.zh}</p>}
+            {s.kind === "code" ? (
+              // 代码段始终显示，不受「隐藏译文」影响。
+              <pre className="code" lang="en">{s.en}</pre>
+            ) : (
+              <>
+                <p className="english" lang="en">
+                  <Inline text={s.en} />
+                </p>
+                {chinese && (
+                  <p className="translation">
+                    <Inline text={s.zh} />
+                  </p>
+                )}
+              </>
+            )}
           </section>
         ))}
         <p className="reading-end">本篇完 · 让理解先于速度</p>
       </div>
       <aside className="player" aria-label="全文朗读控制">
-        <p className="eyebrow">LISTEN & FOLLOW</p>
-        <h2>聆听与跟读</h2>
-        <label className="check">
-          <input
-            type="checkbox"
-            checked={chinese}
-            onChange={(e) => setChinese(e.target.checked)}
-          />
-          显示全部中文
-        </label>
-        <hr />
-        <label>
-          英语音色
-          <select
-            disabled={unavailable}
-            value={player.voice}
-            onChange={(e) => player.configure(e.target.value, player.rate)}
-          >
-            {!player.voices.length && <option value="">暂无可用音色</option>}
-            {player.voices.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.label}
-                {player.total > 0 &&
-                  (v.ready >= player.total
-                    ? "（已生成）"
-                    : `（${v.ready}/${player.total}）`)}
-              </option>
-            ))}
-          </select>
-        </label>
-        {player.voicesError ? (
+        <button
+          type="button"
+          className="settings-toggle"
+          aria-expanded={settingsOpen}
+          aria-controls="audio-settings"
+          onClick={() => setSettingsOpen(!settingsOpen)}
+        >
+          <span>音频设置</span>
+          <span aria-hidden="true">{settingsOpen ? "收起" : "展开"}</span>
+        </button>
+        <div
+          id="audio-settings"
+          className="audio-settings"
+          hidden={!settingsOpen}
+        >
+          <label>
+            英语音色
+            <select
+              disabled={unavailable}
+              value={player.voice}
+              onChange={(e) => player.configure(e.target.value, player.rate)}
+            >
+              {!player.voices.length && <option value="">暂无可用音色</option>}
+              {player.voices.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.label}
+                  {player.total > 0 &&
+                    (v.ready >= player.total
+                      ? "（已生成）"
+                      : `（${v.ready}/${player.total}）`)}
+                </option>
+              ))}
+            </select>
+          </label>
+          {player.voicesLoading ? (
+            <p role="status">正在加载音色…</p>
+          ) : player.total > 0 ? (
+            <p className="player-hint" role="status">
+              {player.readySegments >= player.total
+                ? `该音色已生成全部 ${player.total} 段，可直接播放。`
+                : `该音色已生成 ${player.readySegments} / ${player.total} 段，未生成的段落播放时自动补齐。`}
+            </p>
+          ) : null}
+          <label>
+            语速 · {player.rate.toFixed(2)} 倍
+            <input
+              type="range"
+              min="0.5"
+              max="1.5"
+              step="0.05"
+              value={player.rate}
+              onChange={(e) =>
+                player.configure(player.voice, Number(e.target.value))
+              }
+            />
+          </label>
+        </div>
+        {player.voicesError && (
           <p className="notice" role="alert">
             {player.voicesError}
           </p>
-        ) : player.voicesLoading ? (
-          <p role="status">正在加载音色…</p>
-        ) : player.total > 0 ? (
-          <p className="player-hint" role="status">
-            {player.readySegments >= player.total
-              ? `该音色已生成全部 ${player.total} 段，可直接播放。`
-              : `该音色已生成 ${player.readySegments} / ${player.total} 段，未生成的段落播放时自动补齐。`}
-          </p>
-        ) : null}
-        <label>
-          语速 · {player.rate.toFixed(2)} 倍
-          <input
-            type="range"
-            min="0.5"
-            max="1.5"
-            step="0.05"
-            value={player.rate}
-            onChange={(e) =>
-              player.configure(player.voice, Number(e.target.value))
-            }
-          />
-        </label>
-        <label>
-          播放方式
-          <select
-            value={player.loop ? "loop" : "once"}
-            onChange={(e) => player.setLoop(e.target.value === "loop")}
-          >
-            <option value="once">单次全文</option>
-            <option value="loop">循环全文</option>
-          </select>
-        </label>
-        <div className="play-status" role="status">
-          <strong>{labels[player.status]}</strong>
-          <p>
-            {player.current < 0
-              ? "英语标题 → 全部英语正文"
-              : player.current === 0
-                ? "标题"
-                : `正文第 ${player.current} / ${article.segments.length} 段`}
-          </p>
-        </div>
+        )}
         {player.error && (
           <p className="notice" role="alert">
             {player.error}
@@ -211,13 +328,8 @@ function Reading({ article }: { article: Article }) {
             停止
           </button>
         </div>
-        <p className="player-hint">
-          保存文章时已用默认音色预生成整篇；切换到其他音色后按需即时生成。
-        </p>
-        <p className="player-hint">
-          语速即时生效。可切到后台或息屏继续播放，锁屏与通知栏会显示媒体控制条。
-        </p>
       </aside>
+      </div>
     </div>
   );
 }

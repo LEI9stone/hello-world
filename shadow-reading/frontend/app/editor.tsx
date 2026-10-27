@@ -70,7 +70,6 @@ export default function Editor() {
     setSourceValue(value);
   }
   const [parsedSource, setParsedSource] = useState<string | null>(null);
-  const [issues, setIssues] = useState<ParseResult["issues"]>([]);
   const [ready, setReady] = useState(!articleId);
   const [loadError, setLoadError] = useState("");
   const [retry, setRetry] = useState(0);
@@ -110,7 +109,7 @@ export default function Editor() {
   const dirty =
     ready &&
     !saved.current &&
-    (JSON.stringify(draft) !== original || source !== "" || issues.length > 0);
+    (JSON.stringify(draft) !== original || source !== "");
   const blocker = useBlocker(() => !saved.current && (dirty || busy));
   useBeforeUnload((e) => {
     if (dirty || busy) {
@@ -151,9 +150,12 @@ export default function Editor() {
       change({
         ...draft,
         title: result.title,
-        segments: result.segments.map((s) => ({ en: s.en, zh: s.zh })),
+        segments: result.segments.map((s) => ({
+          en: s.en,
+          zh: s.zh,
+          kind: s.kind,
+        })),
       });
-      setIssues(result.issues);
       setParsedSource(text);
       setPreview(true);
     } catch (e) {
@@ -166,11 +168,10 @@ export default function Editor() {
     e.preventDefault();
     if (
       !preview ||
-      issues.length ||
       (parsedSource !== null && source !== parsedSource) ||
       (sourceTouched && parsedSource === null)
     ) {
-      setFailure("请重新解析原文，并为所有待处理内容分配归属或明确删除。");
+      setFailure("请重新解析原文后再保存。");
       return;
     }
     if (
@@ -178,7 +179,9 @@ export default function Editor() {
       !draft.title.en.trim() ||
       !draft.title.zh.trim() ||
       !draft.segments.length ||
-      draft.segments.some((s) => !s.en.trim() || !s.zh.trim())
+      draft.segments.some(
+        (s) => !s.en.trim() || (s.kind !== "code" && !s.zh.trim()),
+      )
     ) {
       setFailure("请填写单元名称、双语标题及每段双语正文，正文至少一段。");
       return;
@@ -191,6 +194,7 @@ export default function Editor() {
         title: { en: draft.title.en.trim(), zh: draft.title.zh.trim() },
         segments: draft.segments.map((s) => ({
           id: s.id,
+          kind: s.kind ?? "text",
           en: s.en.trim(),
           zh: s.zh.trim(),
         })),
@@ -226,25 +230,28 @@ export default function Editor() {
   }
   function split(i: number) {
     const s = draft.segments[i];
+    const code = s.kind === "code";
     const en = window.prompt(
       "请输入英语拆分位置（字符数，拆分点之前为第一段）",
       String(Math.floor(s.en.length / 2)),
     );
     if (en === null) return;
-    const zh = window.prompt(
-      "请输入中文拆分位置（字符数，拆分点之前为第一段）",
-      String(Math.floor(s.zh.length / 2)),
-    );
-    if (zh === null) return;
+    let zh = "0";
+    if (!code) {
+      const value = window.prompt(
+        "请输入中文拆分位置（字符数，拆分点之前为第一段）",
+        String(Math.floor(s.zh.length / 2)),
+      );
+      if (value === null) return;
+      zh = value;
+    }
     const a = Number(en),
       b = Number(zh);
     if (
       !Number.isInteger(a) ||
-      !Number.isInteger(b) ||
       a <= 0 ||
       a >= s.en.length ||
-      b <= 0 ||
-      b >= s.zh.length
+      (!code && (!Number.isInteger(b) || b <= 0 || b >= s.zh.length))
     ) {
       setFailure("拆分位置必须是文本内部的整数。");
       return;
@@ -254,33 +261,10 @@ export default function Editor() {
       i,
       1,
       { ...s, en: s.en.slice(0, a), zh: s.zh.slice(0, b) },
-      { en: s.en.slice(a), zh: s.zh.slice(b) },
+      // 后半段不带原标识，代码段需要保留类型。
+      { en: s.en.slice(a), zh: s.zh.slice(b), ...(code ? { kind: "code" as const } : {}) },
     );
     change({ ...draft, segments });
-  }
-  function assign(index: number, target: string) {
-    const issue = issues[index];
-    const [where, lang] = target.split(":");
-    if (!lang) return;
-    if (where === "title")
-      change({
-        ...draft,
-        title: {
-          ...draft.title,
-          [lang]: [draft.title[lang as "en" | "zh"], issue.text]
-            .filter(Boolean)
-            .join("\n"),
-        },
-      });
-    else {
-      const n = Number(where);
-      segment(n, {
-        [lang]: [draft.segments[n][lang as "en" | "zh"], issue.text]
-          .filter(Boolean)
-          .join("\n"),
-      });
-    }
-    setIssues(issues.filter((_, i) => i !== index));
   }
   if (!ready)
     return (
@@ -361,9 +345,7 @@ export default function Editor() {
             <section className="panel">
               <div className="section-heading">
                 <h2>02 / 核对配对</h2>
-                <span>
-                  {draft.segments.length} 组正文 · {issues.length} 项待处理
-                </span>
+                <span>{draft.segments.length} 组正文</span>
               </div>
               <div className="pair">
                 <label>
@@ -406,141 +388,116 @@ export default function Editor() {
               >
                 将标题转为首段正文
               </button>
-              {draft.segments.map((s, i) => (
-                <section className="segment-edit" key={i}>
-                  <div className="section-heading">
-                    <h3>正文 {i + 1}</h3>
-                    <div className="actions">
-                      <button
-                        type="button"
-                        disabled={i === 0}
-                        onClick={() => move(i, -1)}
-                      >
-                        上移
-                      </button>
-                      <button
-                        type="button"
-                        disabled={i === draft.segments.length - 1}
-                        onClick={() => move(i, 1)}
-                      >
-                        下移
-                      </button>
-                      <button
-                        type="button"
-                        disabled={i === draft.segments.length - 1}
-                        onClick={() => merge(i)}
-                      >
-                        合并下一段
-                      </button>
-                      <button type="button" onClick={() => split(i)}>
-                        拆分
-                      </button>
-                      <button
-                        type="button"
-                        className="danger"
-                        onClick={() => {
-                          if (window.confirm(`删除正文第 ${i + 1} 组？`))
-                            change({
-                              ...draft,
-                              segments: draft.segments.filter(
-                                (_, j) => j !== i,
-                              ),
-                            });
-                        }}
-                      >
-                        删除
-                      </button>
+              {draft.segments.map((s, i) => {
+                const code = s.kind === "code";
+                return (
+                  <section className="segment-edit" key={i}>
+                    <div className="section-heading">
+                      <div className="segment-title">
+                        <h3>正文 {i + 1}</h3>
+                        {code && <span className="kind-tag">代码</span>}
+                      </div>
+                      <div className="actions">
+                        <button
+                          type="button"
+                          disabled={i === 0}
+                          onClick={() => move(i, -1)}
+                        >
+                          上移
+                        </button>
+                        <button
+                          type="button"
+                          disabled={i === draft.segments.length - 1}
+                          onClick={() => move(i, 1)}
+                        >
+                          下移
+                        </button>
+                        {!code && (
+                          <button
+                            type="button"
+                            disabled={i === draft.segments.length - 1}
+                            onClick={() => merge(i)}
+                          >
+                            合并下一段
+                          </button>
+                        )}
+                        <button type="button" onClick={() => split(i)}>
+                          拆分
+                        </button>
+                        <button
+                          type="button"
+                          className="danger"
+                          onClick={() => {
+                            if (window.confirm(`删除正文第 ${i + 1} 组？`))
+                              change({
+                                ...draft,
+                                segments: draft.segments.filter(
+                                  (_, j) => j !== i,
+                                ),
+                              });
+                          }}
+                        >
+                          删除
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="pair">
-                    <label>
-                      第 {i + 1} 段英语
-                      <textarea
-                        required
-                        rows={4}
-                        lang="en"
-                        value={s.en}
-                        onChange={(e) => segment(i, { en: e.target.value })}
-                      />
-                    </label>
-                    <label>
-                      第 {i + 1} 段中文
-                      <textarea
-                        required
-                        rows={4}
-                        value={s.zh}
-                        onChange={(e) => segment(i, { zh: e.target.value })}
-                      />
-                    </label>
-                  </div>
-                </section>
-              ))}
+                    {code ? (
+                      <label>
+                        第 {i + 1} 段代码
+                        <textarea
+                          required
+                          rows={6}
+                          lang="en"
+                          className="code-input"
+                          value={s.en}
+                          onChange={(e) => segment(i, { en: e.target.value })}
+                        />
+                      </label>
+                    ) : (
+                      <div className="pair">
+                        <label>
+                          第 {i + 1} 段英语
+                          <textarea
+                            required
+                            rows={4}
+                            lang="en"
+                            value={s.en}
+                            onChange={(e) => segment(i, { en: e.target.value })}
+                          />
+                        </label>
+                        <label>
+                          第 {i + 1} 段中文
+                          <textarea
+                            required
+                            rows={4}
+                            value={s.zh}
+                            onChange={(e) => segment(i, { zh: e.target.value })}
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </section>
+                );
+              })}
               <button
                 type="button"
                 onClick={() =>
                   change({
                     ...draft,
-                    segments: [...draft.segments, { en: "", zh: "" }],
+                    segments: [
+                      ...draft.segments,
+                      { en: "", zh: "", kind: "text" },
+                    ],
                   })
                 }
               >
                 新增正文组
               </button>
-              {issues.length > 0 && (
-                <section className="issues">
-                  <h3>待处理原文</h3>
-                  <p>
-                    每项必须明确分配到标题或正文，或由你明确删除。分配会追加原文，不覆盖现有内容。
-                  </p>
-                  {issues.map((issue, i) => (
-                    <div className="issue" key={i}>
-                      <p>
-                        原文第 {issue.line} 行 · {issue.reason}
-                      </p>
-                      <pre>{issue.text}</pre>
-                      <label>
-                        分配位置
-                        <select
-                          value=""
-                          onChange={(e) => assign(i, e.target.value)}
-                        >
-                          <option value="">选择归属…</option>
-                          <option value="title:en">英语标题</option>
-                          <option value="title:zh">中文标题</option>
-                          {draft.segments.map((_, j) => (
-                            <optgroup label={`正文 ${j + 1}`} key={j}>
-                              <option value={`${j}:en`}>
-                                第 {j + 1} 段英语
-                              </option>
-                              <option value={`${j}:zh`}>
-                                第 {j + 1} 段中文
-                              </option>
-                            </optgroup>
-                          ))}
-                        </select>
-                      </label>
-                      <button
-                        type="button"
-                        className="danger"
-                        onClick={() => {
-                          if (window.confirm("明确删除这项待处理原文？"))
-                            setIssues(issues.filter((_, j) => j !== i));
-                        }}
-                      >
-                        删除此项原文
-                      </button>
-                    </div>
-                  ))}
-                </section>
-              )}
             </section>
           )}
           <ErrorNote error={failure} />
           <div className="save-bar">
-            <button
-              className="primary"
-              disabled={!preview || stale || issues.length > 0}
-            >
+            <button className="primary" disabled={!preview || stale}>
               {busy ? "保存中…" : "确认并保存文章"}
             </button>
             <Link to={`/books/${parent}`}>取消</Link>

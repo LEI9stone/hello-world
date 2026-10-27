@@ -37,24 +37,9 @@ export function Layout({ children }: { children: ReactNode }) {
 }
 export default function App() {
   return (
-    <div className="shell">
-      <aside className="sidebar">
-        <Link className="brand" to="/">
-          影子阅读<span>SHADOW READING</span>
-        </Link>
-        <nav>
-          <Link to="/">我的书籍</Link>
-        </nav>
-        <p>
-          先理解，再聆听。
-          <br />
-          让每一次跟读从容开始。
-        </p>
-      </aside>
-      <main id="main">
-        <Outlet />
-      </main>
-    </div>
+    <main id="main">
+      <Outlet />
+    </main>
   );
 }
 export function ErrorBoundary() {

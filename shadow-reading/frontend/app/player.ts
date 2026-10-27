@@ -16,11 +16,12 @@ type Status = "idle" | "playing" | "paused" | "ended" | "error";
 export function usePlayer(options: {
   articleId: number;
   count: number;
+  readable: boolean[];
   title: string;
   subtitle: string;
   album: string;
 }) {
-  const { articleId, count, title, subtitle, album } = options;
+  const { articleId, count, readable, title, subtitle, album } = options;
   const [voices, setVoices] = useState<Voice[]>([]);
   const [voice, setVoice] = useState("en-US-AriaNeural");
   const [rate, setRate] = useState(0.85);
@@ -40,8 +41,23 @@ export function usePlayer(options: {
   const pending = useRef(false);
   const picked = useRef(false);
   const statusRef = useRef<StatusResponse>({ total: 0, voices: [] });
-  const settings = useRef({ voice, rate, loop, count, articleId });
-  settings.current = { voice, rate, loop, count, articleId };
+  const settings = useRef({ voice, rate, loop, count, articleId, readable });
+  settings.current = { voice, rate, loop, count, articleId, readable };
+
+  // 代码段没有音频，朗读序列只走「可朗读」的块；current 仍是块序号，以便高亮与滚动对齐。
+  function nextReadable(index: number) {
+    for (let i = Math.max(0, index); i < settings.current.count; i++) {
+      if (settings.current.readable[i]) return i;
+    }
+    return -1;
+  }
+
+  function prevReadable(index: number) {
+    for (let i = Math.min(index, settings.current.count - 1); i >= 0; i--) {
+      if (settings.current.readable[i]) return i;
+    }
+    return -1;
+  }
 
   function phaseTo(next: Status) {
     phase.current = next;
@@ -79,18 +95,20 @@ export function usePlayer(options: {
 
   function playFrom(index: number) {
     const el = audio.current;
-    if (!el || index < 0 || index >= settings.current.count) return;
+    // 代码段没有音频，落点先推进到下一个可朗读块。
+    const at = settings.current.readable[index] ? index : nextReadable(index);
+    if (!el || at < 0 || at >= settings.current.count) return;
     const own = ++token.current;
-    position.current = index;
+    position.current = at;
     pending.current = false;
-    setCurrent(index);
+    setCurrent(at);
     setError("");
     phaseTo("playing");
     el.onended = () => {
       if (own !== token.current || phase.current !== "playing") return;
-      const total = settings.current.count;
-      if (index + 1 < total) playFrom(index + 1);
-      else if (settings.current.loop) playFrom(0);
+      const next = nextReadable(at + 1);
+      if (next >= 0) playFrom(next);
+      else if (settings.current.loop) playFrom(0); // 标题恒可朗读
       else phaseTo("ended");
     };
     el.onerror = () => {
@@ -98,7 +116,7 @@ export function usePlayer(options: {
       phaseTo("error");
       setError("音频获取失败，可从当前段重试。");
     };
-    el.src = source(index);
+    el.src = source(at);
     el.playbackRate = settings.current.rate;
     describe();
     session("playing");
@@ -107,8 +125,8 @@ export function usePlayer(options: {
       phaseTo("error");
       setError("浏览器阻止了播放，请再次点击播放。");
     });
-    const total = settings.current.count;
-    prefetch(index + 1 < total ? index + 1 : settings.current.loop ? 0 : -1);
+    const next = nextReadable(at + 1);
+    prefetch(next >= 0 ? next : settings.current.loop ? 0 : -1);
   }
 
   function stop() {
@@ -157,8 +175,19 @@ export function usePlayer(options: {
 
   function jump(delta: number) {
     if (phase.current !== "playing" && phase.current !== "paused") return;
-    const total = settings.current.count;
-    playFrom((position.current + delta + total) % total);
+    // 跳过代码段；到头则回绕，与原来的循环切段行为一致。
+    const at =
+      delta > 0
+        ? nextReadable(position.current + 1)
+        : prevReadable(position.current - 1);
+    const wrap =
+      at >= 0
+        ? at
+        : delta > 0
+          ? nextReadable(0)
+          : prevReadable(settings.current.count - 1);
+    if (wrap < 0) return;
+    playFrom(wrap);
   }
 
   function start(nextLoop: boolean) {

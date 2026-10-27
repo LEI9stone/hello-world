@@ -23,14 +23,25 @@ func (s *store) init(ctx context.Context) error {
 	statements := []string{
 		`CREATE TABLE IF NOT EXISTS books (id BIGINT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(200) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 		`CREATE TABLE IF NOT EXISTS articles (id BIGINT PRIMARY KEY AUTO_INCREMENT, book_id BIGINT NOT NULL, unit_name VARCHAR(200) NOT NULL, position INT NOT NULL, title_en VARCHAR(500) NOT NULL, title_zh VARCHAR(500) NOT NULL, INDEX article_order(book_id,position,id), FOREIGN KEY(book_id) REFERENCES books(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
-		`CREATE TABLE IF NOT EXISTS segments (id BIGINT PRIMARY KEY AUTO_INCREMENT, article_id BIGINT NOT NULL, position INT NOT NULL, en MEDIUMTEXT NOT NULL, zh MEDIUMTEXT NOT NULL, INDEX segment_order(article_id,position,id), FOREIGN KEY(article_id) REFERENCES articles(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+		`CREATE TABLE IF NOT EXISTS segments (id BIGINT PRIMARY KEY AUTO_INCREMENT, article_id BIGINT NOT NULL, position INT NOT NULL, kind VARCHAR(16) NOT NULL DEFAULT 'text', en MEDIUMTEXT NOT NULL, zh MEDIUMTEXT NOT NULL, INDEX segment_order(article_id,position,id), FOREIGN KEY(article_id) REFERENCES articles(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 	}
 	for _, stmt := range statements {
 		if _, err := s.db.ExecContext(ctx, stmt); err != nil {
 			return err
 		}
 	}
-	return nil
+	return s.migrate(ctx)
+}
+
+// migrate 为已存在的旧库补齐后加的列；没有迁移框架，这里只做幂等的加法。
+func (s *store) migrate(ctx context.Context) error {
+	var count int
+	err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='segments' AND COLUMN_NAME='kind'`).Scan(&count)
+	if err != nil || count > 0 {
+		return err
+	}
+	_, err = s.db.ExecContext(ctx, `ALTER TABLE segments ADD COLUMN kind VARCHAR(16) NOT NULL DEFAULT 'text'`)
+	return err
 }
 func bookByID(ctx context.Context, q queryer, id int64) (Book, error) {
 	var b Book
@@ -65,14 +76,14 @@ func articleByID(ctx context.Context, q queryer, id int64) (Article, error) {
 	if err != nil {
 		return a, err
 	}
-	rows, err := q.QueryContext(ctx, `SELECT id,position,en,zh FROM segments WHERE article_id=? ORDER BY position,id`, id)
+	rows, err := q.QueryContext(ctx, `SELECT id,position,kind,en,zh FROM segments WHERE article_id=? ORDER BY position,id`, id)
 	if err != nil {
 		return a, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var seg Segment
-		if err = rows.Scan(&seg.ID, &seg.Position, &seg.En, &seg.Zh); err != nil {
+		if err = rows.Scan(&seg.ID, &seg.Position, &seg.Kind, &seg.En, &seg.Zh); err != nil {
 			return a, err
 		}
 		a.Segments = append(a.Segments, seg)
@@ -251,9 +262,9 @@ func (s *store) saveArticle(ctx context.Context, bookID, id int64, in ArticleInp
 				return Article{}, validationError{fmt.Sprintf("第%d组正文标识不属于当前文章", i+1)}
 			}
 			delete(existing, *seg.ID)
-			_, err = tx.ExecContext(ctx, `UPDATE segments SET position=?,en=?,zh=? WHERE id=? AND article_id=?`, i+1, seg.En, seg.Zh, *seg.ID, id)
+			_, err = tx.ExecContext(ctx, `UPDATE segments SET position=?,kind=?,en=?,zh=? WHERE id=? AND article_id=?`, i+1, seg.Kind, seg.En, seg.Zh, *seg.ID, id)
 		} else {
-			_, err = tx.ExecContext(ctx, `INSERT INTO segments(article_id,position,en,zh) VALUES(?,?,?,?)`, id, i+1, seg.En, seg.Zh)
+			_, err = tx.ExecContext(ctx, `INSERT INTO segments(article_id,position,kind,en,zh) VALUES(?,?,?,?,?)`, id, i+1, seg.Kind, seg.En, seg.Zh)
 		}
 		if err != nil {
 			return Article{}, err

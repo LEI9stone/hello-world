@@ -41,7 +41,7 @@ func audioStatusHandler(s *store, t *tts) http.HandlerFunc {
 		writeJSON(w, 200, struct {
 			Total  int          `json:"total"`
 			Voices []voiceState `json:"voices"`
-		}{Total: 1 + len(a.Segments), Voices: voices})
+		}{Total: readableCount(a), Voices: voices})
 	}
 }
 
