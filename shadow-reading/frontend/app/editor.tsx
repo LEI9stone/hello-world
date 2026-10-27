@@ -177,13 +177,16 @@ export default function Editor() {
     if (
       !draft.unitName.trim() ||
       !draft.title.en.trim() ||
-      !draft.title.zh.trim() ||
       !draft.segments.length ||
       draft.segments.some(
-        (s) => !s.en.trim() || (s.kind !== "code" && !s.zh.trim()),
+        (s) =>
+          !s.en.trim() ||
+          (s.kind !== "code" && s.kind !== "table" && !s.zh.trim()),
       )
     ) {
-      setFailure("请填写单元名称、双语标题及每段双语正文，正文至少一段。");
+      setFailure(
+        "请填写单元名称、英语标题及每段正文（正文至少一段）；中文标题可留空。",
+      );
       return;
     }
     setBusy(true);
@@ -230,14 +233,15 @@ export default function Editor() {
   }
   function split(i: number) {
     const s = draft.segments[i];
-    const code = s.kind === "code";
+    // 代码段与表格段只有英语原文一栏，拆分时只需要英语位置。
+    const single = s.kind === "code" || s.kind === "table";
     const en = window.prompt(
       "请输入英语拆分位置（字符数，拆分点之前为第一段）",
       String(Math.floor(s.en.length / 2)),
     );
     if (en === null) return;
     let zh = "0";
-    if (!code) {
+    if (!single) {
       const value = window.prompt(
         "请输入中文拆分位置（字符数，拆分点之前为第一段）",
         String(Math.floor(s.zh.length / 2)),
@@ -251,7 +255,7 @@ export default function Editor() {
       !Number.isInteger(a) ||
       a <= 0 ||
       a >= s.en.length ||
-      (!code && (!Number.isInteger(b) || b <= 0 || b >= s.zh.length))
+      (!single && (!Number.isInteger(b) || b <= 0 || b >= s.zh.length))
     ) {
       setFailure("拆分位置必须是文本内部的整数。");
       return;
@@ -261,8 +265,8 @@ export default function Editor() {
       i,
       1,
       { ...s, en: s.en.slice(0, a), zh: s.zh.slice(0, b) },
-      // 后半段不带原标识，代码段需要保留类型。
-      { en: s.en.slice(a), zh: s.zh.slice(b), ...(code ? { kind: "code" as const } : {}) },
+      // 后半段不带原标识，单栏段需要保留类型。
+      { en: s.en.slice(a), zh: s.zh.slice(b), ...(single ? { kind: s.kind } : {}) },
     );
     change({ ...draft, segments });
   }
@@ -363,9 +367,8 @@ export default function Editor() {
                   />
                 </label>
                 <label>
-                  中文标题
+                  中文标题（可留空）
                   <textarea
-                    required
                     value={draft.title.zh}
                     onChange={(e) =>
                       change({
@@ -390,12 +393,15 @@ export default function Editor() {
               </button>
               {draft.segments.map((s, i) => {
                 const code = s.kind === "code";
+                const table = s.kind === "table";
+                const single = code || table;
                 return (
                   <section className="segment-edit" key={i}>
                     <div className="section-heading">
                       <div className="segment-title">
                         <h3>正文 {i + 1}</h3>
                         {code && <span className="kind-tag">代码</span>}
+                        {table && <span className="kind-tag">表格</span>}
                       </div>
                       <div className="actions">
                         <button
@@ -412,7 +418,7 @@ export default function Editor() {
                         >
                           下移
                         </button>
-                        {!code && (
+                        {!single && (
                           <button
                             type="button"
                             disabled={i === draft.segments.length - 1}
@@ -441,13 +447,15 @@ export default function Editor() {
                         </button>
                       </div>
                     </div>
-                    {code ? (
+                    {code || table ? (
                       <label>
-                        第 {i + 1} 段代码
+                        {code
+                          ? `第 ${i + 1} 段代码`
+                          : `第 ${i + 1} 段表格（Markdown 源码）`}
                         <textarea
                           required
                           rows={6}
-                          lang="en"
+                          lang={code ? "en" : undefined}
                           className="code-input"
                           value={s.en}
                           onChange={(e) => segment(i, { en: e.target.value })}

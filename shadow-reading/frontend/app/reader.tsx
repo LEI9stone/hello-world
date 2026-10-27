@@ -31,6 +31,57 @@ function Inline({ text }: { text: string }) {
   return <>{nodes}</>;
 }
 
+// 目录里显示的文章标题：优先英文，其次中文。
+function articleTitle(article: Article): string {
+  return article.title.en || article.title.zh || "未命名文章";
+}
+
+// 表格段保存的是 Markdown 源码：按行切单元，首行作表头，分隔行跳过，其余作数据行。
+function tableRows(source: string): string[][] {
+  return source
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const cells = line.split("|");
+      if (cells.length && cells[0].trim() === "") cells.shift();
+      if (cells.length && cells[cells.length - 1].trim() === "") cells.pop();
+      return cells.map((cell) => cell.trim());
+    });
+}
+
+function Table({ source }: { source: string }) {
+  const rows = tableRows(source);
+  if (!rows.length) return null;
+  const [head, , ...body] = rows;
+  return (
+    <div className="table-scroll">
+      <table className="md-table">
+        <thead>
+          <tr>
+            {head.map((cell, i) => (
+              <th key={i}>
+                <Inline text={cell} />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {body.map((row, i) => (
+            <tr key={i}>
+              {row.map((cell, j) => (
+                <td key={j}>
+                  <Inline text={cell} />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function BookContents({
   article,
   stop,
@@ -64,14 +115,27 @@ function BookContents({
       container.scrollTop += item.top - bounds.top - bounds.height / 2 + item.height / 2;
     }
   }, [data, article.id, open]);
-  const groups: { name: string; articles: { article: Article; number: number }[] }[] = [];
-  data?.articles.forEach((entry, index) => {
+  const groups: { name: string; articles: Article[] }[] = [];
+  data?.articles.forEach((entry) => {
     let group = groups[groups.length - 1];
     if (!group || group.name !== entry.unitName) {
       group = { name: entry.unitName, articles: [] };
       groups.push(group);
     }
-    group.articles.push({ article: entry, number: index + 1 });
+    group.articles.push(entry);
+  });
+  // 单元标题与文章标题同名时只显示一次：有其它条目就隐去重复条目，
+  // 全是同名条目时隐去单元标题，保留可点击的文章行。
+  const rendered = groups.map((group) => {
+    const name = group.name.trim();
+    const distinct = name
+      ? group.articles.filter((entry) => articleTitle(entry).trim() !== name)
+      : group.articles;
+    return {
+      group,
+      showUnit: Boolean(name) && distinct.length > 0,
+      items: distinct.length ? distinct : group.articles,
+    };
   });
   function toggle(event: SyntheticEvent<HTMLDetailsElement>) {
     const expanded = window.matchMedia("(min-width: 801px)").matches || event.currentTarget.open;
@@ -100,11 +164,17 @@ function BookContents({
               <p className="muted">本书暂无文章</p>
             ) : (
               <ul className="contents-groups">
-                {groups.map((group, index) => (
+                {rendered.map(({ group, showUnit, items }, index) => (
                   <li key={index}>
-                    {group.name && <p className="contents-unit">{group.name}</p>}
-                    <ol className={group.name ? "contents-articles grouped" : "contents-articles"}>
-                      {group.articles.map(({ article: entry, number }) => (
+                    {showUnit && <p className="contents-unit">{group.name}</p>}
+                    <ol
+                      className={
+                        showUnit
+                          ? "contents-articles grouped"
+                          : "contents-articles"
+                      }
+                    >
+                      {items.map((entry) => (
                         <li key={entry.id}>
                           <Link
                             to={`/articles/${entry.id}`}
@@ -114,8 +184,7 @@ function BookContents({
                               else stop();
                             }}
                           >
-                            <span className="contents-number">{number}.</span>
-                            <span>{entry.title.en || entry.title.zh || "未命名文章"}</span>
+                            <span>{articleTitle(entry)}</span>
                           </Link>
                         </li>
                       ))}
@@ -151,7 +220,10 @@ function Reading({ article }: { article: Article }) {
   const player = usePlayer({
     articleId: article.id,
     count: 1 + article.segments.length,
-    readable: [true, ...article.segments.map((s) => s.kind !== "code")],
+    readable: [
+      true,
+      ...article.segments.map((s) => s.kind !== "code" && s.kind !== "table"),
+    ],
     title: article.title.en,
     subtitle: article.title.zh,
     album: article.unitName,
@@ -188,7 +260,7 @@ function Reading({ article }: { article: Article }) {
           <h1 className="serif" lang="en">
             <Inline text={article.title.en} />
           </h1>
-          {chinese && (
+          {chinese && article.title.zh && (
             <p className="translation title-translation">
               <Inline text={article.title.zh} />
             </p>
@@ -203,6 +275,9 @@ function Reading({ article }: { article: Article }) {
             {s.kind === "code" ? (
               // 代码段始终显示，不受「隐藏译文」影响。
               <pre className="code" lang="en">{s.en}</pre>
+            ) : s.kind === "table" ? (
+              // 表格段始终显示，渲染成真正的表格。
+              <Table source={s.en} />
             ) : (
               <>
                 <p className="english" lang="en">

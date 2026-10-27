@@ -31,7 +31,13 @@ export default function BookPage() {
     }
   }
   async function remove(article: Article) {
-    if (!data || !window.confirm(`永久删除文章“${article.title.zh}”？`)) return;
+    if (
+      !data ||
+      !window.confirm(
+        `永久删除文章“${article.title.zh || article.title.en}”？`,
+      )
+    )
+      return;
     setBusy(true);
     setFailure("");
     try {
@@ -88,7 +94,7 @@ export default function BookPage() {
               <h2 className="serif">
                 <Link to={`/articles/${a.id}`}>{a.title.en}</Link>
               </h2>
-              <p>{a.title.zh}</p>
+              {a.title.zh && <p>{a.title.zh}</p>}
             </div>
             <div className="actions">
               <button

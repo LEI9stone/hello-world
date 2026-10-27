@@ -143,6 +143,80 @@ func looksLikeCodeBlock(lines []sourceLine) bool {
 	return true
 }
 
+// isHeadingLine 判断是否 Markdown 标题行（# 到 ###### 加空格）。
+func isHeadingLine(text string) bool { return mdHeading.MatchString(text) }
+
+// looksLikeHeadingTitle 判断整块是否由 Markdown 标题行组成、且首行是英文。
+// 用来识别「# Websockets / # WebSocket」这类没有汉字译文的纯英文标题块。
+func looksLikeHeadingTitle(lines []sourceLine) bool {
+	if len(lines) == 0 || !hasLatin(lines[0].text) || hasHan(lines[0].text) {
+		return false
+	}
+	for _, line := range lines {
+		if !isHeadingLine(line.text) {
+			return false
+		}
+	}
+	return true
+}
+
+// 表格分隔行：--- / :--- / ---: / :---:，每个单元都必须符合。
+var tableSeparator = regexp.MustCompile(`^:?-+:?$`)
+
+// tableCells 按 | 切分一行表格，去掉首尾竖线产生的空单元。
+func tableCells(text string) ([]string, bool) {
+	text = strings.TrimSpace(text)
+	if !strings.Contains(text, "|") {
+		return nil, false
+	}
+	cells := strings.Split(text, "|")
+	// 首尾竖线会切出空单元，去掉它们；中间的空单元保留给渲染端。
+	if len(cells) > 0 && strings.TrimSpace(cells[0]) == "" {
+		cells = cells[1:]
+	}
+	if len(cells) > 0 && strings.TrimSpace(cells[len(cells)-1]) == "" {
+		cells = cells[:len(cells)-1]
+	}
+	if len(cells) < 2 {
+		return nil, false
+	}
+	return cells, true
+}
+
+// isTableSeparator 判断整行是否由 --- 之类的对齐分隔单元组成。
+func isTableSeparator(text string) bool {
+	cells, ok := tableCells(text)
+	if !ok {
+		return false
+	}
+	for _, cell := range cells {
+		if !tableSeparator.MatchString(strings.TrimSpace(cell)) {
+			return false
+		}
+	}
+	return true
+}
+
+// looksLikeTable 只认整块都是 Markdown 表格行、且第二行为分隔行的块，
+// 避免把正文里偶尔出现竖线的句子误判成表格。
+func looksLikeTable(lines []sourceLine) bool {
+	if len(lines) < 2 {
+		return false
+	}
+	if _, ok := tableCells(lines[0].text); !ok {
+		return false
+	}
+	if !isTableSeparator(lines[1].text) {
+		return false
+	}
+	for _, line := range lines[2:] {
+		if _, ok := tableCells(line.text); !ok {
+			return false
+		}
+	}
+	return true
+}
+
 // rawText 用未去掉缩进的原始行拼接代码段内容。
 func rawText(lines []sourceLine) string {
 	parts := make([]string, len(lines))
@@ -208,6 +282,29 @@ func parseText(text string) ParseResult {
 	blocked := false
 	for _, b := range blocks {
 		lines := b.lines
+		// 优先级零：整块 Markdown 表格，保留源码供阅读页渲染。
+		// 围栏内的表格仍按围栏代码处理。
+		if !b.fenced && looksLikeTable(lines) {
+			result.Segments = append(result.Segments, ParsedSegment{
+				En:       rawText(lines),
+				Kind:     kindTable,
+				Position: len(result.Segments) + 1,
+			})
+			continue
+		}
+		// 优先级零：整块都是 Markdown 标题行，第二行没有汉字时也要能当标题。
+		// 3 行以上的标题块不在此列，避免静默丢弃多余标题。
+		if !b.fenced && !titled && !blocked && len(lines) <= 2 && looksLikeHeadingTitle(lines) {
+			if len(lines) == 1 {
+				// 只有英文标题、没有译文：中文标题留空。
+				result.Title = Title{cleanMarkdown(lines[0].text), ""}
+			} else {
+				// 两行都是标题：第二行写入中文标题槽位，术语无需翻译。
+				result.Title = Title{cleanMarkdown(lines[0].text), cleanMarkdown(lines[1].text)}
+			}
+			titled = true
+			continue
+		}
 		// 优先级一：英语在前、中文在后的配对（与原有规则一致）。
 		if !b.fenced && len(lines) == 2 && !hasHan(lines[0].text) && hasLatin(lines[0].text) && hasHan(lines[1].text) {
 			if !titled && !blocked {

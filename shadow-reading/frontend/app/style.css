@@ -322,6 +322,27 @@ header {
 .code-input {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
+.table-scroll {
+  margin: 0 0 8px;
+  overflow-x: auto;
+}
+.md-table {
+  border-collapse: collapse;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.md-table th,
+.md-table td {
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.md-table th {
+  background: #eef0e6;
+  font-weight: 600;
+}
 .inline-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.88em;
@@ -619,7 +640,19 @@ main:has(> .reader-page) {
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #c9d0c4 transparent;
   padding: 18px 10px 28px;
+}
+.contents-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.contents-scroll::-webkit-scrollbar-thumb {
+  background: #c9d0c4;
+  border-radius: 4px;
+}
+.contents-scroll::-webkit-scrollbar-track {
+  background: transparent;
 }
 .contents-label {
   color: #657367;
@@ -653,11 +686,6 @@ main:has(> .reader-page) {
   color: #25362e;
   overflow-wrap: anywhere;
 }
-.contents-number {
-  flex-shrink: 0;
-  color: #657367;
-  font-variant-numeric: tabular-nums;
-}
 .contents-articles a:hover {
   background: #e8ece2;
   text-decoration: none;
@@ -681,6 +709,18 @@ main:has(> .reader-page) {
     position: static;
     order: -1;
     width: 100%;
+  }
+}
+/* details 的内容包装高度为 auto，百分比高度会失效；
+   桌面端改用绝对定位直接以 details 的盒子定高，目录才能滚动。 */
+@media (min-width: 801px) {
+  .contents-details {
+    position: relative;
+  }
+  .contents-scroll {
+    position: absolute;
+    inset: 0;
+    height: auto;
   }
 }
 @media (max-width: 800px) {

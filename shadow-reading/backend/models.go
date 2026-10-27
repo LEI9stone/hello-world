@@ -42,10 +42,11 @@ type ArticleInput struct {
 	Segments []SegmentInput `json:"segments"`
 }
 
-// 正文段落类型：文本段需要双语配对，代码段只保留原样内容。
+// 正文段落类型：文本段需要双语配对，代码段与表格段只保留原样内容。
 const (
-	kindText = "text"
-	kindCode = "code"
+	kindText  = "text"
+	kindCode  = "code"
+	kindTable = "table"
 )
 
 // normalizeKind 把缺省的段落类型归一到 text，未知取值直接拒绝。
@@ -55,6 +56,8 @@ func normalizeKind(kind string) (string, bool) {
 		return kindText, true
 	case kindCode:
 		return kindCode, true
+	case kindTable:
+		return kindTable, true
 	}
 	return "", false
 }
@@ -83,10 +86,14 @@ func (a *ArticleInput) validate() error {
 		value *string
 		name  string
 		max   int
-	}{{&a.UnitName, "单元名称", 200}, {&a.Title.En, "英语标题", 500}, {&a.Title.Zh, "中文标题", 500}} {
+	}{{&a.UnitName, "单元名称", 200}, {&a.Title.En, "英语标题", 500}} {
 		if err := field(f.value, f.name, f.max); err != nil {
 			return err
 		}
+	}
+	// 标题可能是无需翻译的专业术语，中文标题允许留空。
+	if err := optionalField(&a.Title.Zh, "中文标题", 500); err != nil {
+		return err
 	}
 	if len(a.Segments) < 1 || len(a.Segments) > 500 {
 		return fmt.Errorf("正文必须包含1至500组")
@@ -109,8 +116,8 @@ func (a *ArticleInput) validate() error {
 			return err
 		}
 		name := fmt.Sprintf("第%d组中文正文", i+1)
-		if kind == kindCode {
-			// 代码段不朗读，中文说明可有可无。
+		if kind == kindCode || kind == kindTable {
+			// 代码段与表格段不朗读，中文说明可有可无。
 			if err := optionalField(&s.Zh, name, 20000); err != nil {
 				return err
 			}

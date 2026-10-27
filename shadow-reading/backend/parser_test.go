@@ -209,7 +209,7 @@ func TestArticleValidation(t *testing.T) {
 	tests := []struct {
 		name   string
 		mutate func(*ArticleInput)
-	}{{"空单元", func(a *ArticleInput) { a.UnitName = " " }}, {"缺失标题", func(a *ArticleInput) { a.Title.Zh = "" }}, {"无正文", func(a *ArticleInput) { a.Segments = nil }}, {"空译文", func(a *ArticleInput) { a.Segments[0].Zh = "\t" }}, {"超长", func(a *ArticleInput) { a.Title.En = strings.Repeat("a", 501) }}, {"负标识", func(a *ArticleInput) { id := int64(-1); a.Segments[0].ID = &id }}, {"类型无效", func(a *ArticleInput) { a.Segments[0].Kind = "codeblock" }}, {"重复标识", func(a *ArticleInput) {
+	}{{"空单元", func(a *ArticleInput) { a.UnitName = " " }}, {"缺失标题", func(a *ArticleInput) { a.Title.En = "" }}, {"无正文", func(a *ArticleInput) { a.Segments = nil }}, {"空译文", func(a *ArticleInput) { a.Segments[0].Zh = "\t" }}, {"超长", func(a *ArticleInput) { a.Title.En = strings.Repeat("a", 501) }}, {"负标识", func(a *ArticleInput) { id := int64(-1); a.Segments[0].ID = &id }}, {"类型无效", func(a *ArticleInput) { a.Segments[0].Kind = "codeblock" }}, {"重复标识", func(a *ArticleInput) {
 		id := int64(1)
 		a.Segments[0].ID = &id
 		a.Segments = append(a.Segments, a.Segments[0])
@@ -237,5 +237,112 @@ func TestArticleValidation(t *testing.T) {
 	plain := valid()
 	if err := plain.validate(); err != nil || plain.Segments[0].Kind != "text" {
 		t.Fatalf("缺省类型: %v %+v", err, plain.Segments[0])
+	}
+	// 表格段与代码段一样，允许没有中文译文。
+	table := valid()
+	table.Segments[0] = SegmentInput{Kind: "table", En: "| a | b |\n|---|---|"}
+	if err := table.validate(); err != nil || table.Segments[0].Kind != "table" || table.Segments[0].Zh != "" {
+		t.Fatalf("表格段输入: %v %+v", err, table.Segments[0])
+	}
+	// 标题可能是无需翻译的专业术语，中文标题允许留空。
+	term := valid()
+	term.Title = Title{"Websockets", ""}
+	if err := term.validate(); err != nil || term.Title.Zh != "" {
+		t.Fatalf("无中文标题: %v %+v", err, term.Title)
+	}
+}
+
+func TestParserHeadingTitle(t *testing.T) {
+	// 两行纯英文 Markdown 标题：第二行写入中文标题槽位。
+	r := parseText("# Websockets\n# WebSocket\n\n" +
+		"This example will show how to work with websockets in Go.\n" +
+		"本示例将演示如何在 Go 中使用 WebSocket。\n\n" +
+		"We will build a simple server which echoes back everything we send to it.\n" +
+		"我们将搭建一个简单服务端，把收到的所有消息原样回显。")
+	if len(r.Issues) != 0 {
+		t.Fatalf("英文标题不应产生待处理内容: %+v", r.Issues)
+	}
+	if r.Title.En != "Websockets" || r.Title.Zh != "WebSocket" {
+		t.Fatalf("标题错误: %+v", r.Title)
+	}
+	if len(r.Segments) != 2 || r.Segments[0].Kind != "text" {
+		t.Fatalf("正文段错误: %+v", r.Segments)
+	}
+
+	// 只有一行英文标题时，中文标题留空。
+	single := parseText("# Websockets\n\nThis example shows websockets.\n本示例演示 WebSocket。")
+	if len(single.Issues) != 0 || single.Title.En != "Websockets" || single.Title.Zh != "" {
+		t.Fatalf("单行英文标题错误: %+v %+v", single.Title, single.Issues)
+	}
+	if len(single.Segments) != 1 {
+		t.Fatalf("单行英文标题正文错误: %+v", single.Segments)
+	}
+
+	// 带反引号的英文标题 + 中文标题，仍按中英配对处理。
+	quoted := parseText("## Installing the `go-sql-driver/mysql` package\n## 安装 `go-sql-driver/mysql` 包")
+	if quoted.Title.En != "Installing the go-sql-driver/mysql package" || quoted.Title.Zh != "安装 go-sql-driver/mysql 包" {
+		t.Fatalf("反引号标题错误: %+v", quoted.Title)
+	}
+
+	// 三行标题块不自动当标题，仍留给人工核对。
+	if r := parseText("# A\n# B\n# C"); len(r.Issues) != 3 || r.Title.En != "" {
+		t.Fatalf("三行标题块错误: %+v %+v", r.Title, r.Issues)
+	}
+	// 不含 # 的两行英文块不能被误配成标题。
+	if r := parseText("Websockets\nWebSocket"); len(r.Issues) != 2 || r.Title.En != "" {
+		t.Fatalf("无井号英文块错误: %+v %+v", r.Title, r.Issues)
+	}
+}
+
+func TestParserTableSegment(t *testing.T) {
+	text := "In our first example we want to create a table like this:\n" +
+		"在第一个示例中，我们要创建如下这张表：\n\n" +
+		"| id | username | password | created_at |\n" +
+		"|---|---|---|---|\n" +
+		"| 1 | johndoe | secret | 2019‑08‑10 12:30:00 |\n\n" +
+		"Translated to SQL, the command for creating the table will look like this:\n" +
+		"转换成 SQL，建表语句如下：\n\n" +
+		"```\n" +
+		"CREATE TABLE users (\n" +
+		"    id INT AUTO_INCREMENT,\n" +
+		"    username TEXT NOT NULL,\n" +
+		"    password TEXT NOT NULL,\n" +
+		"    created_at DATETIME,\n" +
+		"    PRIMARY KEY (id)\n" +
+		");\n" +
+		"```"
+	r := parseText(text)
+	if len(r.Issues) != 0 {
+		t.Fatalf("表格不应产生待处理内容: %+v", r.Issues)
+	}
+	if r.Title.En != "In our first example we want to create a table like this:" || r.Title.Zh != "在第一个示例中，我们要创建如下这张表：" {
+		t.Fatalf("标题错误: %+v", r.Title)
+	}
+	if len(r.Segments) != 3 {
+		t.Fatalf("正文段数错误: %d %+v", len(r.Segments), r.Segments)
+	}
+	want := []struct {
+		kind, en string
+	}{
+		{"table", "| id | username | password | created_at |\n|---|---|---|---|\n| 1 | johndoe | secret | 2019‑08‑10 12:30:00 |"},
+		{"text", "Translated to SQL, the command for creating the table will look like this:"},
+		{"code", "CREATE TABLE users (\n    id INT AUTO_INCREMENT,\n    username TEXT NOT NULL,\n    password TEXT NOT NULL,\n    created_at DATETIME,\n    PRIMARY KEY (id)\n);"},
+	}
+	for i, w := range want {
+		if r.Segments[i].Kind != w.kind || r.Segments[i].En != w.en || r.Segments[i].Position != i+1 {
+			t.Fatalf("第%d段错误: %+v", i+1, r.Segments[i])
+		}
+	}
+	// 单元格含中文仍是表格，不能被判成双语段。
+	if r := parseText("Title\n标题\n\n| 名称 | 说明 |\n|---|---|\n| 用户 | 账号 |"); len(r.Segments) != 1 || r.Segments[0].Kind != "table" {
+		t.Fatalf("中文表格错误: %+v", r)
+	}
+	// 对齐写法与空数据行同样成立。
+	if r := parseText("Title\n标题\n\n| a | b |\n|:---|---:|---|"); len(r.Segments) != 1 || r.Segments[0].Kind != "table" {
+		t.Fatalf("对齐表格错误: %+v", r)
+	}
+	// 正文里偶尔出现竖线的句子不能被当成表格。
+	if r := parseText("Title\n标题\n\nUse a | b or c"); len(r.Segments) != 0 || len(r.Issues) != 1 {
+		t.Fatalf("普通句子被误判: %+v", r)
 	}
 }

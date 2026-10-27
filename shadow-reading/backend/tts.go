@@ -119,14 +119,14 @@ func cached(path string) bool {
 }
 
 // segmentText 按阅读页顺序取该段落的英语原文：0 为英语标题，1..N 为第 N 组正文。
-// 代码段不朗读，返回 false，音频接口对它返回 404，由前端跳过。
+// 代码段与表格段不朗读，返回 false，音频接口对它返回 404，由前端跳过。
 func segmentText(a Article, index int) (string, bool) {
 	if index == 0 {
 		return a.Title.En, true
 	}
 	if index >= 1 && index <= len(a.Segments) {
 		seg := a.Segments[index-1]
-		if seg.Kind == kindCode {
+		if seg.Kind == kindCode || seg.Kind == kindTable {
 			return "", false
 		}
 		return seg.En, true
@@ -134,11 +134,11 @@ func segmentText(a Article, index int) (string, bool) {
 	return "", false
 }
 
-// readableCount 为可朗读的段落总数：英语标题加非代码正文段。
+// readableCount 为可朗读的段落总数：英语标题加非代码、非表格的正文段。
 func readableCount(a Article) int {
 	total := 1
 	for _, seg := range a.Segments {
-		if seg.Kind != kindCode {
+		if seg.Kind != kindCode && seg.Kind != kindTable {
 			total++
 		}
 	}
@@ -286,7 +286,7 @@ func (t *tts) warm(ctx context.Context, a Article) {
 		}
 		text, ok := segmentText(a, index)
 		if !ok {
-			continue // 代码段没有音频，跳过
+			continue // 代码段与表格段没有音频，跳过
 		}
 		dest := t.cachePath(a.ID, defaultVoice, index, text)
 		if err := t.ensure(ctx, text, defaultVoice, dest); err != nil {
@@ -309,7 +309,7 @@ func (t *tts) readyCount(a Article, voice string) int {
 	for index := 0; index < total; index++ {
 		text, ok := segmentText(a, index)
 		if !ok {
-			continue // 代码段没有音频，不计入就绪数
+			continue // 代码段与表格段没有音频，不计入就绪数
 		}
 		if cached(t.cachePath(a.ID, voice, index, text)) {
 			ready++
