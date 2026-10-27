@@ -5,10 +5,121 @@ import {
   type ReactNode,
   type SyntheticEvent,
 } from "react";
-import { Link, useParams } from "react-router";
-import type { Article, Book } from "./api";
-import { LoadState, useResource } from "./shared";
+import { Link, useNavigate, useParams } from "react-router";
+import { api, type Article, type Book } from "./api";
+import { ErrorNote, LoadState, message, useResource } from "./shared";
 import { usePlayer } from "./player";
+
+type IconName =
+  | "play"
+  | "repeat"
+  | "eye"
+  | "eye-off"
+  | "pause"
+  | "stop"
+  | "retry"
+  | "chevron"
+  | "sliders"
+  | "more"
+  | "file-plus"
+  | "pencil"
+  | "trash";
+
+function Icon({ name }: { name: IconName }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {name === "play" && <path d="M6 3l14 9-14 9V3z" />}
+      {name === "repeat" && (
+        <>
+          <path d="m17 2 4 4-4 4" />
+          <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+          <path d="m7 22-4-4 4-4" />
+          <path d="M21 13v1a4 4 0 0 1-4 4H3" />
+        </>
+      )}
+      {name === "eye" && (
+        <>
+          <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+          <circle cx="12" cy="12" r="3" />
+        </>
+      )}
+      {name === "eye-off" && (
+        <>
+          <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+          <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+          <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+          <path d="m2 2 20 20" />
+        </>
+      )}
+      {name === "pause" && (
+        <>
+          <rect x="14" y="4" width="4" height="16" rx="1" />
+          <rect x="6" y="4" width="4" height="16" rx="1" />
+        </>
+      )}
+      {name === "stop" && <rect x="5" y="5" width="14" height="14" rx="1.5" />}
+      {name === "retry" && (
+        <>
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+        </>
+      )}
+      {name === "chevron" && <path d="m6 9 6 6 6-6" />}
+      {name === "sliders" && (
+        <>
+          <line x1="21" x2="14" y1="4" y2="4" />
+          <line x1="10" x2="3" y1="4" y2="4" />
+          <line x1="21" x2="12" y1="12" y2="12" />
+          <line x1="8" x2="3" y1="12" y2="12" />
+          <line x1="21" x2="16" y1="20" y2="20" />
+          <line x1="12" x2="3" y1="20" y2="20" />
+          <line x1="14" x2="14" y1="2" y2="6" />
+          <line x1="8" x2="8" y1="10" y2="14" />
+          <line x1="16" x2="16" y1="18" y2="22" />
+        </>
+      )}
+      {name === "more" && (
+        <>
+          <circle cx="6" cy="12" r="1.4" fill="currentColor" />
+          <circle cx="12" cy="12" r="1.4" fill="currentColor" />
+          <circle cx="18" cy="12" r="1.4" fill="currentColor" />
+        </>
+      )}
+      {name === "file-plus" && (
+        <>
+          <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+          <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+          <path d="M9 15h6" />
+          <path d="M12 18v-6" />
+        </>
+      )}
+      {name === "pencil" && (
+        <>
+          <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+          <path d="m15 5 4 4" />
+        </>
+      )}
+      {name === "trash" && (
+        <>
+          <path d="M3 6h18" />
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+          <line x1="10" x2="10" y1="11" y2="17" />
+          <line x1="14" x2="14" y1="11" y2="17" />
+        </>
+      )}
+    </svg>
+  );
+}
 
 // 句中出现的代码术语渲染成行内等宽：只认带点限定名、含 / 的路径、含下划线的标识符。
 const TERM =
@@ -214,9 +325,16 @@ export default function Reader() {
     );
   return <Reading key={data.id} article={data} />;
 }
+// 只有支持悬停的设备让鼠标移入展开音频设置；触屏改用点击切换。
+const hoverable = () => window.matchMedia("(hover: hover)").matches;
+
 function Reading({ article }: { article: Article }) {
+  const navigate = useNavigate();
   const [chinese, setChinese] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState("");
   const player = usePlayer({
     articleId: article.id,
     count: 1 + article.segments.length,
@@ -239,20 +357,26 @@ function Reading({ article }: { article: Article }) {
       inline: "nearest",
     });
   }, [player.current, player.status, chinese]);
+  async function removeArticle() {
+    const label = article.title.zh || article.title.en;
+    if (!window.confirm(`永久删除文章“${label}”？`)) return;
+    player.stop();
+    setBusy(true);
+    setActionError("");
+    try {
+      await api(`/articles/${article.id}`, "DELETE");
+      navigate("/");
+    } catch (e) {
+      setActionError(message(e));
+      setBusy(false);
+    }
+  }
   const unavailable = !player.voices.length;
   return (
     <div className="reader-page">
       <BookContents article={article} stop={player.stop} />
       <div className="reading-layout">
       <div className="reading" ref={reading}>
-        <div className="reading-nav">
-          <Link
-            to={`/articles/${article.id}/edit`}
-            onClick={() => player.stop()}
-          >
-            编辑文章
-          </Link>
-        </div>
         <header
           className={`reading-block ${player.current === 0 ? "active" : ""}`}
           aria-current={player.current === 0 ? "true" : undefined}
@@ -294,114 +418,220 @@ function Reading({ article }: { article: Article }) {
         ))}
         <p className="reading-end">本篇完 · 让理解先于速度</p>
       </div>
-      <aside className="player" aria-label="全文朗读控制">
-        <button
-          type="button"
-          className="settings-toggle"
-          aria-expanded={settingsOpen}
-          aria-controls="audio-settings"
-          onClick={() => setSettingsOpen(!settingsOpen)}
-        >
-          <span>音频设置</span>
-          <span aria-hidden="true">{settingsOpen ? "收起" : "展开"}</span>
-        </button>
+      <aside className="player" aria-label="朗读与文章操作">
         <div
-          id="audio-settings"
-          className="audio-settings"
-          hidden={!settingsOpen}
+          className="audio-control"
+          onMouseEnter={() => {
+            if (hoverable()) setSettingsOpen(true);
+          }}
+          onMouseLeave={(e) => {
+            if (!hoverable()) return;
+            if (!e.currentTarget.contains(document.activeElement))
+              setSettingsOpen(false);
+          }}
+          onFocus={() => {
+            if (hoverable()) setSettingsOpen(true);
+          }}
+          onBlur={(e) => {
+            if (!hoverable()) return;
+            if (!e.currentTarget.contains(e.relatedTarget)) setSettingsOpen(false);
+          }}
         >
-          <label>
-            英语音色
-            <select
-              disabled={unavailable}
-              value={player.voice}
-              onChange={(e) => player.configure(e.target.value, player.rate)}
-            >
-              {!player.voices.length && <option value="">暂无可用音色</option>}
-              {player.voices.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.label}
-                  {player.total > 0 &&
-                    (v.ready >= player.total
-                      ? "（已生成）"
-                      : `（${v.ready}/${player.total}）`)}
-                </option>
-              ))}
-            </select>
-          </label>
-          {player.voicesLoading ? (
-            <p role="status">正在加载音色…</p>
-          ) : player.total > 0 ? (
-            <p className="player-hint" role="status">
-              {player.readySegments >= player.total
-                ? `该音色已生成全部 ${player.total} 段，可直接播放。`
-                : `该音色已生成 ${player.readySegments} / ${player.total} 段，未生成的段落播放时自动补齐。`}
-            </p>
-          ) : null}
-          <label>
-            语速 · {player.rate.toFixed(2)} 倍
-            <input
-              type="range"
-              min="0.5"
-              max="1.5"
-              step="0.05"
-              value={player.rate}
-              onChange={(e) =>
-                player.configure(player.voice, Number(e.target.value))
-              }
-            />
-          </label>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="音频设置"
+            title="音频设置"
+            aria-expanded={settingsOpen}
+            aria-controls="audio-settings"
+            onClick={() => {
+              if (!hoverable()) setSettingsOpen(!settingsOpen);
+            }}
+          >
+            <Icon name="sliders" />
+          </button>
+          <div
+            id="audio-settings"
+            className="audio-settings"
+            hidden={!settingsOpen}
+          >
+            <label>
+              英语音色
+              <select
+                disabled={unavailable}
+                value={player.voice}
+                onChange={(e) => player.configure(e.target.value, player.rate)}
+              >
+                {!player.voices.length && (
+                  <option value="">暂无可用音色</option>
+                )}
+                {player.voices.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.label}
+                    {player.total > 0 &&
+                      (v.ready >= player.total
+                        ? "（已生成）"
+                        : `（${v.ready}/${player.total}）`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {player.voicesLoading ? (
+              <p role="status">正在加载音色…</p>
+            ) : player.total > 0 ? (
+              <p className="player-hint" role="status">
+                {player.readySegments >= player.total
+                  ? `该音色已生成全部 ${player.total} 段，可直接播放。`
+                  : `该音色已生成 ${player.readySegments} / ${player.total} 段，未生成的段落播放时自动补齐。`}
+              </p>
+            ) : null}
+            <label>
+              语速 · {player.rate.toFixed(2)} 倍
+              <input
+                type="range"
+                min="0.5"
+                max="1.5"
+                step="0.05"
+                value={player.rate}
+                onChange={(e) =>
+                  player.configure(player.voice, Number(e.target.value))
+                }
+              />
+            </label>
+          </div>
         </div>
-        {player.voicesError && (
-          <p className="notice" role="alert">
-            {player.voicesError}
-          </p>
-        )}
-        {player.error && (
-          <p className="notice" role="alert">
-            {player.error}
-          </p>
+        {(player.voicesError || player.error) && (
+          <div className="player-notices">
+            {player.voicesError && (
+              <p className="notice" role="alert">
+                {player.voicesError}
+              </p>
+            )}
+            {player.error && (
+              <p className="notice" role="alert">
+                {player.error}
+              </p>
+            )}
+          </div>
         )}
         <div className="play-buttons">
           <button
-            className={!player.loop ? "primary" : ""}
+            className={`icon-button${!player.loop ? " primary" : ""}`}
             disabled={unavailable}
+            aria-label="单次播放"
+            title="单次播放"
             aria-pressed={!player.loop}
             onClick={player.playOnce}
           >
-            单次播放
+            <Icon name="play" />
           </button>
           <button
-            className={player.loop ? "primary" : ""}
+            className={`icon-button${player.loop ? " primary" : ""}`}
             disabled={unavailable}
+            aria-label="循环播放"
+            title="循环播放"
             aria-pressed={player.loop}
             onClick={player.playLoop}
           >
-            循环播放
+            <Icon name="repeat" />
           </button>
-          <button aria-pressed={!chinese} onClick={() => setChinese(!chinese)}>
-            {chinese ? "隐藏译文" : "显示译文"}
+          <button
+            className="icon-button"
+            aria-label={chinese ? "隐藏译文" : "显示译文"}
+            title={chinese ? "隐藏译文" : "显示译文"}
+            aria-pressed={chinese}
+            onClick={() => setChinese(!chinese)}
+          >
+            <Icon name={chinese ? "eye" : "eye-off"} />
           </button>
           {player.status === "playing" ? (
-            <button className="primary" onClick={player.pause}>
-              暂停
+            <button
+              className="icon-button primary"
+              aria-label="暂停"
+              title="暂停"
+              onClick={player.pause}
+            >
+              <Icon name="pause" />
             </button>
           ) : player.status === "paused" ? (
             <button
-              className="primary"
+              className="icon-button primary"
               disabled={unavailable}
+              aria-label="继续"
+              title="继续"
               onClick={player.resume}
             >
-              继续
+              <Icon name="play" />
             </button>
           ) : player.status === "error" ? (
-            <button disabled={unavailable} onClick={player.retry}>
-              从当前段重试
+            <button
+              className="icon-button"
+              disabled={unavailable}
+              aria-label="从当前段重试"
+              title="从当前段重试"
+              onClick={player.retry}
+            >
+              <Icon name="retry" />
             </button>
           ) : null}
-          <button disabled={player.status === "idle"} onClick={player.stop}>
-            停止
+          <button
+            className="icon-button"
+            disabled={player.status === "idle"}
+            aria-label="停止"
+            title="停止"
+            onClick={player.stop}
+          >
+            <Icon name="stop" />
           </button>
+        </div>
+        <div className="article-actions">
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="文章操作"
+            title="文章操作"
+            aria-expanded={actionsOpen}
+            aria-controls="article-actions"
+            onClick={() => setActionsOpen(!actionsOpen)}
+          >
+            <Icon name="more" />
+          </button>
+          <div
+            id="article-actions"
+            className="article-actions-panel"
+            hidden={!actionsOpen}
+          >
+            <div className="actions">
+              <Link
+                className="button icon-button"
+                to={`/books/${article.bookId}/new`}
+                aria-label="新增文章"
+                title="新增文章"
+                onClick={() => player.stop()}
+              >
+                <Icon name="file-plus" />
+              </Link>
+              <Link
+                className="button icon-button"
+                to={`/articles/${article.id}/edit`}
+                aria-label="编辑文章"
+                title="编辑文章"
+                onClick={() => player.stop()}
+              >
+                <Icon name="pencil" />
+              </Link>
+              <button
+                className="icon-button danger"
+                disabled={busy}
+                aria-label="删除文章"
+                title="删除文章"
+                onClick={removeArticle}
+              >
+                <Icon name="trash" />
+              </button>
+            </div>
+            <ErrorNote error={actionError} />
+          </div>
         </div>
       </aside>
       </div>

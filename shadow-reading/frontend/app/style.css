@@ -215,8 +215,7 @@ header {
 .empty h2 {
   color: #25362e;
 }
-.book-row,
-.article-row {
+.book-row {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
   gap: 22px;
@@ -227,16 +226,8 @@ header {
 .book-row h2 {
   font-size: 26px;
 }
-.book-row p,
-.article-row p {
+.book-row p {
   margin-bottom: 0;
-}
-.article-row h2 {
-  font-size: 26px;
-  line-height: 1.4;
-}
-.article-row .eyebrow {
-  margin-bottom: 8px;
 }
 .number {
   color: #6b7e6c;
@@ -249,11 +240,25 @@ header {
   flex-wrap: wrap;
   align-items: center;
 }
-.actions button {
+.actions button,
+.actions .button {
   padding: 6px 10px;
   font-size: 13px;
 }
-.page-heading,
+.icon-button,
+.button.icon-button,
+.actions .icon-button {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+}
+.icon-button svg {
+  width: 18px;
+  height: 18px;
+}
 .section-heading {
   display: flex;
   justify-content: space-between;
@@ -382,14 +387,8 @@ fieldset {
 }
 .reading-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 270px;
-  gap: 45px;
-}
-.reading-nav {
-  display: flex;
-  justify-content: flex-end;
-  font-size: 13px;
-  margin-bottom: 24px;
+  grid-template-columns: minmax(0, 1fr) 88px;
+  gap: 32px;
 }
 .reading h1 {
   font-size: clamp(30px, 3.2vw, 42px);
@@ -426,11 +425,16 @@ fieldset {
 .player {
   position: sticky;
   top: 30px;
+  z-index: 2;
   align-self: start;
   border: 1px solid var(--line);
-  padding: 25px 22px;
+  padding: 16px 12px;
   background: #f0f1e8;
   border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
 }
 .player select {
   font-size: 13px;
@@ -438,45 +442,99 @@ fieldset {
   max-width: 100%;
 }
 .player .notice {
-  margin: 14px 0;
+  margin: 0;
+}
+.player-notices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .play-buttons {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 .player-hint {
   font-size: 12px;
   color: #657367;
-  margin: 20px 0 0;
-}
-.settings-toggle {
-  display: flex;
-  width: 100%;
-  justify-content: space-between;
-  align-items: baseline;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  padding: 0;
-  color: #25362e;
-  font-size: 14px;
-  font-weight: 600;
-}
-.settings-toggle span:last-child {
-  font-size: 12px;
-  font-weight: 400;
-  color: #657367;
-}
-.settings-toggle:hover span:last-child {
-  color: var(--green);
+  margin: 12px 0 0;
 }
 .audio-settings[hidden] {
   display: none;
 }
 .audio-settings {
-  margin-top: 20px;
+  margin-top: 14px;
+}
+.article-actions {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.article-actions-panel[hidden] {
+  display: none;
+}
+.article-actions-panel {
+  margin-top: 14px;
+}
+.article-actions-panel .actions {
+  flex-direction: row;
+  align-items: center;
+}
+.article-actions-panel .notice {
+  margin: 12px 0 0;
+}
+.audio-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.audio-control .icon-button[aria-expanded="true"],
+.article-actions .icon-button[aria-expanded="true"] {
+  background: #e0e8da;
+  border-color: var(--green);
+  color: var(--green);
+}
+@media (min-width: 801px) {
+  .audio-control,
+  .article-actions {
+    position: relative;
+  }
+  .audio-settings,
+  .article-actions-panel {
+    position: absolute;
+    right: 100%;
+    top: 0;
+    width: 240px;
+    margin: 0;
+    padding: 18px;
+    background: #f0f1e8;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: 0 14px 34px rgba(37, 54, 46, 0.16);
+    z-index: 6;
+  }
+  .article-actions-panel {
+    width: max-content;
+  }
+  .article-actions-panel .notice {
+    width: 200px;
+  }
+  .audio-settings label {
+    margin-bottom: 14px;
+  }
+  .audio-settings label:last-child {
+    margin-bottom: 0;
+  }
+  .player-notices {
+    position: absolute;
+    right: calc(100% + 12px);
+    top: 10px;
+    width: 240px;
+    z-index: 5;
+  }
 }
 .reading-end {
   font-size: 12px;
@@ -498,14 +556,8 @@ fieldset {
 }
 @media (max-width: 1100px) {
   .reading-layout {
-    grid-template-columns: minmax(0, 1fr) 240px;
-    gap: 28px;
-  }
-  .article-row {
-    grid-template-columns: 30px 1fr;
-  }
-  .article-row .actions {
-    grid-column: 2;
+    grid-template-columns: minmax(0, 1fr) 88px;
+    gap: 24px;
   }
 }
 @media (max-width: 800px) {
@@ -548,12 +600,31 @@ fieldset {
     order: -1;
     width: 100%;
     display: block;
+    padding: 20px 22px;
+  }
+  .player .audio-control,
+  .player .article-actions,
+  .player .play-buttons {
+    align-items: flex-start;
+  }
+  .player .player-notices,
+  .player .play-buttons {
+    margin-top: 14px;
+  }
+  .player .article-actions {
+    margin-top: 18px;
   }
   .player label {
     margin-bottom: 14px;
   }
   .player-hint {
     margin-top: 12px;
+  }
+  .icon-button,
+  .button.icon-button,
+  .actions .icon-button {
+    width: 40px;
+    height: 40px;
   }
   .pair {
     grid-template-columns: 1fr;
@@ -572,12 +643,6 @@ fieldset {
   .reading-block {
     margin-inline: -12px;
     padding-inline: 12px;
-  }
-  .reading-nav {
-    margin-top: 12px;
-  }
-  .page-heading {
-    flex-wrap: wrap;
   }
   .inline-form {
     flex-wrap: wrap;
@@ -699,16 +764,6 @@ main:has(> .reader-page) {
 @media (min-width: 801px) and (max-width: 1200px) {
   .reader-page {
     grid-template-columns: 240px minmax(0, 1fr);
-  }
-  .reader-page > .reading-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-  }
-  .reader-page .player {
-    position: static;
-    order: -1;
-    width: 100%;
   }
 }
 /* details 的内容包装高度为 auto，百分比高度会失效；
