@@ -53,12 +53,15 @@ func TestInvalidRequests(t *testing.T) {
 	}
 }
 func TestParseHTTP(t *testing.T) {
-	payload, _ := json.Marshal(map[string]string{"text": planningSample})
+	payload, _ := json.Marshal(map[string]string{"text": `[{"en":"# Hello","zh":"你好"},{"en":"Hello **world**","zh":"你好，世界"}]`})
 	w := httptest.NewRecorder()
 	handler(&store{}, newTestTTS(t, t.TempDir())).ServeHTTP(w, httptest.NewRequest("POST", "/api/parse", strings.NewReader(string(payload))))
 	var r ParseResult
-	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &r) != nil || len(r.Segments) != 10 {
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &r) != nil || len(r.Segments) != 1 || r.Title.En != "Hello" {
 		t.Fatalf("解析契约: %d %s", w.Code, w.Body.String())
+	}
+	if r.Segments[0].En != "Hello **world**" || r.Segments[0].Kind != kindText {
+		t.Fatalf("正文契约: %+v", r.Segments)
 	}
 }
 func TestUnavailableDatabase(t *testing.T) {

@@ -19,12 +19,13 @@ export type ArticleInput = {
 export type Article = ArticleInput & {
   id: number;
   bookId: number;
+  parentId: number | null;
   position: number;
+  childCount: number;
 };
 export type ParseResult = {
   title: { en: string; zh: string };
   segments: Segment[];
-  issues: { line: number; text: string; reason: string }[];
 };
 export async function api<T>(
   path: string,

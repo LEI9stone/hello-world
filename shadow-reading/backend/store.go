@@ -22,7 +22,7 @@ type queryer interface {
 func (s *store) init(ctx context.Context) error {
 	statements := []string{
 		`CREATE TABLE IF NOT EXISTS books (id BIGINT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(200) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
-		`CREATE TABLE IF NOT EXISTS articles (id BIGINT PRIMARY KEY AUTO_INCREMENT, book_id BIGINT NOT NULL, unit_name VARCHAR(200) NOT NULL, position INT NOT NULL, title_en VARCHAR(500) NOT NULL, title_zh VARCHAR(500) NOT NULL, INDEX article_order(book_id,position,id), FOREIGN KEY(book_id) REFERENCES books(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+		`CREATE TABLE IF NOT EXISTS articles (id BIGINT PRIMARY KEY AUTO_INCREMENT, book_id BIGINT NOT NULL, parent_id BIGINT NULL, unit_name VARCHAR(200) NOT NULL, position INT NOT NULL, title_en VARCHAR(500) NOT NULL, title_zh VARCHAR(500) NOT NULL, INDEX article_order(book_id,position,id), INDEX article_parent(parent_id), FOREIGN KEY(book_id) REFERENCES books(id) ON DELETE CASCADE, CONSTRAINT fk_articles_parent FOREIGN KEY(parent_id) REFERENCES articles(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 		`CREATE TABLE IF NOT EXISTS segments (id BIGINT PRIMARY KEY AUTO_INCREMENT, article_id BIGINT NOT NULL, position INT NOT NULL, kind VARCHAR(16) NOT NULL DEFAULT 'text', en MEDIUMTEXT NOT NULL, zh MEDIUMTEXT NOT NULL, INDEX segment_order(article_id,position,id), FOREIGN KEY(article_id) REFERENCES articles(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 	}
 	for _, stmt := range statements {
@@ -36,18 +36,36 @@ func (s *store) init(ctx context.Context) error {
 // migrate 为已存在的旧库补齐后加的列；没有迁移框架，这里只做幂等的加法。
 func (s *store) migrate(ctx context.Context) error {
 	var count int
-	err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='segments' AND COLUMN_NAME='kind'`).Scan(&count)
-	if err != nil || count > 0 {
+	if err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='segments' AND COLUMN_NAME='kind'`).Scan(&count); err != nil {
 		return err
 	}
-	_, err = s.db.ExecContext(ctx, `ALTER TABLE segments ADD COLUMN kind VARCHAR(16) NOT NULL DEFAULT 'text'`)
-	return err
+	if count == 0 {
+		if _, err := s.db.ExecContext(ctx, `ALTER TABLE segments ADD COLUMN kind VARCHAR(16) NOT NULL DEFAULT 'text'`); err != nil {
+			return err
+		}
+	}
+	if err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='articles' AND COLUMN_NAME='parent_id'`).Scan(&count); err != nil {
+		return err
+	}
+	if count == 0 {
+		if _, err := s.db.ExecContext(ctx, `ALTER TABLE articles ADD COLUMN parent_id BIGINT NULL AFTER book_id`); err != nil {
+			return err
+		}
+	}
+	if err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='articles' AND CONSTRAINT_NAME='fk_articles_parent'`).Scan(&count); err != nil {
+		return err
+	}
+	if count == 0 {
+		_, err := s.db.ExecContext(ctx, `ALTER TABLE articles ADD CONSTRAINT fk_articles_parent FOREIGN KEY(parent_id) REFERENCES articles(id) ON DELETE CASCADE`)
+		return err
+	}
+	return nil
 }
 func bookByID(ctx context.Context, q queryer, id int64) (Book, error) {
 	var b Book
 	var first sql.NullInt64
 	err := q.QueryRowContext(ctx, `SELECT b.id,b.name,(SELECT COUNT(*) FROM articles a WHERE a.book_id=b.id),
-		(SELECT a2.id FROM articles a2 WHERE a2.book_id=b.id ORDER BY a2.position,a2.id LIMIT 1)
+		(SELECT a2.id FROM articles a2 WHERE a2.book_id=b.id AND a2.parent_id IS NULL ORDER BY a2.position,a2.id LIMIT 1)
 		FROM books b WHERE b.id=?`, id).Scan(&b.ID, &b.Name, &b.ArticleCount, &first)
 	if errors.Is(err, sql.ErrNoRows) {
 		err = errNotFound
@@ -59,7 +77,7 @@ func bookByID(ctx context.Context, q queryer, id int64) (Book, error) {
 }
 func (s *store) books(ctx context.Context) ([]Book, error) {
 	rows, err := s.db.QueryContext(ctx, `SELECT b.id,b.name,COUNT(a.id),
-		(SELECT a2.id FROM articles a2 WHERE a2.book_id=b.id ORDER BY a2.position,a2.id LIMIT 1)
+		(SELECT a2.id FROM articles a2 WHERE a2.book_id=b.id AND a2.parent_id IS NULL ORDER BY a2.position,a2.id LIMIT 1)
 		FROM books b LEFT JOIN articles a ON a.book_id=b.id GROUP BY b.id,b.name ORDER BY b.id`)
 	if err != nil {
 		return nil, err
@@ -81,12 +99,18 @@ func (s *store) books(ctx context.Context) ([]Book, error) {
 }
 func articleByID(ctx context.Context, q queryer, id int64) (Article, error) {
 	a := Article{Segments: []Segment{}}
-	err := q.QueryRowContext(ctx, `SELECT id,book_id,unit_name,position,title_en,title_zh FROM articles WHERE id=?`, id).Scan(&a.ID, &a.BookID, &a.UnitName, &a.Position, &a.Title.En, &a.Title.Zh)
+	var parent sql.NullInt64
+	err := q.QueryRowContext(ctx, `SELECT a.id,a.book_id,a.parent_id,a.unit_name,a.position,a.title_en,a.title_zh,
+		(SELECT COUNT(*) FROM articles c WHERE c.parent_id=a.id)
+		FROM articles a WHERE a.id=?`, id).Scan(&a.ID, &a.BookID, &parent, &a.UnitName, &a.Position, &a.Title.En, &a.Title.Zh, &a.ChildCount)
 	if errors.Is(err, sql.ErrNoRows) {
 		return a, errNotFound
 	}
 	if err != nil {
 		return a, err
+	}
+	if parent.Valid {
+		a.ParentID = &parent.Int64
 	}
 	rows, err := q.QueryContext(ctx, `SELECT id,position,kind,en,zh FROM segments WHERE article_id=? ORDER BY position,id`, id)
 	if err != nil {
@@ -202,7 +226,8 @@ func (s *store) deleteBook(ctx context.Context, id int64) error {
 }
 
 // 所有文章变更都先锁定所属书籍，避免追加文章与调整顺序发生竞态。
-func (s *store) saveArticle(ctx context.Context, bookID, id int64, in ArticleInput) (Article, error) {
+// parentID 非空时表示作为该文章的小节插入，层级由创建入口决定，编辑不改变。
+func (s *store) saveArticle(ctx context.Context, bookID, id int64, parentID *int64, in ArticleInput) (Article, error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return Article{}, err
@@ -216,9 +241,24 @@ func (s *store) saveArticle(ctx context.Context, bookID, id int64, in ArticleInp
 		if err != nil {
 			return Article{}, err
 		}
+	} else if parentID != nil {
+		// 小节随父文章归入同一本书，父文章不存在时直接 404。
+		var parentBook int64
+		err = tx.QueryRowContext(ctx, `SELECT book_id FROM articles WHERE id=?`, *parentID).Scan(&parentBook)
+		if errors.Is(err, sql.ErrNoRows) {
+			return Article{}, errNotFound
+		}
+		if err != nil {
+			return Article{}, err
+		}
+		bookID = parentBook
 	}
 	if err = lockBook(ctx, tx, bookID); err != nil {
 		return Article{}, err
+	}
+	var parentValue any
+	if parentID != nil {
+		parentValue = *parentID
 	}
 	if id == 0 {
 		for _, seg := range in.Segments {
@@ -227,10 +267,10 @@ func (s *store) saveArticle(ctx context.Context, bookID, id int64, in ArticleInp
 			}
 		}
 		var position int
-		if err = tx.QueryRowContext(ctx, `SELECT COALESCE(MAX(position),0)+1 FROM articles WHERE book_id=?`, bookID).Scan(&position); err != nil {
+		if err = tx.QueryRowContext(ctx, `SELECT COALESCE(MAX(position),0)+1 FROM articles WHERE book_id=? AND parent_id <=> ?`, bookID, parentValue).Scan(&position); err != nil {
 			return Article{}, err
 		}
-		res, e := tx.ExecContext(ctx, `INSERT INTO articles(book_id,unit_name,position,title_en,title_zh) VALUES(?,?,?,?,?)`, bookID, in.UnitName, position, in.Title.En, in.Title.Zh)
+		res, e := tx.ExecContext(ctx, `INSERT INTO articles(book_id,parent_id,unit_name,position,title_en,title_zh) VALUES(?,?,?,?,?,?)`, bookID, parentValue, in.UnitName, position, in.Title.En, in.Title.Zh)
 		if e != nil {
 			return Article{}, e
 		}

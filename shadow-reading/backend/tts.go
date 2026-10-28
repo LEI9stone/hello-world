@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -118,18 +119,47 @@ func cached(path string) bool {
 	return err == nil && !fi.IsDir() && fi.Size() > 0
 }
 
+// 朗读前剥离 Markdown 标记用的正则。
+var (
+	speechListPrefix = regexp.MustCompile(`^\s*(?:[-*+]|\d+[.)])\s+`)
+	speechImage      = regexp.MustCompile(`!\[([^\]]*)\]\([^)]*\)`)
+	speechLink       = regexp.MustCompile(`\[([^\]]*)\]\([^)]*\)`)
+	speechBold       = regexp.MustCompile(`\*\*([^*]+)\*\*`)
+)
+
+// speechText 去掉 Markdown 标记，避免朗读时念出 #、**、反引号和链接地址。
+// 逐行处理后再合并成一句话；单个下划线保持原样，避免破坏 snake_case。
+func speechText(s string) string {
+	parts := make([]string, 0, 4)
+	for _, line := range strings.Split(s, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		line = mdHeading.ReplaceAllString(line, "")
+		line = strings.TrimPrefix(line, "> ")
+		line = speechListPrefix.ReplaceAllString(line, "")
+		line = speechImage.ReplaceAllString(line, "$1")
+		line = speechLink.ReplaceAllString(line, "$1")
+		line = speechBold.ReplaceAllString(line, "$1")
+		line = strings.ReplaceAll(line, "`", "")
+		parts = append(parts, line)
+	}
+	return strings.Join(parts, " ")
+}
+
 // segmentText 按阅读页顺序取该段落的英语原文：0 为英语标题，1..N 为第 N 组正文。
 // 代码段与表格段不朗读，返回 false，音频接口对它返回 404，由前端跳过。
 func segmentText(a Article, index int) (string, bool) {
 	if index == 0 {
-		return a.Title.En, true
+		return speechText(a.Title.En), true
 	}
 	if index >= 1 && index <= len(a.Segments) {
 		seg := a.Segments[index-1]
 		if seg.Kind == kindCode || seg.Kind == kindTable {
 			return "", false
 		}
-		return seg.En, true
+		return speechText(seg.En), true
 	}
 	return "", false
 }

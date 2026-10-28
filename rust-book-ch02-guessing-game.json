@@ -1,0 +1,618 @@
+[
+  {
+    "en": "# Programming a Guessing Game",
+    "zh": "# 编写猜数字游戏"
+  },
+  {
+    "en": "Let’s jump into Rust by working through a hands-on project together! This chapter introduces you to a few common Rust concepts by showing you how to use them in a real program. You’ll learn about `let`, `match`, methods, associated functions, external crates, and more! In the following chapters, we’ll explore these ideas in more detail. In this chapter, you’ll just practice the fundamentals.",
+    "zh": "让我们通过一起完成一个动手项目来进入 Rust 的世界！本章通过展示如何在一个真实程序中使用一些常见的 Rust 概念来介绍它们。你将了解 `let`、`match`、方法、关联函数、外部 crate 等等！在接下来的章节中，我们会更详细地探讨这些概念。在本章中，你只需练习这些基础知识。"
+  },
+  {
+    "en": "We’ll implement a classic beginner programming problem: a guessing game. Here’s how it works: The program will generate a random integer between 1 and 100. It will then prompt the player to enter a guess. After a guess is entered, the program will indicate whether the guess is too low or too high. If the guess is correct, the game will print a congratulatory message and exit.",
+    "zh": "我们将实现一个经典的编程入门问题：猜数字游戏。它的工作方式如下：程序会生成一个 1 到 100 之间的随机整数，然后提示玩家输入猜测。输入猜测后，程序会指出猜测太低还是太高。如果猜对了，游戏会打印一条祝贺消息并退出。"
+  },
+  {
+    "en": "## Setting Up a New Project",
+    "zh": "## 建立新项目"
+  },
+  {
+    "en": "To set up a new project, go to the *projects* directory that you created in Chapter 1 and make a new project using Cargo, like so:",
+    "zh": "要建立新项目，请进入你在第 1 章创建的 *projects* 目录，并使用 Cargo 创建一个新项目，如下所示："
+  },
+  {
+    "en": "```console\n$ cargo new guessing_game\n$ cd guessing_game\n```",
+    "zh": "```console\n$ cargo new guessing_game\n$ cd guessing_game\n```"
+  },
+  {
+    "en": "The first command, `cargo new`, takes the name of the project (`guessing_game`) as the first argument. The second command changes to the new project’s directory.",
+    "zh": "第一条命令 `cargo new` 将项目名称（`guessing_game`）作为第一个参数。第二条命令切换到新项目的目录。"
+  },
+  {
+    "en": "Look at the generated *Cargo.toml* file:",
+    "zh": "查看生成的 *Cargo.toml* 文件："
+  },
+  {
+    "en": "Filename: Cargo.toml",
+    "zh": "文件名：Cargo.toml"
+  },
+  {
+    "en": "```toml\n[package]\nname = \"guessing_game\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[dependencies]\n```",
+    "zh": "```toml\n[package]\nname = \"guessing_game\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[dependencies]\n```"
+  },
+  {
+    "en": "As you saw in Chapter 1, `cargo new` generates a “Hello, world!” program for you. Check out the *src/main.rs* file:",
+    "zh": "正如你在第 1 章所见，`cargo new` 为你生成了一个“Hello, world!”程序。查看 *src/main.rs* 文件："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\nfn main() {\n    println!(\"Hello, world!\");\n}\n```",
+    "zh": "```rust\nfn main() {\n    println!(\"Hello, world!\");\n}\n```"
+  },
+  {
+    "en": "Now let’s compile this “Hello, world!” program and run it in the same step using the `cargo run` command:",
+    "zh": "现在让我们用 `cargo run` 命令在一步中编译并运行这个“Hello, world!”程序："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s\n     Running `target/debug/guessing_game`\nHello, world!\n```",
+    "zh": "```console\n$ cargo run\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s\n     Running `target/debug/guessing_game`\nHello, world!\n```"
+  },
+  {
+    "en": "The `run` command comes in handy when you need to rapidly iterate on a project, as we’ll do in this game, quickly testing each iteration before moving on to the next one.",
+    "zh": "当你需要快速迭代项目时，`run` 命令会派上用场，就像我们在这个游戏中所做的那样：在进入下一步之前快速测试每次迭代。"
+  },
+  {
+    "en": "Reopen the *src/main.rs* file. You’ll be writing all the code in this file.",
+    "zh": "重新打开 *src/main.rs* 文件。你将把全部代码写在这个文件里。"
+  },
+  {
+    "en": "## Processing a Guess",
+    "zh": "## 处理一次猜测"
+  },
+  {
+    "en": "The first part of the guessing game program will ask for user input, process that input, and check that the input is in the expected form. To start, we’ll allow the player to input a guess. Enter the code in Listing 2-1 into *src/main.rs*.",
+    "zh": "猜数字程序的第一部分会请求用户输入、处理该输入，并检查输入是否符合预期格式。首先，我们允许玩家输入一个猜测。将代码清单 2-1 中的代码输入到 *src/main.rs* 中。"
+  },
+  {
+    "en": "This code contains a lot of information, so let’s go over it line by line. To obtain user input and then print the result as output, we need to bring the `io` input/output library into scope. The `io` library comes from the standard library, known as `std`:",
+    "zh": "这段代码包含很多信息，让我们逐行分析。为了获取用户输入并将结果作为输出打印，我们需要把 `io` 输入/输出库引入作用域。`io` 库来自标准库，标准库被称为 `std`："
+  },
+  {
+    "en": "```rust\nuse std::io;\n```",
+    "zh": "```rust\nuse std::io;\n```"
+  },
+  {
+    "en": "By default, Rust has a set of items defined in the standard library that it brings into the scope of every program. This set is called the *prelude*, and you can see everything in it [in the standard library documentation](https://doc.rust-lang.org/book/../std/prelude/index.html).",
+    "zh": "默认情况下，Rust 在标准库中定义了一组会引入每个程序作用域的项目。这个集合被称为 *prelude*（预导入模块），你可以在[标准库文档](https://doc.rust-lang.org/book/../std/prelude/index.html)中查看其中的所有内容。"
+  },
+  {
+    "en": "If a type you want to use isn’t in the prelude, you have to bring that type into scope explicitly with a `use` statement. Using the `std::io` library provides you with a number of useful features, including the ability to accept user input.",
+    "zh": "如果你想使用的类型不在 prelude 中，就必须用 `use` 语句显式地将该类型引入作用域。使用 `std::io` 库为你提供了许多有用的功能，包括接受用户输入的能力。"
+  },
+  {
+    "en": "As you saw in Chapter 1, the `main` function is the entry point into the program:",
+    "zh": "正如你在第 1 章所见，`main` 函数是程序的入口点："
+  },
+  {
+    "en": "```rust\nfn main() {\n```",
+    "zh": "```rust\nfn main() {\n```"
+  },
+  {
+    "en": "The `fn` syntax declares a new function; the parentheses, `()`, indicate there are no parameters; and the curly bracket, `{`, starts the body of the function.",
+    "zh": "`fn` 语法声明一个新函数；圆括号 `()` 表示没有参数；花括号 `{` 开始函数体。"
+  },
+  {
+    "en": "As you also learned in Chapter 1, `println!` is a macro that prints a string to the screen:",
+    "zh": "正如你在第 1 章所学，`println!` 是一个将字符串打印到屏幕的宏："
+  },
+  {
+    "en": "```rust\n    println!(\"Guess the number!\");\n\n    println!(\"Please input your guess.\");\n```",
+    "zh": "```rust\n    println!(\"Guess the number!\");\n\n    println!(\"Please input your guess.\");\n```"
+  },
+  {
+    "en": "This code is printing a prompt stating what the game is and requesting input from the user.",
+    "zh": "这段代码打印一条提示，说明游戏内容并请求用户输入。"
+  },
+  {
+    "en": "### Storing Values with Variables",
+    "zh": "### 用变量存储值"
+  },
+  {
+    "en": "Next, we’ll create a *variable* to store the user input, like this:",
+    "zh": "接下来，我们将创建一个*变量*来存储用户输入，像这样："
+  },
+  {
+    "en": "```rust\n    let mut guess = String::new();\n```",
+    "zh": "```rust\n    let mut guess = String::new();\n```"
+  },
+  {
+    "en": "Now the program is getting interesting! There’s a lot going on in this little line. We use the `let` statement to create the variable. Here’s another example:",
+    "zh": "现在程序变得有趣了！这一小行里发生了很多事情。我们使用 `let` 语句创建变量。这里还有一个例子："
+  },
+  {
+    "en": "```rust\nlet apples = 5;\n```",
+    "zh": "```rust\nlet apples = 5;\n```"
+  },
+  {
+    "en": "This line creates a new variable named `apples` and binds it to the value `5`. In Rust, variables are immutable by default, meaning once we give the variable a value, the value won’t change. We’ll be discussing this concept in detail in the [“Variables and Mutability”](https://doc.rust-lang.org/book/ch03-01-variables-and-mutability.html#variables-and-mutability) section in Chapter 3. To make a variable mutable, we add `mut` before the variable name:",
+    "zh": "这一行创建一个名为 `apples` 的新变量，并将其绑定到值 `5`。在 Rust 中，变量默认是不可变的，也就是说，一旦给变量赋值，该值就不会改变。我们将在第 3 章的[“变量与可变性”](https://doc.rust-lang.org/book/ch03-01-variables-and-mutability.html#variables-and-mutability)一节中详细讨论这个概念。要使变量可变，我们在变量名之前加上 `mut`："
+  },
+  {
+    "en": "```rust\nlet apples = 5; // immutable\nlet mut bananas = 5; // mutable\n```",
+    "zh": "```rust\nlet apples = 5; // immutable\nlet mut bananas = 5; // mutable\n```"
+  },
+  {
+    "en": "Note: The `//` syntax starts a comment that continues until the end of the line. Rust ignores everything in comments. We’ll discuss comments in more detail in [Chapter 3](https://doc.rust-lang.org/book/ch03-04-comments.html).",
+    "zh": "注意：`//` 语法开始一条持续到行末的注释。Rust 会忽略注释中的所有内容。我们将在[第 3 章](https://doc.rust-lang.org/book/ch03-04-comments.html)更详细地讨论注释。"
+  },
+  {
+    "en": "Returning to the guessing game program, you now know that `let mut guess` will introduce a mutable variable named `guess`. The equal sign (`=`) tells Rust we want to bind something to the variable now. On the right of the equal sign is the value that `guess` is bound to, which is the result of calling `String::new`, a function that returns a new instance of a `String`. [`String`](https://doc.rust-lang.org/book/../std/string/struct.String.html) is a string type provided by the standard library that is a growable, UTF-8 encoded bit of text.",
+    "zh": "回到猜数字游戏程序：现在你知道 `let mut guess` 会引入一个名为 `guess` 的可变变量。等号（`=`）告诉 Rust 我们现在要把某个值绑定到该变量。等号右侧是 `guess` 绑定的值，即调用 `String::new` 的结果——这个函数返回一个新的 `String` 实例。[`String`](https://doc.rust-lang.org/book/../std/string/struct.String.html) 是标准库提供的一种字符串类型，是可增长、UTF-8 编码的文本。"
+  },
+  {
+    "en": "The `::` syntax in the `::new` line indicates that `new` is an associated function of the `String` type. An *associated function* is a function that’s implemented on a type, in this case `String`. This `new` function creates a new, empty string. You’ll find a `new` function on many types because it’s a common name for a function that makes a new value of some kind.",
+    "zh": "`::new` 行中的 `::` 语法表示 `new` 是 `String` 类型的一个关联函数。*关联函数*是在某个类型上实现的函数，这里是 `String`。这个 `new` 函数创建一个新的空字符串。你会在许多类型上找到 `new` 函数，因为它是创建某种新值的函数的常见名称。"
+  },
+  {
+    "en": "In full, the `let mut guess = String::new();` line has created a mutable variable that is currently bound to a new, empty instance of a `String`. Whew!",
+    "zh": "完整地说，`let mut guess = String::new();` 这一行创建了一个可变变量，当前绑定到一个新的空 `String` 实例。哇！"
+  },
+  {
+    "en": "### Receiving User Input",
+    "zh": "### 接收用户输入"
+  },
+  {
+    "en": "Recall that we included the input/output functionality from the standard library with `use std::io;` on the first line of the program. Now we’ll call the `stdin` function from the `io` module, which will allow us to handle user input:",
+    "zh": "回想一下，我们在程序第一行用 `use std::io;` 引入了标准库中的输入/输出功能。现在我们调用 `io` 模块中的 `stdin` 函数，它允许我们处理用户输入："
+  },
+  {
+    "en": "```rust\n    io::stdin()\n        .read_line(&mut guess)\n```",
+    "zh": "```rust\n    io::stdin()\n        .read_line(&mut guess)\n```"
+  },
+  {
+    "en": "If we hadn’t imported the `io` module with `use std::io;` at the beginning of the program, we could still use the function by writing this function call as `std::io::stdin`. The `stdin` function returns an instance of [`std::io::Stdin`](https://doc.rust-lang.org/book/../std/io/struct.Stdin.html), which is a type that represents a handle to the standard input for your terminal.",
+    "zh": "如果我们在程序开头没有用 `use std::io;` 导入 `io` 模块，我们仍然可以把函数调用写成 `std::io::stdin` 来使用它。`stdin` 函数返回一个 [`std::io::Stdin`](https://doc.rust-lang.org/book/../std/io/struct.Stdin.html) 实例，这个类型表示终端标准输入的句柄。"
+  },
+  {
+    "en": "Next, the line `.read_line(&mut guess)` calls the [`read_line`](https://doc.rust-lang.org/book/../std/io/struct.Stdin.html#method.read_line) method on the standard input handle to get input from the user. We’re also passing `&mut guess` as the argument to `read_line` to tell it what string to store the user input in. The full job of `read_line` is to take whatever the user types into standard input and append that into a string (without overwriting its contents), so we therefore pass that string as an argument. The string argument needs to be mutable so that the method can change the string’s content.",
+    "zh": "接下来，`.read_line(&mut guess)` 这一行在标准输入句柄上调用 [`read_line`](https://doc.rust-lang.org/book/../std/io/struct.Stdin.html#method.read_line) 方法，以获取用户输入。我们还把 `&mut guess` 作为参数传给 `read_line`，告诉它将用户输入存储到哪个字符串中。`read_line` 的完整工作是把用户输入到标准输入的所有内容追加到字符串中（不覆盖其内容），因此我们传入该字符串作为参数。字符串参数必须是可变的，这样该方法才能修改字符串内容。"
+  },
+  {
+    "en": "The `&` indicates that this argument is a *reference*, which gives you a way to let multiple parts of your code access one piece of data without needing to copy that data into memory multiple times. References are a complex feature, and one of Rust’s major advantages is how safe and easy it is to use references. You don’t need to know a lot of those details to finish this program. For now, all you need to know is that, like variables, references are immutable by default. Hence, you need to write `&mut guess` rather than `&guess` to make it mutable. (Chapter 4 will explain references more thoroughly.)",
+    "zh": "`&` 表示这个参数是一个*引用*，它让你能够让代码的多个部分访问同一份数据，而无需多次将该数据复制到内存中。引用是一个复杂的功能，而 Rust 的一大优势就是使用引用既安全又简单。你不需要了解很多这些细节就能完成这个程序。目前你只需要知道，和变量一样，引用默认是不可变的。因此，你需要写 `&mut guess` 而不是 `&guess`，使其可变。（第 4 章会更全面地解释引用。）"
+  },
+  {
+    "en": "### Handling Potential Failure with `Result`",
+    "zh": "### 用 `Result` 处理可能的失败"
+  },
+  {
+    "en": "We’re still working on this line of code. We’re now discussing a third line of text, but note that it’s still part of a single logical line of code. The next part is this method:",
+    "zh": "我们仍然在处理这一行代码。现在讨论的是第三行文本，但请注意它仍然属于同一行逻辑代码。下一部分是这个方法："
+  },
+  {
+    "en": "```rust\n        .expect(\"Failed to read line\");\n```",
+    "zh": "```rust\n        .expect(\"Failed to read line\");\n```"
+  },
+  {
+    "en": "We could have written this code as:",
+    "zh": "我们本可以这样写这段代码："
+  },
+  {
+    "en": "```rust\nio::stdin().read_line(&mut guess).expect(\"Failed to read line\");\n```",
+    "zh": "```rust\nio::stdin().read_line(&mut guess).expect(\"Failed to read line\");\n```"
+  },
+  {
+    "en": "However, one long line is difficult to read, so it’s best to divide it. It’s often wise to introduce a newline and other whitespace to help break up long lines when you call a method with the `.method_name()` syntax. Now let’s discuss what this line does.",
+    "zh": "然而，一行太长难以阅读，所以最好将其拆分。当你使用 `.method_name()` 语法调用方法时，通常明智的做法是引入换行和其他空白，以帮助拆分过长的行。现在让我们讨论这一行的作用。"
+  },
+  {
+    "en": "As mentioned earlier, `read_line` puts whatever the user enters into the string we pass to it, but it also returns a `Result` value. [`Result`](https://doc.rust-lang.org/book/../std/result/enum.Result.html) is an [*enumeration*](https://doc.rust-lang.org/book/ch06-00-enums.html), often called an *enum*, which is a type that can be in one of multiple possible states. We call each possible state a *variant*.",
+    "zh": "如前所述，`read_line` 把用户输入的内容放入我们传入的字符串中，但它也会返回一个 `Result` 值。[`Result`](https://doc.rust-lang.org/book/../std/result/enum.Result.html) 是一种[*枚举*](https://doc.rust-lang.org/book/ch06-00-enums.html)，通常称为 *enum*，它是一种可能处于多种状态之一的类型。我们把每种可能的状态称为一个*变体*（variant）。"
+  },
+  {
+    "en": "[Chapter 6](https://doc.rust-lang.org/book/ch06-00-enums.html) will cover enums in more detail. The purpose of these `Result` types is to encode error-handling information.",
+    "zh": "[第 6 章](https://doc.rust-lang.org/book/ch06-00-enums.html)会更详细地介绍枚举。这些 `Result` 类型的用途是编码错误处理信息。"
+  },
+  {
+    "en": "`Result`’s variants are `Ok` and `Err`. The `Ok` variant indicates the operation was successful, and it contains the successfully generated value. The `Err` variant means the operation failed, and it contains information about how or why the operation failed.",
+    "zh": "`Result` 的变体是 `Ok` 和 `Err`。`Ok` 变体表示操作成功，它包含成功生成的值。`Err` 变体表示操作失败，它包含关于操作如何或为何失败的信息。"
+  },
+  {
+    "en": "Values of the `Result` type, like values of any type, have methods defined on them. An instance of `Result` has an [`expect` method](https://doc.rust-lang.org/book/../std/result/enum.Result.html#method.expect) that you can call. If this instance of `Result` is an `Err` value, `expect` will cause the program to crash and display the message that you passed as an argument to `expect`. If the `read_line` method returns an `Err`, it would likely be the result of an error coming from the underlying operating system. If this instance of `Result` is an `Ok` value, `expect` will take the return value that `Ok` is holding and return just that value to you so that you can use it. In this case, that value is the number of bytes in the user’s input.",
+    "zh": "`Result` 类型的值，和任何类型的值一样，都有定义在其上的方法。`Result` 实例有一个可以调用的 [`expect` 方法](https://doc.rust-lang.org/book/../std/result/enum.Result.html#method.expect)。如果这个 `Result` 实例是 `Err` 值，`expect` 会让程序崩溃并显示你传给 `expect` 的消息。如果 `read_line` 方法返回 `Err`，那很可能是底层操作系统产生的错误导致的。如果这个 `Result` 实例是 `Ok` 值，`expect` 会取出 `Ok` 持有的返回值，并将该值返回给你，以便你使用。在这种情况下，该值是用户输入中的字节数。"
+  },
+  {
+    "en": "If you don’t call `expect`, the program will compile, but you’ll get a warning:",
+    "zh": "如果你不调用 `expect`，程序仍会编译，但你会收到一个警告："
+  },
+  {
+    "en": "```console\n$ cargo build\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\nwarning: unused `Result` that must be used\n  --> src/main.rs:10:5\n   |\n10 |     io::stdin().read_line(&mut guess);\n   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n   |\n   = note: this `Result` may be an `Err` variant, which should be handled\n   = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default\nhelp: use `let _ = ...` to ignore the resulting value\n   |\n10 |     let _ = io::stdin().read_line(&mut guess);\n   |     +++++++\n\nwarning: `guessing_game` (bin \"guessing_game\") generated 1 warning\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.59s\n```",
+    "zh": "```console\n$ cargo build\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\nwarning: unused `Result` that must be used\n  --> src/main.rs:10:5\n   |\n10 |     io::stdin().read_line(&mut guess);\n   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n   |\n   = note: this `Result` may be an `Err` variant, which should be handled\n   = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default\nhelp: use `let _ = ...` to ignore the resulting value\n   |\n10 |     let _ = io::stdin().read_line(&mut guess);\n   |     +++++++\n\nwarning: `guessing_game` (bin \"guessing_game\") generated 1 warning\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.59s\n```"
+  },
+  {
+    "en": "Rust warns that you haven’t used the `Result` value returned from `read_line`, indicating that the program hasn’t handled a possible error.",
+    "zh": "Rust 警告你没有使用 `read_line` 返回的 `Result` 值，表示程序没有处理可能发生的错误。"
+  },
+  {
+    "en": "The right way to suppress the warning is to actually write error-handling code, but in our case we just want to crash this program when a problem occurs, so we can use `expect`. You’ll learn about recovering from errors in [Chapter 9](https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html).",
+    "zh": "抑制该警告的正确做法是实际编写错误处理代码，但在我们的情况下，我们只是想在发生问题时让程序崩溃，所以可以使用 `expect`。你将在[第 9 章](https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html)学习如何从错误中恢复。"
+  },
+  {
+    "en": "### Printing Values with `println!` Placeholders",
+    "zh": "### 使用 `println!` 占位符打印值"
+  },
+  {
+    "en": "Aside from the closing curly bracket, there’s only one more line to discuss in the code so far:",
+    "zh": "除了右花括号之外，目前的代码中还有一行需要讨论："
+  },
+  {
+    "en": "```rust\n    println!(\"You guessed: {guess}\");\n```",
+    "zh": "```rust\n    println!(\"You guessed: {guess}\");\n```"
+  },
+  {
+    "en": "This line prints the string that now contains the user’s input. The `{}` set of curly brackets is a placeholder: Think of `{}` as little crab pincers that hold a value in place. When printing the value of a variable, the variable name can go inside the curly brackets. When printing the result of evaluating an expression, place empty curly brackets in the format string, then follow the format string with a comma-separated list of expressions to print in each empty curly bracket placeholder in the same order. Printing a variable and the result of an expression in one call to `println!` would look like this:",
+    "zh": "这一行打印现在包含用户输入的字符串。`{}` 这一组花括号是占位符：可以把 `{}` 想象成夹住值的小螃蟹钳子。打印变量值时，变量名可以放在花括号内。打印表达式的求值结果时，在格式字符串中放置空花括号，然后在格式字符串后面按相同顺序跟一个以逗号分隔的表达式列表，依次填入每个空花括号占位符。在一次 `println!` 调用中同时打印变量和表达式结果，看起来会像这样："
+  },
+  {
+    "en": "```rust\nlet x = 5;\nlet y = 10;\n\nprintln!(\"x = {x} and y + 2 = {}\", y + 2);\n```",
+    "zh": "```rust\nlet x = 5;\nlet y = 10;\n\nprintln!(\"x = {x} and y + 2 = {}\", y + 2);\n```"
+  },
+  {
+    "en": "This code would print `x = 5 and y + 2 = 12`.",
+    "zh": "这段代码会打印 `x = 5 and y + 2 = 12`。"
+  },
+  {
+    "en": "### Testing the First Part",
+    "zh": "### 测试第一部分"
+  },
+  {
+    "en": "Let’s test the first part of the guessing game. Run it using `cargo run`:",
+    "zh": "让我们测试猜数字游戏的第一部分。使用 `cargo run` 运行它："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.44s\n     Running `target/debug/guessing_game`\nGuess the number!\nPlease input your guess.\n6\nYou guessed: 6\n```",
+    "zh": "```console\n$ cargo run\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.44s\n     Running `target/debug/guessing_game`\nGuess the number!\nPlease input your guess.\n6\nYou guessed: 6\n```"
+  },
+  {
+    "en": "At this point, the first part of the game is done: We’re getting input from the keyboard and then printing it.",
+    "zh": "至此，游戏的第一部分完成了：我们从键盘获取输入，然后将其打印出来。"
+  },
+  {
+    "en": "## Generating a Secret Number",
+    "zh": "## 生成秘密数字"
+  },
+  {
+    "en": "Next, we need to generate a secret number that the user will try to guess. The secret number should be different every time so that the game is fun to play more than once. We’ll use a random number between 1 and 100 so that the game isn’t too difficult. Rust doesn’t yet include random number functionality in its standard library. However, the Rust team does provide a [`rand` crate](https://crates.io/crates/rand) with said functionality.",
+    "zh": "接下来，我们需要生成一个用户将尝试猜测的秘密数字。秘密数字每次都应当不同，这样游戏才值得多玩几次。我们将使用 1 到 100 之间的随机数，以免游戏过于困难。Rust 的标准库尚未包含随机数功能。不过，Rust 团队提供了一个 [`rand` crate](https://crates.io/crates/rand)，其中包含该功能。"
+  },
+  {
+    "en": "### Increasing Functionality with a Crate",
+    "zh": "### 使用 crate 增强功能"
+  },
+  {
+    "en": "Remember that a crate is a collection of Rust source code files. The project we’ve been building is a binary crate, which is an executable. The `rand` crate is a library crate, which contains code that is intended to be used in other programs and can’t be executed on its own.",
+    "zh": "记住，crate 是 Rust 源代码文件的集合。我们一直在构建的项目是一个二进制 crate，即一个可执行文件。`rand` crate 是一个库 crate，其中包含供其他程序使用的代码，不能单独执行。"
+  },
+  {
+    "en": "Cargo’s coordination of external crates is where Cargo really shines. Before we can write code that uses `rand`, we need to modify the *Cargo.toml* file to include the `rand` crate as a dependency. Open that file now and add the following line to the bottom, beneath the `[dependencies]` section header that Cargo created for you. Be sure to specify `rand` exactly as we have here, with this version number, or the code examples in this tutorial may not work:",
+    "zh": "Cargo 对外部 crate 的协调正是 Cargo 真正出彩的地方。在编写使用 `rand` 的代码之前，我们需要修改 *Cargo.toml* 文件，将 `rand` crate 添加为依赖。现在打开该文件，并在 Cargo 为你创建的 `[dependencies]` 节标题下方添加下面这一行。务必完全按照这里的样子指定 `rand` 和这个版本号，否则本教程中的代码示例可能无法工作："
+  },
+  {
+    "en": "Filename: Cargo.toml",
+    "zh": "文件名：Cargo.toml"
+  },
+  {
+    "en": "```toml\n[dependencies]\nrand = \"0.10.1\"\n```",
+    "zh": "```toml\n[dependencies]\nrand = \"0.10.1\"\n```"
+  },
+  {
+    "en": "In the *Cargo.toml* file, everything that follows a header is part of that section that continues until another section starts. In `[dependencies]`, you tell Cargo which external crates your project depends on and which versions of those crates you require. In this case, we specify the `rand` crate with the semantic version specifier `0.10.1`. Cargo understands [Semantic Versioning](http://semver.org) (sometimes called *SemVer*), which is a standard for writing version numbers. The specifier `0.10.1` is actually shorthand for `^0.10.1`, which means any version that is at least 0.10.1 but below 0.11.0.",
+    "zh": "在 *Cargo.toml* 文件中，标题之后的所有内容都属于该节，直到另一个节开始。在 `[dependencies]` 中，你告诉 Cargo 项目依赖哪些外部 crate，以及需要这些 crate 的哪些版本。这里，我们用语义化版本说明符 `0.10.1` 指定 `rand` crate。Cargo 理解[语义化版本](http://semver.org)（有时称为 *SemVer*），这是书写版本号的标准。说明符 `0.10.1` 实际上是 `^0.10.1` 的简写，表示任何至少为 0.10.1 但低于 0.11.0 的版本。"
+  },
+  {
+    "en": "Cargo considers these versions to have public APIs compatible with version 0.10.1, and this specification ensures that you’ll get the latest patch release that will still compile with the code in this chapter. Any version 0.11.0 or greater is not guaranteed to have the same API as what the following examples use.",
+    "zh": "Cargo 认为这些版本的公共 API 与 0.10.1 版本兼容，该规范确保你会得到仍能与本章代码一起编译的最新补丁版本。任何 0.11.0 或更高版本都不保证与以下示例使用的 API 相同。"
+  },
+  {
+    "en": "Now, without changing any of the code, let’s build the project, as shown in Listing 2-2.",
+    "zh": "现在，在不更改任何代码的情况下，让我们构建项目，如代码清单 2-2 所示。"
+  },
+  {
+    "en": "You may see different version numbers (but they will all be compatible with the code, thanks to SemVer!) and different lines (depending on the operating system), and the lines may be in a different order.",
+    "zh": "你可能会看到不同的版本号（但由于 SemVer，它们都与代码兼容！）以及不同的行（取决于操作系统），而且行的顺序也可能不同。"
+  },
+  {
+    "en": "When we include an external dependency, Cargo fetches the latest versions of everything that dependency needs from the *registry*, which is a copy of data from [Crates.io](https://crates.io/). Crates.io is where people in the Rust ecosystem post their open source Rust projects for others to use.",
+    "zh": "当我们引入外部依赖时，Cargo 会从 *registry* 获取该依赖所需的一切的最新版本，registry 是来自 [Crates.io](https://crates.io/) 的数据副本。Crates.io 是 Rust 生态系统中人们发布开源 Rust 项目供他人使用的地方。"
+  },
+  {
+    "en": "After updating the registry, Cargo checks the `[dependencies]` section and downloads any crates listed that aren’t already downloaded. In this case, although we only listed `rand` as a dependency, Cargo also grabbed other crates that `rand` depends on to work. After downloading the crates, Rust compiles them and then compiles the project with the dependencies available.",
+    "zh": "更新 registry 后，Cargo 检查 `[dependencies]` 节，并下载其中列出但尚未下载的任何 crate。在这个例子中，虽然我们只将 `rand` 列为依赖，但 Cargo 还获取了 `rand` 工作所依赖的其他 crate。下载 crate 后，Rust 会编译它们，然后在依赖可用的情况下编译项目。"
+  },
+  {
+    "en": "If you immediately run `cargo build` again without making any changes, you won’t get any output aside from the `Finished` line. Cargo knows it has already downloaded and compiled the dependencies, and you haven’t changed anything about them in your *Cargo.toml* file. Cargo also knows that you haven’t changed anything about your code, so it doesn’t recompile that either. With nothing to do, it simply exits.",
+    "zh": "如果你不做任何更改立刻再次运行 `cargo build`，除了 `Finished` 行之外不会看到任何输出。Cargo 知道它已经下载并编译了依赖，而且你没有在 *Cargo.toml* 文件中更改任何相关内容。Cargo 也知道你没有更改代码，所以也不会重新编译代码。无事可做时，它就简单退出。"
+  },
+  {
+    "en": "If you open the *src/main.rs* file, make a trivial change, and then save it and build again, you’ll only see two lines of output:",
+    "zh": "如果你打开 *src/main.rs* 文件，做一个小改动，保存后再次构建，你只会看到两行输出："
+  },
+  {
+    "en": "```console\n$ cargo build\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s\n```",
+    "zh": "```console\n$ cargo build\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s\n```"
+  },
+  {
+    "en": "These lines show that Cargo only updates the build with your tiny change to the *src/main.rs* file. Your dependencies haven’t changed, so Cargo knows it can reuse what it has already downloaded and compiled for those.",
+    "zh": "这些行表明 Cargo 只是根据你对 *src/main.rs* 文件的小改动更新了构建。你的依赖没有变化，所以 Cargo 知道它可以重用已经下载并编译好的依赖。"
+  },
+  {
+    "en": "#### Ensuring Reproducible Builds",
+    "zh": "#### 确保可重现的构建"
+  },
+  {
+    "en": "Cargo has a mechanism that ensures that you can rebuild the same artifact every time you or anyone else builds your code: Cargo will use only the versions of the dependencies you specified until you indicate otherwise. For example, say that next week version 0.10.2 of the `rand` crate comes out, and that version contains an important bug fix, but it also contains a regression that will break your code. To handle this, Rust creates the *Cargo.lock* file the first time you run `cargo build`, so we now have this in the *guessing_game* directory.",
+    "zh": "Cargo 有一种机制，确保你或任何其他人每次构建代码时都能重新构建出相同的产物：Cargo 只会使用你指定的依赖版本，直到你另行指示。例如，假设下周 `rand` crate 发布了 0.10.2 版本，该版本包含一个重要 bug 修复，但也包含一个会破坏你代码的回归问题。为处理这种情况，Rust 在你第一次运行 `cargo build` 时创建 *Cargo.lock* 文件，所以现在 *guessing_game* 目录中就有这个文件。"
+  },
+  {
+    "en": "When you build a project for the first time, Cargo figures out all the versions of the dependencies that fit the criteria and then writes them to the *Cargo.lock* file. When you build your project in the future, Cargo will see that the *Cargo.lock* file exists and will use the versions specified there rather than doing all the work of figuring out versions again. This lets you have a reproducible build automatically. In other words, your project will remain at 0.10.1 until you explicitly upgrade, thanks to the *Cargo.lock* file. Because the *Cargo.lock* file is important for reproducible builds, it’s often checked into source control with the rest of the code in your project.",
+    "zh": "当你第一次构建项目时，Cargo 会找出符合条件的所有依赖版本，然后将它们写入 *Cargo.lock* 文件。以后构建项目时，Cargo 会看到 *Cargo.lock* 文件存在，并使用其中指定的版本，而不是再次做找出所有版本的工作。这让你自动获得可重现的构建。换句话说，得益于 *Cargo.lock* 文件，你的项目会保持在 0.10.1，直到你显式升级。由于 *Cargo.lock* 文件对可重现构建很重要，它通常会和项目中的其他代码一起提交到源代码控制中。"
+  },
+  {
+    "en": "#### Updating a Crate to Get a New Version",
+    "zh": "#### 更新 crate 以获得新版本"
+  },
+  {
+    "en": "When you *do* want to update a crate, Cargo provides the command `update`, which will ignore the *Cargo.lock* file and figure out all the latest versions that fit your specifications in *Cargo.toml*. Cargo will then write those versions to the *Cargo.lock* file. Otherwise, by default, Cargo will only look for versions greater than 0.10.1 and less than 0.11.0. If the `rand` crate has released the two new versions 0.10.2 and 0.999.0, you would see the following if you ran `cargo update`:",
+    "zh": "当你*确实*想更新某个 crate 时，Cargo 提供了 `update` 命令，它会忽略 *Cargo.lock* 文件，找出符合 *Cargo.toml* 中你的规范的所有最新版本。然后 Cargo 会将这些版本写入 *Cargo.lock* 文件。否则，默认情况下，Cargo 只会查找大于 0.10.1 且小于 0.11.0 的版本。如果 `rand` crate 发布了两个新版本 0.10.2 和 0.999.0，运行 `cargo update` 时你会看到以下内容："
+  },
+  {
+    "en": "```console\n$ cargo update\n    Updating crates.io index\n     Locking 1 package to latest Rust 1.96.0 compatible version\n    Updating rand v0.10.1 -> v0.10.2 (available: v0.999.0)\n```",
+    "zh": "```console\n$ cargo update\n    Updating crates.io index\n     Locking 1 package to latest Rust 1.96.0 compatible version\n    Updating rand v0.10.1 -> v0.10.2 (available: v0.999.0)\n```"
+  },
+  {
+    "en": "Cargo ignores the 0.999.0 release. At this point, you would also notice a change in your *Cargo.lock* file noting that the version of the `rand` crate you are now using is 0.10.2. To use `rand` version 0.999.0 or any version in the 0.999.*x* series, you’d have to update the *Cargo.toml* file to look like this instead (don’t actually make this change because the following examples assume you’re using `rand` 0.10):",
+    "zh": "Cargo 会忽略 0.999.0 版本。此时，你还会注意到 *Cargo.lock* 文件发生变化，表明你现在使用的 `rand` crate 版本是 0.10.2。要使用 `rand` 0.999.0 版本或 0.999.*x* 系列中的任何版本，你必须将 *Cargo.toml* 文件改为如下所示（不要真的做这个更改，因为以下示例假定你使用的是 `rand` 0.10）："
+  },
+  {
+    "en": "```toml\n[dependencies]\nrand = \"0.999.0\"\n```",
+    "zh": "```toml\n[dependencies]\nrand = \"0.999.0\"\n```"
+  },
+  {
+    "en": "The next time you run `cargo build`, Cargo will update the registry of crates available and reevaluate your `rand` requirements according to the new version you have specified.",
+    "zh": "下次运行 `cargo build` 时，Cargo 会更新可用 crate 的 registry，并根据你指定的新版本重新评估 `rand` 的需求。"
+  },
+  {
+    "en": "There’s a lot more to say about [Cargo](https://doc.rust-lang.org/cargo/) and [its ecosystem](https://doc.rust-lang.org/cargo/reference/publishing.html), which we’ll discuss in Chapter 14, but for now, that’s all you need to know. Cargo makes it very easy to reuse libraries, so Rustaceans are able to write smaller projects that are assembled from a number of packages.",
+    "zh": "关于 [Cargo](https://doc.rust-lang.org/cargo/) 和[其生态系统](https://doc.rust-lang.org/cargo/reference/publishing.html)，还有很多内容可讲，我们将在第 14 章讨论，但目前你只需要知道这些。Cargo 让复用库变得非常容易，因此 Rustacean 能够编写由多个包组装而成的更小的项目。"
+  },
+  {
+    "en": "### Generating a Random Number",
+    "zh": "### 生成随机数"
+  },
+  {
+    "en": "Let’s start using `rand` to generate a number to guess. The next step is to update *src/main.rs*, as shown in Listing 2-3.",
+    "zh": "让我们开始使用 `rand` 生成一个用于猜测的数字。下一步是更新 *src/main.rs*，如代码清单 2-3 所示。"
+  },
+  {
+    "en": "First, we add the line `use rand::prelude::*;`. The `prelude` module contains the most commonly used parts of the `rand` crate, and `use` makes those items available in our program’s scope.",
+    "zh": "首先，我们添加 `use rand::prelude::*;` 这一行。`prelude` 模块包含 `rand` crate 中最常用的部分，`use` 使这些项在程序作用域中可用。"
+  },
+  {
+    "en": "Next, we’re adding two lines in the middle. In the first line, we call the `rand::rng` function that gives us the particular random number generator we’re going to use: one that is local to the current thread of execution and is seeded by the operating system. Then, we call the `random_range` method on the random number generator. This method is defined by the `RngExt` trait that is part of the `rand::prelude` module that we brought into scope with the `use rand::prelude::*;` statement. The `random_range` method takes a range expression as an argument and generates a random number in the range. The kind of range expression we’re using here takes the form `start..=end` and is inclusive on the lower and upper bounds, so we need to specify `1..=100` to request a number between 1 and 100.",
+    "zh": "接下来，我们在中间添加两行。第一行中，我们调用 `rand::rng` 函数，它给我们提供将要使用的特定随机数生成器：一个位于当前执行线程本地、由操作系统播种的生成器。然后，我们在该随机数生成器上调用 `random_range` 方法。该方法由 `RngExt` trait 定义，而该 trait 属于我们通过 `use rand::prelude::*;` 语句引入作用域的 `rand::prelude` 模块。`random_range` 方法接受一个范围表达式作为参数，并生成该范围内的随机数。我们这里使用的范围表达式形式为 `start..=end`，包含上下界，因此需要指定 `1..=100` 来请求 1 到 100 之间的数字。"
+  },
+  {
+    "en": "Note: You won’t just know what to bring into scope and which methods and functions to call from a crate, so each crate has documentation with instructions for using it. Another neat feature of Cargo is that running the `cargo doc --open` command will build documentation provided by all your dependencies locally and open it in your browser. If you’re interested in other functionality in the `rand` crate, for example, run `cargo doc --open` and click `rand` in the sidebar on the left.",
+    "zh": "注意：你不可能仅凭直觉就知道应该从某个 crate 引入哪些内容，以及调用哪些方法和函数，因此每个 crate 都有包含使用说明的文档。Cargo 的另一个很棒的功能是：运行 `cargo doc --open` 命令会在本地构建所有依赖提供的文档，并在浏览器中打开。例如，如果你对 `rand` crate 中的其他功能感兴趣，可以运行 `cargo doc --open`，然后点击左侧边栏中的 `rand`。"
+  },
+  {
+    "en": "The second new line prints the secret number. This is useful while we’re developing the program to be able to test it, but we’ll delete it from the final version. It’s not much of a game if the program prints the answer as soon as it starts!",
+    "zh": "新增的第二行打印秘密数字。在我们开发程序以便测试时这很有用，但最终版本中我们会删除它。如果程序一开始就打印答案，那就不太像游戏了！"
+  },
+  {
+    "en": "Try running the program a few times:",
+    "zh": "试着多次运行这个程序："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.02s\n     Running `target/debug/guessing_game`\nGuess the number!\nThe secret number is: 7\nPlease input your guess.\n4\nYou guessed: 4\n\n$ cargo run\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.02s\n     Running `target/debug/guessing_game`\nGuess the number!\nThe secret number is: 83\nPlease input your guess.\n5\nYou guessed: 5\n```",
+    "zh": "```console\n$ cargo run\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.02s\n     Running `target/debug/guessing_game`\nGuess the number!\nThe secret number is: 7\nPlease input your guess.\n4\nYou guessed: 4\n\n$ cargo run\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.02s\n     Running `target/debug/guessing_game`\nGuess the number!\nThe secret number is: 83\nPlease input your guess.\n5\nYou guessed: 5\n```"
+  },
+  {
+    "en": "You should get different random numbers, and they should all be numbers between 1 and 100. If you get warnings, they are safe to ignore. If you get errors, please check that you have `rand = \"0.10.1\"` in your *Cargo.toml* as future versions of `rand` may have a different API, but any version in the `0.10` series should work with the code in this chapter.",
+    "zh": "你应该会得到不同的随机数，而且它们都应该是 1 到 100 之间的数字。如果出现警告，可以安全地忽略。如果出现错误，请检查 *Cargo.toml* 中是否有 `rand = \"0.10.1\"`，因为 `rand` 的未来版本可能有不同的 API，但 `0.10` 系列中的任何版本都应与本章代码兼容。"
+  },
+  {
+    "en": "## Comparing the Guess to the Secret Number",
+    "zh": "## 将猜测与秘密数字进行比较"
+  },
+  {
+    "en": "Now that we have user input and a random number, we can compare them. That step is shown in Listing 2-4. Note that this code won’t compile just yet, as we will explain.",
+    "zh": "现在我们有了用户输入和一个随机数，可以比较它们了。这一步如代码清单 2-4 所示。请注意，这段代码暂时还不能编译，原因我们将会解释。"
+  },
+  {
+    "en": "First, we add another `use` statement, bringing a type called `std::cmp::Ordering` into scope from the standard library. The `Ordering` type is another enum and has the variants `Less`, `Greater`, and `Equal`. These are the three outcomes that are possible when you compare two values.",
+    "zh": "首先，我们再添加一个 `use` 语句，把标准库中名为 `std::cmp::Ordering` 的类型引入作用域。`Ordering` 类型是另一个枚举，具有 `Less`、`Greater` 和 `Equal` 三个变体。它们是比较两个值时可能出现的三种结果。"
+  },
+  {
+    "en": "Then, we add five new lines at the bottom that use the `Ordering` type. The `cmp` method compares two values and can be called on anything that can be compared. It takes a reference to whatever you want to compare with: Here, it’s comparing `guess` to `secret_number`. Then, it returns a variant of the `Ordering` enum we brought into scope with the `use` statement. We use a [`match`](https://doc.rust-lang.org/book/ch06-02-match.html) expression to decide what to do next based on which variant of `Ordering` was returned from the call to `cmp` with the values in `guess` and `secret_number`.",
+    "zh": "然后，我们在底部添加五行新代码，使用 `Ordering` 类型。`cmp` 方法比较两个值，可以在任何可比较的对象上调用。它接受一个对你想要比较的对象的引用：这里它把 `guess` 与 `secret_number` 进行比较。之后，它返回我们用 `use` 语句引入作用域的 `Ordering` 枚举的一个变体。我们使用 [`match`](https://doc.rust-lang.org/book/ch06-02-match.html) 表达式，根据用 `guess` 和 `secret_number` 的值调用 `cmp` 所返回的 `Ordering` 变体，决定接下来做什么。"
+  },
+  {
+    "en": "A `match` expression is made up of *arms*. An arm consists of a *pattern* to match against, and the code that should be run if the value given to `match` fits that arm’s pattern. Rust takes the value given to `match` and looks through each arm’s pattern in turn. Patterns and the `match` construct are powerful Rust features: They let you express a variety of situations your code might encounter, and they make sure you handle them all. These features will be covered in detail in Chapter 6 and Chapter 19, respectively.",
+    "zh": "`match` 表达式由*分支*（arm）组成。一个分支由一个*模式*（pattern）和如果传给 `match` 的值符合该分支模式时应运行的代码组成。Rust 取出传给 `match` 的值，依次检查每个分支的模式。模式和 `match` 构造是强大的 Rust 特性：它们让你表达代码可能遇到的各种情况，并确保你处理所有情况。这些特性将分别在第 6 章和第 19 章详细介绍。"
+  },
+  {
+    "en": "Let’s walk through an example with the `match` expression we use here. Say that the user has guessed 50 and the randomly generated secret number this time is 38.",
+    "zh": "让我们用一个例子来走查这里使用的 `match` 表达式。假设用户猜的是 50，而这次随机生成的秘密数字是 38。"
+  },
+  {
+    "en": "When the code compares 50 to 38, the `cmp` method will return `Ordering::Greater` because 50 is greater than 38. The `match` expression gets the `Ordering::Greater` value and starts checking each arm’s pattern. It looks at the first arm’s pattern, `Ordering::Less`, and sees that the value `Ordering::Greater` does not match `Ordering::Less`, so it ignores the code in that arm and moves to the next arm. The next arm’s pattern is `Ordering::Greater`, which *does* match `Ordering::Greater`! The associated code in that arm will execute and print `Too big!` to the screen. The `match` expression ends after the first successful match, so it won’t look at the last arm in this scenario.",
+    "zh": "当代码比较 50 与 38 时，`cmp` 方法会返回 `Ordering::Greater`，因为 50 大于 38。`match` 表达式获得 `Ordering::Greater` 值，开始检查每个分支的模式。它查看第一个分支的模式 `Ordering::Less`，发现值 `Ordering::Greater` 不匹配 `Ordering::Less`，于是忽略该分支中的代码，转到下一个分支。下一个分支的模式是 `Ordering::Greater`，它*确实*匹配 `Ordering::Greater`！该分支中关联的代码将执行，并向屏幕打印 `Too big!`。`match` 表达式在第一次成功匹配后结束，因此在这个场景中不会查看最后一个分支。"
+  },
+  {
+    "en": "However, the code in Listing 2-4 won’t compile yet. Let’s try it:",
+    "zh": "不过，代码清单 2-4 中的代码还不能编译。让我们试一试："
+  },
+  {
+    "en": "```console\n$ cargo build\n   Compiling libc v0.2.186\n   Compiling rand_core v0.10.1\n   Compiling getrandom v0.4.3\n   Compiling cfg-if v1.0.0\n   Compiling chacha20 v0.10.1\n   Compiling rand v0.10.1\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\nerror[E0308]: mismatched types\n  --> src/main.rs:23:21\n   |\n23 |     match guess.cmp(&secret_number) {\n   |                 --- ^^^^^^^^^^^^^^ expected `&String`, found `&{integer}`\n   |                 |\n   |                 arguments to this method are incorrect\n   |\n   = note: expected reference `&String`\n              found reference `&{integer}`\nnote: method defined here\n  --> /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/cmp.rs:1000:7\n\nFor more information about this error, try `rustc --explain E0308`.\nerror: could not compile `guessing_game` (bin \"guessing_game\") due to 1 previous error\n```",
+    "zh": "```console\n$ cargo build\n   Compiling libc v0.2.186\n   Compiling rand_core v0.10.1\n   Compiling getrandom v0.4.3\n   Compiling cfg-if v1.0.0\n   Compiling chacha20 v0.10.1\n   Compiling rand v0.10.1\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\nerror[E0308]: mismatched types\n  --> src/main.rs:23:21\n   |\n23 |     match guess.cmp(&secret_number) {\n   |                 --- ^^^^^^^^^^^^^^ expected `&String`, found `&{integer}`\n   |                 |\n   |                 arguments to this method are incorrect\n   |\n   = note: expected reference `&String`\n              found reference `&{integer}`\nnote: method defined here\n  --> /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/cmp.rs:1000:7\n\nFor more information about this error, try `rustc --explain E0308`.\nerror: could not compile `guessing_game` (bin \"guessing_game\") due to 1 previous error\n```"
+  },
+  {
+    "en": "The core of the error states that there are *mismatched types*. Rust has a strong, static type system. However, it also has type inference. When we wrote `let mut guess = String::new()`, Rust was able to infer that `guess` should be a `String` and didn’t make us write the type. The `secret_number`, on the other hand, is a number type. A few of Rust’s number types can have a value between 1 and 100: `i32`, a 32-bit number; `u32`, an unsigned 32-bit number; `i64`, a 64-bit number; as well as others. Unless otherwise specified, Rust defaults to an `i32`, which is the type of `secret_number` unless you add type information elsewhere that would cause Rust to infer a different numerical type. The reason for the error is that Rust cannot compare a string and a number type.",
+    "zh": "错误的核心说明存在*类型不匹配*。Rust 拥有强大的静态类型系统。不过，它也有类型推断。当我们写 `let mut guess = String::new()` 时，Rust 能够推断 `guess` 应该是 `String`，而无需我们写出类型。另一方面，`secret_number` 是数字类型。Rust 的几种数字类型都可以保存 1 到 100 之间的值：`i32`（32 位数字）、`u32`（无符号 32 位数字）、`i64`（64 位数字）等。除非另有说明，Rust 默认使用 `i32`，这就是 `secret_number` 的类型，除非你在别处添加类型信息让 Rust 推断出不同的数值类型。错误的原因是 Rust 无法比较字符串和数字类型。"
+  },
+  {
+    "en": "Ultimately, we want to convert the `String` the program reads as input into a number type so that we can compare it numerically to the secret number. We do so by adding this line to the `main` function body:",
+    "zh": "最终，我们希望把程序读取的 `String` 输入转换为数字类型，以便将其与秘密数字进行数值比较。为此，我们在 `main` 函数体中添加这一行："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\n    // --snip--\n\n    let mut guess = String::new();\n\n    io::stdin()\n        .read_line(&mut guess)\n        .expect(\"Failed to read line\");\n\n    let guess: u32 = guess.trim().parse().expect(\"Please type a number!\");\n\n    println!(\"You guessed: {guess}\");\n\n    match guess.cmp(&secret_number) {\n        Ordering::Less => println!(\"Too small!\"),\n        Ordering::Greater => println!(\"Too big!\"),\n        Ordering::Equal => println!(\"You win!\"),\n    }\n```",
+    "zh": "```rust\n    // --snip--\n\n    let mut guess = String::new();\n\n    io::stdin()\n        .read_line(&mut guess)\n        .expect(\"Failed to read line\");\n\n    let guess: u32 = guess.trim().parse().expect(\"Please type a number!\");\n\n    println!(\"You guessed: {guess}\");\n\n    match guess.cmp(&secret_number) {\n        Ordering::Less => println!(\"Too small!\"),\n        Ordering::Greater => println!(\"Too big!\"),\n        Ordering::Equal => println!(\"You win!\"),\n    }\n```"
+  },
+  {
+    "en": "The line is:",
+    "zh": "这一行是："
+  },
+  {
+    "en": "```rust\nlet guess: u32 = guess.trim().parse().expect(\"Please type a number!\");\n```",
+    "zh": "```rust\nlet guess: u32 = guess.trim().parse().expect(\"Please type a number!\");\n```"
+  },
+  {
+    "en": "We create a variable named `guess`. But wait, doesn’t the program already have a variable named `guess`? It does, but helpfully Rust allows us to shadow the previous value of `guess` with a new one. *Shadowing* lets us reuse the `guess` variable name rather than forcing us to create two unique variables, such as `guess_str` and `guess`, for example. We’ll cover this in more detail in [Chapter 3](https://doc.rust-lang.org/book/ch03-01-variables-and-mutability.html#shadowing), but for now, know that this feature is often used when you want to convert a value from one type to another type.",
+    "zh": "我们创建了一个名为 `guess` 的变量。但等等，程序不是已经有一个名为 `guess` 的变量了吗？确实如此，但 Rust 允许我们用新值遮蔽（shadow）`guess` 之前的值，这很有帮助。*遮蔽*让我们可以重用 `guess` 这个变量名，而不必被迫创建两个不同的变量（例如 `guess_str` 和 `guess`）。我们将在[第 3 章](https://doc.rust-lang.org/book/ch03-01-variables-and-mutability.html#shadowing)更详细地介绍这一点，但目前你只需知道，当你想把某个值从一种类型转换为另一种类型时，经常会用到这个特性。"
+  },
+  {
+    "en": "We bind this new variable to the expression `guess.trim().parse()`. The `guess` in the expression refers to the original `guess` variable that contained the input as a string. The `trim` method on a `String` instance will eliminate any whitespace at the beginning and end, which we must do before we can convert the string to a `u32`, which can only contain numerical data. The user must press enter to satisfy `read_line` and input their guess, which adds a newline character to the string. For example, if the user types 5 and presses enter, `guess` looks like this: `5\\n`. The `\\n` represents “newline.” (On Windows, pressing enter results in a carriage return and a newline, `\\r\\n`.) The `trim` method eliminates `\\n` or `\\r\\n`, resulting in just `5`.",
+    "zh": "我们将这个新变量绑定到表达式 `guess.trim().parse()`。表达式中的 `guess` 指的是原来那个包含字符串输入的 `guess` 变量。`String` 实例上的 `trim` 方法会消除开头和结尾的任何空白，这是把字符串转换为 `u32`（只能包含数字数据）之前必须做的。用户必须按回车才能满足 `read_line` 并输入猜测，这会给字符串添加一个换行符。例如，如果用户输入 5 并按回车，`guess` 看起来像这样：`5\\n`。`\\n` 表示“换行”。（在 Windows 上，按回车会产生回车加换行，即 `\\r\\n`。）`trim` 方法会消除 `\\n` 或 `\\r\\n`，结果只剩 `5`。"
+  },
+  {
+    "en": "The [`parse` method on strings](https://doc.rust-lang.org/book/../std/primitive.str.html#method.parse) converts a string to another type. Here, we use it to convert from a string to a number. We need to tell Rust the exact number type we want by using `let guess: u32`. The colon (`:`) after `guess` tells Rust we’ll annotate the variable’s type. Rust has a few built-in number types; the `u32` seen here is an unsigned, 32-bit integer. It’s a good default choice for a small positive number. You’ll learn about other number types in [Chapter 3](https://doc.rust-lang.org/book/ch03-02-data-types.html#integer-types).",
+    "zh": "字符串上的 [`parse` 方法](https://doc.rust-lang.org/book/../std/primitive.str.html#method.parse) 将字符串转换为另一种类型。这里，我们用它把字符串转换为数字。我们需要用 `let guess: u32` 告诉 Rust 我们想要的确切数字类型。`guess` 后面的冒号（`:`）告诉 Rust 我们将标注变量类型。Rust 有一些内置数字类型；这里看到的 `u32` 是无符号 32 位整数。对于小的正数来说，这是一个不错的默认选择。你将在[第 3 章](https://doc.rust-lang.org/book/ch03-02-data-types.html#integer-types)了解其他数字类型。"
+  },
+  {
+    "en": "Additionally, the `u32` annotation in this example program and the comparison with `secret_number` means Rust will infer that `secret_number` should be a `u32` as well. So, now the comparison will be between two values of the same type!",
+    "zh": "此外，这个示例程序中的 `u32` 标注以及与 `secret_number` 的比较意味着 Rust 会推断 `secret_number` 也应该是 `u32`。所以现在比较将在两个相同类型的值之间进行！"
+  },
+  {
+    "en": "The `parse` method will only work on characters that can logically be converted into numbers and so can easily cause errors. If, for example, the string contained `A👍%`, there would be no way to convert that to a number. Because it might fail, the `parse` method returns a `Result` type, much as the `read_line` method does (discussed earlier in [“Handling Potential Failure with `Result`”](https://doc.rust-lang.org/book/#handling-potential-failure-with-result)). We’ll treat this `Result` the same way by using the `expect` method again. If `parse` returns an `Err` `Result` variant because it couldn’t create a number from the string, the `expect` call will crash the game and print the message we give it. If `parse` can successfully convert the string to a number, it will return the `Ok` variant of `Result`, and `expect` will return the number that we want from the `Ok` value.",
+    "zh": "`parse` 方法只对能够合理转换为数字的字符有效，因此很容易导致错误。例如，如果字符串包含 `A👍%`，就无法将其转换为数字。由于可能失败，`parse` 方法返回一个 `Result` 类型，就像 `read_line` 方法那样（前面在[“用 `Result` 处理可能的失败”](https://doc.rust-lang.org/book/#handling-potential-failure-with-result)中讨论过）。我们会再次使用 `expect` 方法，以同样的方式处理这个 `Result`。如果 `parse` 因为无法从字符串创建数字而返回 `Err` 变体，`expect` 调用会让游戏崩溃并打印我们给它的消息。如果 `parse` 能成功将字符串转换为数字，它会返回 `Result` 的 `Ok` 变体，`expect` 会从 `Ok` 值中返回我们想要的数字。"
+  },
+  {
+    "en": "Let’s run the program now:",
+    "zh": "现在让我们运行程序："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.26s\n     Running `target/debug/guessing_game`\nGuess the number!\nThe secret number is: 58\nPlease input your guess.\n  76\nYou guessed: 76\nToo big!\n```",
+    "zh": "```console\n$ cargo run\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.26s\n     Running `target/debug/guessing_game`\nGuess the number!\nThe secret number is: 58\nPlease input your guess.\n  76\nYou guessed: 76\nToo big!\n```"
+  },
+  {
+    "en": "Nice! Even though spaces were added before the guess, the program still figured out that the user guessed 76. Run the program a few times to verify the different behavior with different kinds of input: Guess the number correctly, guess a number that is too high, and guess a number that is too low.",
+    "zh": "不错！尽管猜测前多了空格，程序仍然算出用户猜的是 76。多运行几次程序，验证不同类型输入下的不同行为：猜对数字、猜一个太大的数字，以及猜一个太小的数字。"
+  },
+  {
+    "en": "We have most of the game working now, but the user can make only one guess. Let’s change that by adding a loop!",
+    "zh": "现在游戏的大部分功能都能工作了，但用户只能猜一次。让我们通过添加循环来改变这一点！"
+  },
+  {
+    "en": "## Allowing Multiple Guesses with Looping",
+    "zh": "## 通过循环允许多次猜测"
+  },
+  {
+    "en": "The `loop` keyword creates an infinite loop. We’ll add a loop to give users more chances at guessing the number:",
+    "zh": "`loop` 关键字创建一个无限循环。我们将添加一个循环，给用户更多猜数字的机会："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\n    // --snip--\n\n    println!(\"The secret number is: {secret_number}\");\n\n    loop {\n        println!(\"Please input your guess.\");\n\n        // --snip--\n\n        match guess.cmp(&secret_number) {\n            Ordering::Less => println!(\"Too small!\"),\n            Ordering::Greater => println!(\"Too big!\"),\n            Ordering::Equal => println!(\"You win!\"),\n        }\n    }\n}\n```",
+    "zh": "```rust\n    // --snip--\n\n    println!(\"The secret number is: {secret_number}\");\n\n    loop {\n        println!(\"Please input your guess.\");\n\n        // --snip--\n\n        match guess.cmp(&secret_number) {\n            Ordering::Less => println!(\"Too small!\"),\n            Ordering::Greater => println!(\"Too big!\"),\n            Ordering::Equal => println!(\"You win!\"),\n        }\n    }\n}\n```"
+  },
+  {
+    "en": "As you can see, we’ve moved everything from the guess input prompt onward into a loop. Be sure to indent the lines inside the loop another four spaces each and run the program again. The program will now ask for another guess forever, which actually introduces a new problem. It doesn’t seem like the user can quit!",
+    "zh": "如你所见，我们把从猜测输入提示开始的所有内容都移入了循环。务必把循环内的行再缩进四个空格，然后再次运行程序。程序现在会永远要求再猜一次，这实际上引入了一个新问题。用户似乎无法退出！"
+  },
+  {
+    "en": "The user could always interrupt the program by using the keyboard shortcut ctrl-C. But there’s another way to escape this insatiable monster, as mentioned in the `parse` discussion in [“Comparing the Guess to the Secret Number”](https://doc.rust-lang.org/book/#comparing-the-guess-to-the-secret-number): If the user enters a non-number answer, the program will crash. We can take advantage of that to allow the user to quit, as shown here:",
+    "zh": "用户总是可以使用键盘快捷键 Ctrl-C 中断程序。但还有另一种方法可以逃离这个贪得无厌的怪物，正如在[“将猜测与秘密数字进行比较”](https://doc.rust-lang.org/book/#comparing-the-guess-to-the-secret-number)中讨论 `parse` 时提到的：如果用户输入非数字答案，程序会崩溃。我们可以利用这一点让用户退出，如下所示："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s\n     Running `target/debug/guessing_game`\nGuess the number!\nThe secret number is: 59\nPlease input your guess.\n45\nYou guessed: 45\nToo small!\nPlease input your guess.\n60\nYou guessed: 60\nToo big!\nPlease input your guess.\n59\nYou guessed: 59\nYou win!\nPlease input your guess.\nquit\n\nthread 'main' (6694925) panicked at src/main.rs:28:47:\nPlease type a number!: ParseIntError { kind: InvalidDigit }\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n```",
+    "zh": "```console\n$ cargo run\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s\n     Running `target/debug/guessing_game`\nGuess the number!\nThe secret number is: 59\nPlease input your guess.\n45\nYou guessed: 45\nToo small!\nPlease input your guess.\n60\nYou guessed: 60\nToo big!\nPlease input your guess.\n59\nYou guessed: 59\nYou win!\nPlease input your guess.\nquit\n\nthread 'main' (6694925) panicked at src/main.rs:28:47:\nPlease type a number!: ParseIntError { kind: InvalidDigit }\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n```"
+  },
+  {
+    "en": "Typing `quit` will quit the game, but as you’ll notice, so will entering any other non-number input. This is suboptimal, to say the least; we want the game to also stop when the correct number is guessed.",
+    "zh": "输入 `quit` 会退出游戏，但你会注意到，输入任何其他非数字内容也会退出。至少可以说，这并不理想；我们还希望游戏在猜中正确数字时也停止。"
+  },
+  {
+    "en": "### Quitting After a Correct Guess",
+    "zh": "### 猜对后退出"
+  },
+  {
+    "en": "Let’s program the game to quit when the user wins by adding a `break` statement:",
+    "zh": "让我们通过添加 `break` 语句，让游戏在用户获胜时退出："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\n        // --snip--\n\n        match guess.cmp(&secret_number) {\n            Ordering::Less => println!(\"Too small!\"),\n            Ordering::Greater => println!(\"Too big!\"),\n            Ordering::Equal => {\n                println!(\"You win!\");\n                break;\n            }\n        }\n    }\n}\n```",
+    "zh": "```rust\n        // --snip--\n\n        match guess.cmp(&secret_number) {\n            Ordering::Less => println!(\"Too small!\"),\n            Ordering::Greater => println!(\"Too big!\"),\n            Ordering::Equal => {\n                println!(\"You win!\");\n                break;\n            }\n        }\n    }\n}\n```"
+  },
+  {
+    "en": "Adding the `break` line after `You win!` makes the program exit the loop when the user guesses the secret number correctly. Exiting the loop also means exiting the program, because the loop is the last part of `main`.",
+    "zh": "在 `You win!` 之后添加 `break` 行，使用户猜中秘密数字时程序退出循环。退出循环也意味着退出程序，因为循环是 `main` 的最后一部分。"
+  },
+  {
+    "en": "### Handling Invalid Input",
+    "zh": "### 处理无效输入"
+  },
+  {
+    "en": "To further refine the game’s behavior, rather than crashing the program when the user inputs a non-number, let’s make the game ignore a non-number so that the user can continue guessing. We can do that by altering the line where `guess` is converted from a `String` to a `u32`, as shown in Listing 2-5.",
+    "zh": "为了进一步改进游戏的行为，与其在用户输入非数字时让程序崩溃，不如让游戏忽略非数字，以便用户继续猜测。我们可以通过修改将 `guess` 从 `String` 转换为 `u32` 的那一行来实现，如代码清单 2-5 所示。"
+  },
+  {
+    "en": "We switch from an `expect` call to a `match` expression to move from crashing on an error to handling the error. Remember that `parse` returns a `Result` type and `Result` is an enum that has the variants `Ok` and `Err`. We’re using a `match` expression here, as we did with the `Ordering` result of the `cmp` method.",
+    "zh": "我们将 `expect` 调用改为 `match` 表达式，从遇错即崩溃转为处理错误。记住，`parse` 返回一个 `Result` 类型，而 `Result` 是一个具有 `Ok` 和 `Err` 变体的枚举。我们在这里使用 `match` 表达式，就像处理 `cmp` 方法返回的 `Ordering` 结果时那样。"
+  },
+  {
+    "en": "If `parse` is able to successfully turn the string into a number, it will return an `Ok` value that contains the resultant number. That `Ok` value will match the first arm’s pattern, and the `match` expression will just return the `num` value that `parse` produced and put inside the `Ok` value. That number will end up right where we want it in the new `guess` variable we’re creating.",
+    "zh": "如果 `parse` 能成功将字符串转换为数字，它会返回一个包含结果数字的 `Ok` 值。该 `Ok` 值将匹配第一个分支的模式，`match` 表达式将返回 `parse` 生成并放入 `Ok` 值中的 `num` 值。这个数字最终会进入我们正在创建的新 `guess` 变量中我们想要的位置。"
+  },
+  {
+    "en": "If `parse` is *not* able to turn the string into a number, it will return an `Err` value that contains more information about the error. The `Err` value does not match the `Ok(num)` pattern in the first `match` arm, but it does match the `Err(_)` pattern in the second arm. The underscore, `_`, is a catch-all value; in this example, we’re saying we want to match all `Err` values, no matter what information they have inside them. So, the program will execute the second arm’s code, `continue`, which tells the program to go to the next iteration of the `loop` and ask for another guess. So, effectively, the program ignores all errors that `parse` might encounter!",
+    "zh": "如果 `parse` *不能*将字符串转换为数字，它会返回一个包含更多错误信息的 `Err` 值。`Err` 值不匹配第一个 `match` 分支中的 `Ok(num)` 模式，但它匹配第二个分支中的 `Err(_)` 模式。下划线 `_` 是一个通配值；在这个例子中，我们表示要匹配所有 `Err` 值，无论它们内部包含什么信息。因此，程序会执行第二个分支的代码 `continue`，它告诉程序进入 `loop` 的下一次迭代并请求再次猜测。所以，实际上程序忽略了 `parse` 可能遇到的所有错误！"
+  },
+  {
+    "en": "Now everything in the program should work as expected. Let’s try it:",
+    "zh": "现在程序中的一切都应能按预期工作。让我们试一试："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s\n     Running `target/debug/guessing_game`\nGuess the number!\nThe secret number is: 61\nPlease input your guess.\n10\nYou guessed: 10\nToo small!\nPlease input your guess.\n99\nYou guessed: 99\nToo big!\nPlease input your guess.\nfoo\nPlease input your guess.\n61\nYou guessed: 61\nYou win!\n```",
+    "zh": "```console\n$ cargo run\n   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s\n     Running `target/debug/guessing_game`\nGuess the number!\nThe secret number is: 61\nPlease input your guess.\n10\nYou guessed: 10\nToo small!\nPlease input your guess.\n99\nYou guessed: 99\nToo big!\nPlease input your guess.\nfoo\nPlease input your guess.\n61\nYou guessed: 61\nYou win!\n```"
+  },
+  {
+    "en": "Awesome! With one tiny final tweak, we will finish the guessing game. Recall that the program is still printing the secret number. That worked well for testing, but it ruins the game. Let’s delete the `println!` that outputs the secret number. Listing 2-6 shows the final code.",
+    "zh": "太棒了！再做最后一处小调整，我们就能完成猜数字游戏。回想一下，程序仍在打印秘密数字。这在测试时很好用，但会毁掉游戏。让我们删除输出秘密数字的 `println!`。代码清单 2-6 展示了最终代码。"
+  },
+  {
+    "en": "At this point, you’ve successfully built the guessing game. Congratulations!",
+    "zh": "至此，你已经成功构建了猜数字游戏。恭喜！"
+  },
+  {
+    "en": "## Summary",
+    "zh": "## 总结"
+  },
+  {
+    "en": "This project was a hands-on way to introduce you to many new Rust concepts: `let`, `match`, functions, the use of external crates, and more. In the next few chapters, you’ll learn about these concepts in more detail. Chapter 3 covers concepts that most programming languages have, such as variables, data types, and functions, and shows how to use them in Rust. Chapter 4 explores ownership, a feature that makes Rust different from other languages. Chapter 5 discusses structs and method syntax, and Chapter 6 explains how enums work.",
+    "zh": "这个项目通过动手实践向你介绍了许多新的 Rust 概念：`let`、`match`、函数、外部 crate 的使用等等。在接下来的几章中，你将更详细地学习这些概念。第 3 章涵盖大多数编程语言都有的概念，例如变量、数据类型和函数，并展示如何在 Rust 中使用它们。第 4 章探讨所有权，这是让 Rust 区别于其他语言的一个特性。第 5 章讨论结构体和方法语法，第 6 章解释枚举如何工作。"
+  }
+]

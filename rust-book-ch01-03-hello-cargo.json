@@ -1,0 +1,210 @@
+[
+  {
+    "en": "## Hello, Cargo!",
+    "zh": "## Hello, Cargo!"
+  },
+  {
+    "en": "Cargo is Rust’s build system and package manager. Most Rustaceans use this tool to manage their Rust projects because Cargo handles a lot of tasks for you, such as building your code, downloading the libraries your code depends on, and building those libraries. (We call the libraries that your code needs *dependencies*.)",
+    "zh": "Cargo 是 Rust 的构建系统和包管理器。大多数 Rustacean 都使用这个工具来管理他们的 Rust 项目，因为 Cargo 为你处理许多任务，例如构建代码、下载代码依赖的库，以及构建这些库。（我们把代码所需的库称为*依赖*。）"
+  },
+  {
+    "en": "The simplest Rust programs, like the one we’ve written so far, don’t have any dependencies. If we had built the “Hello, world!” project with Cargo, it would only use the part of Cargo that handles building your code. As you write more complex Rust programs, you’ll add dependencies, and if you start a project using Cargo, adding dependencies will be much easier to do.",
+    "zh": "最简单的 Rust 程序，比如我们目前编写的那个，没有任何依赖。如果我们用 Cargo 构建“Hello, world!”项目，它只会使用 Cargo 中负责构建代码的那部分功能。当你编写更复杂的 Rust 程序时，你会添加依赖，而如果你使用 Cargo 创建项目，添加依赖会容易得多。"
+  },
+  {
+    "en": "Because the vast majority of Rust projects use Cargo, the rest of this book assumes that you’re using Cargo too. Cargo comes installed with Rust if you used the official installers discussed in the [“Installation”](https://doc.rust-lang.org/book/ch01-01-installation.html#installation) section. If you installed Rust through some other means, check whether Cargo is installed by entering the following in your terminal:",
+    "zh": "由于绝大多数 Rust 项目都使用 Cargo，本书其余部分假定你也使用 Cargo。如果你使用了[“安装”](https://doc.rust-lang.org/book/ch01-01-installation.html#installation)一节中讨论的官方安装程序，Cargo 会随 Rust 一起安装。如果你通过其他方式安装了 Rust，请通过在终端中输入以下命令来检查 Cargo 是否已安装："
+  },
+  {
+    "en": "```console\n$ cargo --version\n```",
+    "zh": "```console\n$ cargo --version\n```"
+  },
+  {
+    "en": "If you see a version number, you have it! If you see an error, such as `command not found`, look at the documentation for your method of installation to determine how to install Cargo separately.",
+    "zh": "如果你看到了版本号，说明你已经安装了！如果看到错误，例如 `command not found`，请查看你所使用安装方式的文档，以确定如何单独安装 Cargo。"
+  },
+  {
+    "en": "### Creating a Project with Cargo",
+    "zh": "### 使用 Cargo 创建项目"
+  },
+  {
+    "en": "Let’s create a new project using Cargo and look at how it differs from our original “Hello, world!” project. Navigate back to your *projects* directory (or wherever you decided to store your code). Then, on any operating system, run the following:",
+    "zh": "让我们用 Cargo 创建一个新项目，并看看它与我们最初的“Hello, world!”项目有何不同。回到你的 *projects* 目录（或你决定存放代码的位置）。然后，在任何操作系统上运行以下命令："
+  },
+  {
+    "en": "```console\n$ cargo new hello_cargo\n$ cd hello_cargo\n```",
+    "zh": "```console\n$ cargo new hello_cargo\n$ cd hello_cargo\n```"
+  },
+  {
+    "en": "The first command creates a new directory and project called *hello_cargo*. We’ve named our project *hello_cargo*, and Cargo creates its files in a directory of the same name.",
+    "zh": "第一条命令创建一个名为 *hello_cargo* 的新目录和项目。我们将项目命名为 *hello_cargo*，Cargo 会在同名目录中创建其文件。"
+  },
+  {
+    "en": "Go into the *hello_cargo* directory and list the files. You’ll see that Cargo has generated two files and one directory for us: a *Cargo.toml* file and a *src* directory with a *main.rs* file inside.",
+    "zh": "进入 *hello_cargo* 目录并列出文件。你会看到 Cargo 为我们生成了两个文件和一个目录：一个 *Cargo.toml* 文件，以及一个包含 *main.rs* 文件的 *src* 目录。"
+  },
+  {
+    "en": "It has also initialized a new Git repository along with a *.gitignore* file. Git files won’t be generated if you run `cargo new` within an existing Git repository; you can override this behavior by using `cargo new --vcs=git`.",
+    "zh": "它还初始化了一个新的 Git 仓库以及一个 *.gitignore* 文件。如果你在已有的 Git 仓库中运行 `cargo new`，则不会生成 Git 文件；你可以使用 `cargo new --vcs=git` 覆盖此行为。"
+  },
+  {
+    "en": "Note: Git is a common version control system. You can change `cargo new` to use a different version control system or no version control system by using the `--vcs` flag. Run `cargo new --help` to see the available options.",
+    "zh": "注意：Git 是一种常见的版本控制系统。你可以使用 `--vcs` 标志让 `cargo new` 使用其他版本控制系统，或完全不使用版本控制。运行 `cargo new --help` 查看可用选项。"
+  },
+  {
+    "en": "Open *Cargo.toml* in your text editor of choice. It should look similar to the code in Listing 1-2.",
+    "zh": "在你选择的文本编辑器中打开 *Cargo.toml*。它应该与代码清单 1-2 中的代码类似。"
+  },
+  {
+    "en": "This file is in the [*TOML*](https://toml.io) (*Tom’s Obvious, Minimal Language*) format, which is Cargo’s configuration format.",
+    "zh": "这个文件采用 [*TOML*](https://toml.io)（*Tom’s Obvious, Minimal Language*）格式，这是 Cargo 的配置格式。"
+  },
+  {
+    "en": "The first line, `[package]`, is a section heading that indicates that the following statements are configuring a package. As we add more information to this file, we’ll add other sections.",
+    "zh": "第一行 `[package]` 是一个节的标题，表示后面的语句正在配置一个包。随着我们向该文件添加更多信息，我们还会添加其他节。"
+  },
+  {
+    "en": "The next three lines set the configuration information Cargo needs to compile your program: the name, the version, and the edition of Rust to use. We’ll talk about the `edition` key in [Appendix E](https://doc.rust-lang.org/book/appendix-05-editions.html).",
+    "zh": "接下来的三行设置 Cargo 编译程序所需的配置信息：名称、版本，以及要使用的 Rust edition。我们将在[附录 E](https://doc.rust-lang.org/book/appendix-05-editions.html)中讨论 `edition` 键。"
+  },
+  {
+    "en": "The last line, `[dependencies]`, is the start of a section for you to list any of your project’s dependencies. In Rust, packages of code are referred to as *crates*. We won’t need any other crates for this project, but we will in the first project in Chapter 2, so we’ll use this dependencies section then.",
+    "zh": "最后一行 `[dependencies]` 是一个节的开始，用于列出项目的任何依赖。在 Rust 中，代码包被称为 *crate*。这个项目不需要任何其他 crate，但在第 2 章的第一个项目中会需要，所以到那时我们会使用这个依赖节。"
+  },
+  {
+    "en": "Now open *src/main.rs* and take a look:",
+    "zh": "现在打开 *src/main.rs* 看一看："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\nfn main() {\n    println!(\"Hello, world!\");\n}\n```",
+    "zh": "```rust\nfn main() {\n    println!(\"Hello, world!\");\n}\n```"
+  },
+  {
+    "en": "Cargo has generated a “Hello, world!” program for you, just like the one we wrote in Listing 1-1! So far, the differences between our project and the project Cargo generated are that Cargo placed the code in the *src* directory, and we have a *Cargo.toml* configuration file in the top directory.",
+    "zh": "Cargo 为你生成了一个“Hello, world!”程序，就像我们在代码清单 1-1 中写的一样！到目前为止，我们的项目与 Cargo 生成的项目之间的区别在于：Cargo 把代码放在了 *src* 目录中，而且顶层目录中有一个 *Cargo.toml* 配置文件。"
+  },
+  {
+    "en": "Cargo expects your source files to live inside the *src* directory. The top-level project directory is just for README files, license information, configuration files, and anything else not related to your code. Using Cargo helps you organize your projects. There’s a place for everything, and everything is in its place.",
+    "zh": "Cargo 期望你的源文件放在 *src* 目录内。顶层项目目录只用于 README 文件、许可证信息、配置文件以及其他与代码无关的内容。使用 Cargo 有助于你组织项目。万物各得其所，各安其位。"
+  },
+  {
+    "en": "If you started a project that doesn’t use Cargo, as we did with the “Hello, world!” project, you can convert it to a project that does use Cargo. Move the project code into the *src* directory and create an appropriate *Cargo.toml* file. One easy way to get that *Cargo.toml* file is to run `cargo init`, which will create it for you automatically.",
+    "zh": "如果你创建的项目没有使用 Cargo，就像我们编写“Hello, world!”项目时那样，你可以把它转换为使用 Cargo 的项目。将项目代码移入 *src* 目录，并创建一个合适的 *Cargo.toml* 文件。获得该 *Cargo.toml* 文件的一个简单方法是运行 `cargo init`，它会自动为你创建。"
+  },
+  {
+    "en": "### Building and Running a Cargo Project",
+    "zh": "### 构建并运行 Cargo 项目"
+  },
+  {
+    "en": "Now let’s look at what’s different when we build and run the “Hello, world!” program with Cargo! From your *hello_cargo* directory, build your project by entering the following command:",
+    "zh": "现在我们来看看使用 Cargo 构建和运行“Hello, world!”程序时有什么不同！在 *hello_cargo* 目录中，输入以下命令来构建项目："
+  },
+  {
+    "en": "```console\n$ cargo build\n   Compiling hello_cargo v0.1.0 (file:///projects/hello_cargo)\n    Finished dev [unoptimized + debuginfo] target(s) in 2.85 secs\n```",
+    "zh": "```console\n$ cargo build\n   Compiling hello_cargo v0.1.0 (file:///projects/hello_cargo)\n    Finished dev [unoptimized + debuginfo] target(s) in 2.85 secs\n```"
+  },
+  {
+    "en": "This command creates an executable file in *target/debug/hello_cargo* (or *target\\debug\\hello_cargo.exe* on Windows) rather than in your current directory. Because the default build is a debug build, Cargo puts the binary in a directory named *debug*. You can run the executable with this command:",
+    "zh": "这条命令会在 *target/debug/hello_cargo*（在 Windows 上是 *target\\debug\\hello_cargo.exe*）中创建一个可执行文件，而不是在当前目录中。由于默认构建是 debug 构建，Cargo 将二进制文件放在名为 *debug* 的目录中。你可以使用以下命令运行该可执行文件："
+  },
+  {
+    "en": "```console\n$ ./target/debug/hello_cargo # or .\\target\\debug\\hello_cargo.exe on Windows\nHello, world!\n```",
+    "zh": "```console\n$ ./target/debug/hello_cargo # or .\\target\\debug\\hello_cargo.exe on Windows\nHello, world!\n```"
+  },
+  {
+    "en": "If all goes well, `Hello, world!` should print to the terminal. Running `cargo build` for the first time also causes Cargo to create a new file at the top level: *Cargo.lock*. This file keeps track of the exact versions of dependencies in your project. This project doesn’t have dependencies, so the file is a bit sparse. You won’t ever need to change this file manually; Cargo manages its contents for you.",
+    "zh": "如果一切顺利，`Hello, world!` 应打印到终端。第一次运行 `cargo build` 还会让 Cargo 在顶层创建一个新文件：*Cargo.lock*。该文件记录项目中依赖的确切版本。这个项目没有依赖，所以文件内容比较少。你永远不需要手动修改这个文件；Cargo 会为你管理其内容。"
+  },
+  {
+    "en": "We just built a project with `cargo build` and ran it with `./target/debug/hello_cargo`, but we can also use `cargo run` to compile the code and then run the resultant executable all in one command:",
+    "zh": "我们刚刚用 `cargo build` 构建了一个项目，并用 `./target/debug/hello_cargo` 运行了它，但我们也可以使用 `cargo run`，用一条命令完成编译代码并运行生成的可执行文件："
+  },
+  {
+    "en": "```console\n$ cargo run\n    Finished dev [unoptimized + debuginfo] target(s) in 0.0 secs\n     Running `target/debug/hello_cargo`\nHello, world!\n```",
+    "zh": "```console\n$ cargo run\n    Finished dev [unoptimized + debuginfo] target(s) in 0.0 secs\n     Running `target/debug/hello_cargo`\nHello, world!\n```"
+  },
+  {
+    "en": "Using `cargo run` is more convenient than having to remember to run `cargo build` and then use the whole path to the binary, so most developers use `cargo run`.",
+    "zh": "使用 `cargo run` 比记住先运行 `cargo build`、再使用二进制文件的完整路径更方便，所以大多数开发者使用 `cargo run`。"
+  },
+  {
+    "en": "Notice that this time we didn’t see output indicating that Cargo was compiling `hello_cargo`. Cargo figured out that the files hadn’t changed, so it didn’t rebuild but just ran the binary. If you had modified your source code, Cargo would have rebuilt the project before running it, and you would have seen this output:",
+    "zh": "注意，这次我们没有看到表示 Cargo 正在编译 `hello_cargo` 的输出。Cargo 发现文件没有变化，所以没有重新构建，只是运行了二进制文件。如果你修改了源代码，Cargo 会在运行前重新构建项目，你会看到类似下面的输出："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling hello_cargo v0.1.0 (file:///projects/hello_cargo)\n    Finished dev [unoptimized + debuginfo] target(s) in 0.33 secs\n     Running `target/debug/hello_cargo`\nHello, world!\n```",
+    "zh": "```console\n$ cargo run\n   Compiling hello_cargo v0.1.0 (file:///projects/hello_cargo)\n    Finished dev [unoptimized + debuginfo] target(s) in 0.33 secs\n     Running `target/debug/hello_cargo`\nHello, world!\n```"
+  },
+  {
+    "en": "Cargo also provides a command called `cargo check`. This command quickly checks your code to make sure it compiles but doesn’t produce an executable:",
+    "zh": "Cargo 还提供了一个名为 `cargo check` 的命令。该命令会快速检查代码以确保其可以编译，但不生成可执行文件："
+  },
+  {
+    "en": "```console\n$ cargo check\n   Checking hello_cargo v0.1.0 (file:///projects/hello_cargo)\n    Finished dev [unoptimized + debuginfo] target(s) in 0.32 secs\n```",
+    "zh": "```console\n$ cargo check\n   Checking hello_cargo v0.1.0 (file:///projects/hello_cargo)\n    Finished dev [unoptimized + debuginfo] target(s) in 0.32 secs\n```"
+  },
+  {
+    "en": "Why would you not want an executable? Often, `cargo check` is much faster than `cargo build` because it skips the step of producing an executable. If you’re continually checking your work while writing the code, using `cargo check` will speed up the process of letting you know if your project is still compiling! As such, many Rustaceans run `cargo check` periodically as they write their program to make sure it compiles. Then, they run `cargo build` when they’re ready to use the executable.",
+    "zh": "为什么你会不需要可执行文件呢？通常，`cargo check` 比 `cargo build` 快得多，因为它跳过了生成可执行文件的步骤。如果你在编写代码时不断检查工作成果，使用 `cargo check` 可以加快获知项目是否仍能编译的过程！因此，许多 Rustacean 在编写程序时会定期运行 `cargo check`，以确保代码可以编译。然后，当他们准备好使用可执行文件时，再运行 `cargo build`。"
+  },
+  {
+    "en": "Let’s recap what we’ve learned so far about Cargo:",
+    "zh": "让我们回顾一下到目前为止所学的 Cargo 知识："
+  },
+  {
+    "en": "- We can create a project using `cargo new`.\n- We can build a project using `cargo build`.\n- We can build and run a project in one step using `cargo run`.\n- We can build a project without producing a binary to check for errors using `cargo check`.\n- Instead of saving the result of the build in the same directory as our code, Cargo stores it in the target/debug directory.",
+    "zh": "- 我们可以使用 `cargo new` 创建项目。\n- 我们可以使用 `cargo build` 构建项目。\n- 我们可以使用 `cargo run` 一步完成构建和运行项目。\n- 我们可以使用 `cargo check` 在不生成二进制文件的情况下构建项目以检查错误。\n- Cargo 不会将构建结果保存在代码所在目录，而是存储在 target/debug 目录中。"
+  },
+  {
+    "en": "An additional advantage of using Cargo is that the commands are the same no matter which operating system you’re working on. So, at this point, we’ll no longer provide specific instructions for Linux and macOS versus Windows.",
+    "zh": "使用 Cargo 的另一个优势是，无论你在哪个操作系统上工作，命令都是相同的。因此，从这时起，我们不再分别提供 Linux 和 macOS 与 Windows 的具体说明。"
+  },
+  {
+    "en": "### Building for Release",
+    "zh": "### 为发布而构建"
+  },
+  {
+    "en": "When your project is finally ready for release, you can use `cargo build --release` to compile it with optimizations. This command will create an executable in *target/release* instead of *target/debug*. The optimizations make your Rust code run faster, but turning them on lengthens the time it takes for your program to compile. This is why there are two different profiles: one for development, when you want to rebuild quickly and often, and another for building the final program you’ll give to a user that won’t be rebuilt repeatedly and that will run as fast as possible. If you’re benchmarking your code’s running time, be sure to run `cargo build --release` and benchmark with the executable in *target/release*.",
+    "zh": "当项目最终准备好发布时，你可以使用 `cargo build --release` 以优化方式编译它。该命令会在 *target/release* 而不是 *target/debug* 中创建可执行文件。优化会让你的 Rust 代码运行得更快，但启用优化会延长程序编译所需的时间。这就是为什么有两种不同的配置：一种用于开发，此时你希望快速且频繁地重新构建；另一种用于构建最终交给用户的程序，它不会被反复重新构建，并且会尽可能快地运行。如果你要对代码的运行时间进行基准测试，务必运行 `cargo build --release`，并使用 *target/release* 中的可执行文件进行基准测试。"
+  },
+  {
+    "en": "### Leveraging Cargo’s Conventions",
+    "zh": "### 利用 Cargo 的约定"
+  },
+  {
+    "en": "With simple projects, Cargo doesn’t provide a lot of value over just using `rustc`, but it will prove its worth as your programs become more intricate. Once programs grow to multiple files or need a dependency, it’s much easier to let Cargo coordinate the build.",
+    "zh": "对于简单项目，Cargo 相比仅使用 `rustc` 并没有提供太多额外价值，但随着程序变得更加复杂，它会证明自己的价值。一旦程序增长到多个文件或需要依赖，让 Cargo 协调构建就会容易得多。"
+  },
+  {
+    "en": "Even though the `hello_cargo` project is simple, it now uses much of the real tooling you’ll use in the rest of your Rust career. In fact, to work on any existing projects, you can use the following commands to check out the code using Git, change to that project’s directory, and build:",
+    "zh": "尽管 `hello_cargo` 项目很简单，但它现在使用的许多工具，正是你在余下 Rust 生涯中会使用的真实工具。事实上，要处理任何现有项目，你可以使用以下命令通过 Git 检出代码、切换到该项目目录并构建："
+  },
+  {
+    "en": "```console\n$ git clone example.org/someproject\n$ cd someproject\n$ cargo build\n```",
+    "zh": "```console\n$ git clone example.org/someproject\n$ cd someproject\n$ cargo build\n```"
+  },
+  {
+    "en": "For more information about Cargo, check out [its documentation](https://doc.rust-lang.org/cargo/).",
+    "zh": "有关 Cargo 的更多信息，请查看[其文档](https://doc.rust-lang.org/cargo/)。"
+  },
+  {
+    "en": "## Summary",
+    "zh": "## 总结"
+  },
+  {
+    "en": "You’re already off to a great start on your Rust journey! In this chapter, you learned how to:",
+    "zh": "你已经为 Rust 之旅开了一个好头！在本章中，你学会了如何："
+  },
+  {
+    "en": "- Install the latest stable version of Rust using `rustup`.\n- Update to a newer Rust version.\n- Open locally installed documentation.\n- Write and run a “Hello, world!” program using `rustc` directly.\n- Create and run a new project using the conventions of Cargo.",
+    "zh": "- 使用 `rustup` 安装最新稳定版本的 Rust。\n- 更新到更新的 Rust 版本。\n- 打开本地安装的文档。\n- 直接使用 `rustc` 编写并运行“Hello, world!”程序。\n- 使用 Cargo 的约定创建并运行一个新项目。"
+  },
+  {
+    "en": "This is a great time to build a more substantial program to get used to reading and writing Rust code. So, in Chapter 2, we’ll build a guessing game program. If you would rather start by learning how common programming concepts work in Rust, see Chapter 3 and then return to Chapter 2.",
+    "zh": "现在是构建一个更实质性的程序、以熟悉读写 Rust 代码的好时机。因此，在第 2 章，我们将构建一个猜数字游戏程序。如果你更愿意从学习常见编程概念在 Rust 中如何工作开始，请阅读第 3 章，然后再回到第 2 章。"
+  }
+]

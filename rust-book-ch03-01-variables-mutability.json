@@ -1,0 +1,170 @@
+[
+  {
+    "en": "## Variables and Mutability",
+    "zh": "## 变量与可变性"
+  },
+  {
+    "en": "As mentioned in the [“Storing Values with Variables”](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#storing-values-with-variables) section, by default, variables are immutable. This is one of many nudges Rust gives you to write your code in a way that takes advantage of the safety and easy concurrency that Rust offers. However, you still have the option to make your variables mutable. Let’s explore how and why Rust encourages you to favor immutability and why sometimes you might want to opt out.",
+    "zh": "正如[“用变量存储值”](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#storing-values-with-variables)一节所述，变量默认是不可变的。这是 Rust 给你的众多提示之一，让你以能够利用 Rust 所提供的安全性和轻松并发的方式来编写代码。不过，你仍然可以选择让变量可变。让我们探讨 Rust 如何以及为何鼓励你偏爱不可变性，以及为什么有时你可能会想选择可变。"
+  },
+  {
+    "en": "When a variable is immutable, once a value is bound to a name, you can’t change that value. To illustrate this, generate a new project called *variables* in your *projects* directory by using `cargo new variables`.",
+    "zh": "当变量不可变时，一旦某个值绑定到某个名称，你就不能更改该值。为了说明这一点，请在你的 *projects* 目录中使用 `cargo new variables` 创建一个名为 *variables* 的新项目。"
+  },
+  {
+    "en": "Then, in your new *variables* directory, open *src/main.rs* and replace its code with the following code, which won’t compile just yet:",
+    "zh": "然后，在你新建的 *variables* 目录中打开 *src/main.rs*，用以下代码替换其中的代码。这段代码暂时还不能编译："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\nfn main() {\n    let x = 5;\n    println!(\"The value of x is: {x}\");\n    x = 6;\n    println!(\"The value of x is: {x}\");\n}\n```",
+    "zh": "```rust\nfn main() {\n    let x = 5;\n    println!(\"The value of x is: {x}\");\n    x = 6;\n    println!(\"The value of x is: {x}\");\n}\n```"
+  },
+  {
+    "en": "Save and run the program using `cargo run`. You should receive an error message regarding an immutability error, as shown in this output:",
+    "zh": "保存并使用 `cargo run` 运行程序。你应该会收到一条关于不可变性错误的错误消息，如下所示："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling variables v0.1.0 (file:///projects/variables)\nerror[E0384]: cannot assign twice to immutable variable `x`\n --> src/main.rs:4:5\n  |\n2 |     let x = 5;\n  |         - first assignment to `x`\n3 |     println!(\"The value of x is: {x}\");\n4 |     x = 6;\n  |     ^^^^^ cannot assign twice to immutable variable\n  |\nhelp: consider making this binding mutable\n  |\n2 |     let mut x = 5;\n  |         +++\n\nFor more information about this error, try `rustc --explain E0384`.\nerror: could not compile `variables` (bin \"variables\") due to 1 previous error\n```",
+    "zh": "```console\n$ cargo run\n   Compiling variables v0.1.0 (file:///projects/variables)\nerror[E0384]: cannot assign twice to immutable variable `x`\n --> src/main.rs:4:5\n  |\n2 |     let x = 5;\n  |         - first assignment to `x`\n3 |     println!(\"The value of x is: {x}\");\n4 |     x = 6;\n  |     ^^^^^ cannot assign twice to immutable variable\n  |\nhelp: consider making this binding mutable\n  |\n2 |     let mut x = 5;\n  |         +++\n\nFor more information about this error, try `rustc --explain E0384`.\nerror: could not compile `variables` (bin \"variables\") due to 1 previous error\n```"
+  },
+  {
+    "en": "This example shows how the compiler helps you find errors in your programs. Compiler errors can be frustrating, but really they only mean your program isn’t safely doing what you want it to do yet; they do *not* mean that you’re not a good programmer! Experienced Rustaceans still get compiler errors.",
+    "zh": "这个例子展示了编译器如何帮助你发现程序中的错误。编译器错误可能会令人沮丧，但实际上它们只意味着你的程序目前还没有安全地按你的意愿工作；它们*并不*意味着你不是一个好程序员！经验丰富的 Rustacean 仍然会遇到编译器错误。"
+  },
+  {
+    "en": "You received the error message ``cannot assign twice to immutable variable `x` `` because you tried to assign a second value to the immutable `x` variable.",
+    "zh": "你收到的错误消息是 ``cannot assign twice to immutable variable `x` ``，因为你试图给不可变的 `x` 变量赋第二个值。"
+  },
+  {
+    "en": "It’s important that we get compile-time errors when we attempt to change a value that’s designated as immutable, because this very situation can lead to bugs. If one part of our code operates on the assumption that a value will never change and another part of our code changes that value, it’s possible that the first part of the code won’t do what it was designed to do. The cause of this kind of bug can be difficult to track down after the fact, especially when the second piece of code changes the value only *sometimes*. The Rust compiler guarantees that when you state that a value won’t change, it really won’t change, so you don’t have to keep track of it yourself. Your code is thus easier to reason through.",
+    "zh": "当我们试图更改被指定为不可变的值时，能在编译时得到错误很重要，因为这种情况可能导致 bug。如果代码的一部分假定某个值永远不会改变，而代码的另一部分却更改了该值，那么第一部分代码可能无法完成它原本设计要做的事。这类 bug 的成因在事后很难追踪，尤其是当第二段代码只是*有时*更改该值时。Rust 编译器保证：当你声明某个值不会改变时，它就真的不会改变，因此你无需自己跟踪它。这样你的代码就更容易推理。"
+  },
+  {
+    "en": "But mutability can be very useful and can make code more convenient to write. Although variables are immutable by default, you can make them mutable by adding `mut` in front of the variable name as you did in [Chapter 2](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#storing-values-with-variables). Adding `mut` also conveys intent to future readers of the code by indicating that other parts of the code will be changing this variable’s value.",
+    "zh": "但可变性可能非常有用，并且能让代码更便于编写。虽然变量默认不可变，但你可以像[第 2 章](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#storing-values-with-variables)那样，在变量名前添加 `mut` 来使它们可变。添加 `mut` 也向代码的未来读者传达了意图，表明代码的其他部分将更改该变量的值。"
+  },
+  {
+    "en": "For example, let’s change *src/main.rs* to the following:",
+    "zh": "例如，让我们把 *src/main.rs* 改成以下内容："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\nfn main() {\n    let mut x = 5;\n    println!(\"The value of x is: {x}\");\n    x = 6;\n    println!(\"The value of x is: {x}\");\n}\n```",
+    "zh": "```rust\nfn main() {\n    let mut x = 5;\n    println!(\"The value of x is: {x}\");\n    x = 6;\n    println!(\"The value of x is: {x}\");\n}\n```"
+  },
+  {
+    "en": "When we run the program now, we get this:",
+    "zh": "现在运行程序，我们会得到："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling variables v0.1.0 (file:///projects/variables)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.30s\n     Running `target/debug/variables`\nThe value of x is: 5\nThe value of x is: 6\n```",
+    "zh": "```console\n$ cargo run\n   Compiling variables v0.1.0 (file:///projects/variables)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.30s\n     Running `target/debug/variables`\nThe value of x is: 5\nThe value of x is: 6\n```"
+  },
+  {
+    "en": "We’re allowed to change the value bound to `x` from `5` to `6` when `mut` is used. Ultimately, deciding whether to use mutability or not is up to you and depends on what you think is clearest in that particular situation.",
+    "zh": "使用 `mut` 时，我们允许把绑定到 `x` 的值从 `5` 改为 `6`。归根结底，是否使用可变性由你决定，取决于你认为在特定情况下哪种方式最清晰。"
+  },
+  {
+    "en": "### Declaring Constants",
+    "zh": "### 声明常量"
+  },
+  {
+    "en": "Like immutable variables, *constants* are values that are bound to a name and are not allowed to change, but there are a few differences between constants and variables.",
+    "zh": "与不可变变量一样，*常量*是绑定到名称且不允许改变的值，但常量与变量之间有一些区别。"
+  },
+  {
+    "en": "First, you aren’t allowed to use `mut` with constants. Constants aren’t just immutable by default—they’re always immutable. You declare constants using the `const` keyword instead of the `let` keyword, and the type of the value *must* be annotated. We’ll cover types and type annotations in the next section, [“Data Types”](https://doc.rust-lang.org/book/ch03-02-data-types.html#data-types), so don’t worry about the details right now. Just know that you must always annotate the type.",
+    "zh": "首先，你不能对常量使用 `mut`。常量不仅仅是默认不可变——它们始终不可变。你使用 `const` 关键字而不是 `let` 关键字声明常量，并且值的类型*必须*标注。我们将在下一节[“数据类型”](https://doc.rust-lang.org/book/ch03-02-data-types.html#data-types)中介绍类型和类型标注，所以现在不必担心细节。只需知道你必须始终标注类型。"
+  },
+  {
+    "en": "Constants can be declared in any scope, including the global scope, which makes them useful for values that many parts of code need to know about.",
+    "zh": "常量可以在任何作用域中声明，包括全局作用域，这使它们对于代码的许多部分都需要知道的值很有用。"
+  },
+  {
+    "en": "The last difference is that constants may be set only to a constant expression, not the result of a value that could only be computed at runtime.",
+    "zh": "最后一个区别是，常量只能设置为常量表达式，而不能设置为只能在运行时计算出的值的结果。"
+  },
+  {
+    "en": "Here’s an example of a constant declaration:",
+    "zh": "下面是一个常量声明的例子："
+  },
+  {
+    "en": "```rust\nconst THREE_HOURS_IN_SECONDS: u32 = 60 * 60 * 3;\n```",
+    "zh": "```rust\nconst THREE_HOURS_IN_SECONDS: u32 = 60 * 60 * 3;\n```"
+  },
+  {
+    "en": "The constant’s name is `THREE_HOURS_IN_SECONDS`, and its value is set to the result of multiplying 60 (the number of seconds in a minute) by 60 (the number of minutes in an hour) by 3 (the number of hours we want to count in this program). Rust’s naming convention for constants is to use all uppercase with underscores between words. The compiler is able to evaluate a limited set of operations at compile time, which lets us choose to write out this value in a way that’s easier to understand and verify, rather than setting this constant to the value 10,800. See the [Rust Reference’s section on constant evaluation](https://doc.rust-lang.org/book/../reference/const_eval.html) for more information on what operations can be used when declaring constants.",
+    "zh": "常量的名称是 `THREE_HOURS_IN_SECONDS`，其值设置为 60（一分钟的秒数）乘以 60（一小时的分钟数）再乘以 3（本程序中我们要计算的小时数）的结果。Rust 的常量命名惯例是全部使用大写字母，单词之间用下划线分隔。编译器能够在编译时求值一组有限的操作，这让我们可以选择以更易于理解和验证的方式写出这个值，而不是把该常量设为 10800。关于声明常量时可以使用哪些操作的更多信息，请参阅 [Rust 参考手册中关于常量求值的章节](https://doc.rust-lang.org/book/../reference/const_eval.html)。"
+  },
+  {
+    "en": "Constants are valid for the entire time a program runs, within the scope in which they were declared. This property makes constants useful for values in your application domain that multiple parts of the program might need to know about, such as the maximum number of points any player of a game is allowed to earn, or the speed of light.",
+    "zh": "常量在其声明的作用域内，在程序运行的整个期间都有效。这一特性使常量适用于应用程序域中程序的多个部分都可能需要知道的值，例如游戏中任何玩家允许获得的最高分数，或光速。"
+  },
+  {
+    "en": "Naming hardcoded values used throughout your program as constants is useful in conveying the meaning of that value to future maintainers of the code. It also helps to have only one place in your code that you would need to change if the hardcoded value needed to be updated in the future.",
+    "zh": "把程序中各处的硬编码值命名为常量，有助于向代码的未来维护者传达该值的含义。如果将来需要更新该硬编码值，这也让你只需在代码中的一个地方进行修改。"
+  },
+  {
+    "en": "### Shadowing",
+    "zh": "### 遮蔽"
+  },
+  {
+    "en": "As you saw in the guessing game tutorial in [Chapter 2](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number), you can declare a new variable with the same name as a previous variable. Rustaceans say that the first variable is *shadowed* by the second, which means that the second variable is what the compiler will see when you use the name of the variable. In effect, the second variable overshadows the first, taking any uses of the variable name to itself until either it itself is shadowed or the scope ends. We can shadow a variable by using the same variable’s name and repeating the use of the `let` keyword as follows:",
+    "zh": "正如你在[第 2 章](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number)的猜数字游戏教程中所见，你可以声明一个与先前变量同名的新变量。Rustacean 说第一个变量被第二个变量*遮蔽*（shadowed），这意味着当你使用该变量名时，编译器看到的是第二个变量。实际上，第二个变量遮盖了第一个变量，把对该变量名的所有使用都归于自己，直到它自身被遮蔽或作用域结束。我们可以通过使用相同的变量名并重复使用 `let` 关键字来遮蔽变量，如下所示："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\nfn main() {\n    let x = 5;\n\n    let x = x + 1;\n\n    {\n        let x = x * 2;\n        println!(\"The value of x in the inner scope is: {x}\");\n    }\n\n    println!(\"The value of x is: {x}\");\n}\n```",
+    "zh": "```rust\nfn main() {\n    let x = 5;\n\n    let x = x + 1;\n\n    {\n        let x = x * 2;\n        println!(\"The value of x in the inner scope is: {x}\");\n    }\n\n    println!(\"The value of x is: {x}\");\n}\n```"
+  },
+  {
+    "en": "This program first binds `x` to a value of `5`. Then, it creates a new variable `x` by repeating `let x =`, taking the original value and adding `1` so that the value of `x` is `6`. Then, within an inner scope created with the curly brackets, the third `let` statement also shadows `x` and creates a new variable, multiplying the previous value by `2` to give `x` a value of `12`. When that scope is over, the inner shadowing ends and `x` returns to being `6`. When we run this program, it will output the following:",
+    "zh": "这个程序首先把 `x` 绑定到值 `5`。然后，它通过重复 `let x =` 创建新变量 `x`，取原值并加 `1`，使 `x` 的值为 `6`。接着，在用花括号创建的内层作用域中，第三个 `let` 语句也遮蔽了 `x` 并创建一个新变量，把之前的值乘以 `2`，使 `x` 的值为 `12`。当该作用域结束时，内层遮蔽结束，`x` 又变回 `6`。当我们运行这个程序时，它会输出以下内容："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling variables v0.1.0 (file:///projects/variables)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.31s\n     Running `target/debug/variables`\nThe value of x in the inner scope is: 12\nThe value of x is: 6\n```",
+    "zh": "```console\n$ cargo run\n   Compiling variables v0.1.0 (file:///projects/variables)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.31s\n     Running `target/debug/variables`\nThe value of x in the inner scope is: 12\nThe value of x is: 6\n```"
+  },
+  {
+    "en": "Shadowing is different from marking a variable as `mut` because we’ll get a compile-time error if we accidentally try to reassign to this variable without using the `let` keyword. By using `let`, we can perform a few transformations on a value but have the variable be immutable after those transformations have completed.",
+    "zh": "遮蔽与将变量标记为 `mut` 不同，因为如果我们不小心在不使用 `let` 关键字的情况下试图给该变量重新赋值，就会得到编译时错误。通过使用 `let`，我们可以对值进行若干次变换，但在这些变换完成后，变量仍然是不可变的。"
+  },
+  {
+    "en": "The other difference between `mut` and shadowing is that because we’re effectively creating a new variable when we use the `let` keyword again, we can change the type of the value but reuse the same name. For example, say our program asks a user to show how many spaces they want between some text by inputting space characters, and then we want to store that input as a number:",
+    "zh": "`mut` 与遮蔽的另一个区别是：因为我们在再次使用 `let` 关键字时实际上创建了一个新变量，所以可以改变值的类型，同时重用相同的名称。例如，假设我们的程序要求用户通过输入空格字符来表明他们希望在某些文本之间留多少个空格，然后我们想把该输入存储为数字："
+  },
+  {
+    "en": "```rust\n    let spaces = \"   \";\n    let spaces = spaces.len();\n```",
+    "zh": "```rust\n    let spaces = \"   \";\n    let spaces = spaces.len();\n```"
+  },
+  {
+    "en": "The first `spaces` variable is a string type, and the second `spaces` variable is a number type. Shadowing thus spares us from having to come up with different names, such as `spaces_str` and `spaces_num`; instead, we can reuse the simpler `spaces` name. However, if we try to use `mut` for this, as shown here, we’ll get a compile-time error:",
+    "zh": "第一个 `spaces` 变量是字符串类型，第二个 `spaces` 变量是数字类型。因此，遮蔽让我们不必想出不同的名称，例如 `spaces_str` 和 `spaces_num`；相反，我们可以重用更简单的 `spaces` 名称。然而，如果我们尝试对此使用 `mut`，如下所示，就会得到编译时错误："
+  },
+  {
+    "en": "```rust\n    let mut spaces = \"   \";\n    spaces = spaces.len();\n```",
+    "zh": "```rust\n    let mut spaces = \"   \";\n    spaces = spaces.len();\n```"
+  },
+  {
+    "en": "The error says we’re not allowed to mutate a variable’s type:",
+    "zh": "错误表明我们不允许改变变量的类型："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling variables v0.1.0 (file:///projects/variables)\nerror[E0308]: mismatched types\n --> src/main.rs:3:14\n  |\n2 |     let mut spaces = \"   \";\n  |                      ----- expected due to this value\n3 |     spaces = spaces.len();\n  |              ^^^^^^^^^^^^ expected `&str`, found `usize`\n\nFor more information about this error, try `rustc --explain E0308`.\nerror: could not compile `variables` (bin \"variables\") due to 1 previous error\n```",
+    "zh": "```console\n$ cargo run\n   Compiling variables v0.1.0 (file:///projects/variables)\nerror[E0308]: mismatched types\n --> src/main.rs:3:14\n  |\n2 |     let mut spaces = \"   \";\n  |                      ----- expected due to this value\n3 |     spaces = spaces.len();\n  |              ^^^^^^^^^^^^ expected `&str`, found `usize`\n\nFor more information about this error, try `rustc --explain E0308`.\nerror: could not compile `variables` (bin \"variables\") due to 1 previous error\n```"
+  },
+  {
+    "en": "Now that we’ve explored how variables work, let’s look at more data types they can have.",
+    "zh": "现在我们已经探讨了变量的工作方式，让我们看看变量还可以拥有哪些数据类型。"
+  }
+]

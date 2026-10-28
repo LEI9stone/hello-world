@@ -6,6 +6,8 @@ import {
   type SyntheticEvent,
 } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { api, type Article, type Book } from "./api";
 import { ErrorNote, LoadState, message, useResource } from "./shared";
 import { usePlayer } from "./player";
@@ -193,6 +195,23 @@ function Table({ source }: { source: string }) {
   );
 }
 
+// Markdown 正文：标题、列表、引用、代码块、表格等交给 react-markdown 渲染。
+function Markdown({
+  text,
+  className,
+  lang,
+}: {
+  text: string;
+  className?: string;
+  lang?: string;
+}) {
+  return (
+    <div className={`markdown${className ? ` ${className}` : ""}`} lang={lang}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+    </div>
+  );
+}
+
 function BookContents({
   article,
   stop,
@@ -226,28 +245,37 @@ function BookContents({
       container.scrollTop += item.top - bounds.top - bounds.height / 2 + item.height / 2;
     }
   }, [data, article.id, open]);
-  const groups: { name: string; articles: Article[] }[] = [];
+  // 扁平文章按 parentId 组树；接口已按 position,id 排序，同层顺序直接沿用。
+  const byParent = new Map<number | null, Article[]>();
   data?.articles.forEach((entry) => {
-    let group = groups[groups.length - 1];
-    if (!group || group.name !== entry.unitName) {
-      group = { name: entry.unitName, articles: [] };
-      groups.push(group);
-    }
-    group.articles.push(entry);
+    const key = entry.parentId ?? null;
+    const bucket = byParent.get(key);
+    if (bucket) bucket.push(entry);
+    else byParent.set(key, [entry]);
   });
-  // 单元标题与文章标题同名时只显示一次：有其它条目就隐去重复条目，
-  // 全是同名条目时隐去单元标题，保留可点击的文章行。
-  const rendered = groups.map((group) => {
-    const name = group.name.trim();
-    const distinct = name
-      ? group.articles.filter((entry) => articleTitle(entry).trim() !== name)
-      : group.articles;
-    return {
-      group,
-      showUnit: Boolean(name) && distinct.length > 0,
-      items: distinct.length ? distinct : group.articles,
-    };
-  });
+  function renderTree(parent: number | null, depth: number) {
+    const items = byParent.get(parent);
+    if (!items?.length) return null;
+    return (
+      <ul className={depth === 0 ? "contents-tree" : "contents-children"}>
+        {items.map((entry) => (
+          <li key={entry.id}>
+            <Link
+              to={`/articles/${entry.id}`}
+              aria-current={entry.id === article.id ? "page" : undefined}
+              onClick={(event) => {
+                if (entry.id === article.id) event.preventDefault();
+                else stop();
+              }}
+            >
+              <span>{articleTitle(entry)}</span>
+            </Link>
+            {renderTree(entry.id, depth + 1)}
+          </li>
+        ))}
+      </ul>
+    );
+  }
   function toggle(event: SyntheticEvent<HTMLDetailsElement>) {
     const expanded = window.matchMedia("(min-width: 801px)").matches || event.currentTarget.open;
     event.currentTarget.open = expanded;
@@ -274,35 +302,7 @@ function BookContents({
             ) : !data.articles.length ? (
               <p className="muted">本书暂无文章</p>
             ) : (
-              <ul className="contents-groups">
-                {rendered.map(({ group, showUnit, items }, index) => (
-                  <li key={index}>
-                    {showUnit && <p className="contents-unit">{group.name}</p>}
-                    <ol
-                      className={
-                        showUnit
-                          ? "contents-articles grouped"
-                          : "contents-articles"
-                      }
-                    >
-                      {items.map((entry) => (
-                        <li key={entry.id}>
-                          <Link
-                            to={`/articles/${entry.id}`}
-                            aria-current={entry.id === article.id ? "page" : undefined}
-                            onClick={(event) => {
-                              if (entry.id === article.id) event.preventDefault();
-                              else stop();
-                            }}
-                          >
-                            <span>{articleTitle(entry)}</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ol>
-                  </li>
-                ))}
-              </ul>
+              renderTree(null, 0)
             )}
           </nav>
         </div>
@@ -359,7 +359,8 @@ function Reading({ article }: { article: Article }) {
   }, [player.current, player.status, chinese]);
   async function removeArticle() {
     const label = article.title.zh || article.title.en;
-    if (!window.confirm(`永久删除文章“${label}”？`)) return;
+    const suffix = article.childCount > 0 ? "及其全部小节" : "";
+    if (!window.confirm(`永久删除文章“${label}”${suffix}？`)) return;
     player.stop();
     setBusy(true);
     setActionError("");
@@ -404,13 +405,9 @@ function Reading({ article }: { article: Article }) {
               <Table source={s.en} />
             ) : (
               <>
-                <p className="english" lang="en">
-                  <Inline text={s.en} />
-                </p>
-                {chinese && (
-                  <p className="translation">
-                    <Inline text={s.zh} />
-                  </p>
+                <Markdown className="english" lang="en" text={s.en} />
+                {chinese && s.zh && (
+                  <Markdown className="translation" text={s.zh} />
                 )}
               </>
             )}
@@ -604,9 +601,9 @@ function Reading({ article }: { article: Article }) {
             <div className="actions">
               <Link
                 className="button icon-button"
-                to={`/books/${article.bookId}/new`}
-                aria-label="新增文章"
-                title="新增文章"
+                to={`/articles/${article.id}/new`}
+                aria-label="新增小节"
+                title="新增小节"
                 onClick={() => player.stop()}
               >
                 <Icon name="file-plus" />

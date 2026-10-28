@@ -114,6 +114,30 @@ func TestSegmentTextBounds(t *testing.T) {
 	}
 }
 
+func TestSpeechText(t *testing.T) {
+	cases := []struct{ in, want string }{
+		{"# Installation", "Installation"},
+		{"Use **strong** text.", "Use strong text."},
+		{"Run `cargo build`.", "Run cargo build."},
+		{"See [the guide](https://example.com).", "See the guide."},
+		{"- First item\n1. Second item", "First item Second item"},
+		{"> A quoted line", "A quoted line"},
+		{"Keep snake_case intact.", "Keep snake_case intact."},
+	}
+	for _, c := range cases {
+		if got := speechText(c.in); got != c.want {
+			t.Fatalf("%q: got=%q want=%q", c.in, got, c.want)
+		}
+	}
+	// 代码段与表格段仍然跳过朗读。
+	a := Article{Segments: []Segment{{Kind: kindCode, En: "func main() {}"}, {Kind: kindTable, En: "| a | b |"}}}
+	for _, index := range []int{1, 2} {
+		if _, ok := segmentText(a, index); ok {
+			t.Fatalf("不应朗读第 %d 段", index)
+		}
+	}
+}
+
 func TestRateLimitClassification(t *testing.T) {
 	for _, c := range []struct {
 		output string

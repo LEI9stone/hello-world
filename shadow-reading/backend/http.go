@@ -87,7 +87,12 @@ func handler(s *store, t *tts) http.Handler {
 			fail(w, 400, "原文不能为空")
 			return
 		}
-		writeJSON(w, 200, parseText(in.Text))
+		result, err := parseJSON(in.Text)
+		if err != nil {
+			fail(w, 400, err.Error())
+			return
+		}
+		writeJSON(w, 200, result)
 	})
 	mux.HandleFunc("GET /api/books", func(w http.ResponseWriter, r *http.Request) {
 		books, err := s.books(r.Context())
@@ -190,7 +195,7 @@ func handler(s *store, t *tts) http.Handler {
 		} else {
 			aid = id
 		}
-		a, err := s.saveArticle(r.Context(), bid, aid, in)
+		a, err := s.saveArticle(r.Context(), bid, aid, nil, in)
 		if err != nil {
 			dbError(w, err)
 			return
@@ -205,6 +210,31 @@ func handler(s *store, t *tts) http.Handler {
 	}
 	mux.HandleFunc("POST /api/books/{id}/articles", saveArticle)
 	mux.HandleFunc("PUT /api/articles/{id}", saveArticle)
+	mux.HandleFunc("POST /api/articles/{id}/children", func(w http.ResponseWriter, r *http.Request) {
+		id, ok := pathID(w, r)
+		if !ok {
+			return
+		}
+		var in ArticleInput
+		if !decode(w, r, &in) {
+			return
+		}
+		if err := in.validate(); err != nil {
+			fail(w, 400, err.Error())
+			return
+		}
+		a, err := s.saveArticle(r.Context(), 0, 0, &id, in)
+		if err != nil {
+			dbError(w, err)
+			return
+		}
+		warmCtx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), 10*time.Minute)
+		go func() {
+			defer cancel()
+			t.warm(warmCtx, a)
+		}()
+		writeJSON(w, 201, a)
+	})
 	mux.HandleFunc("DELETE /api/articles/{id}", func(w http.ResponseWriter, r *http.Request) {
 		id, ok := pathID(w, r)
 		if !ok {

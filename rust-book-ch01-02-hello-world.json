@@ -1,0 +1,182 @@
+[
+  {
+    "en": "## Hello, World!",
+    "zh": "## Hello, World!"
+  },
+  {
+    "en": "Now that you’ve installed Rust, it’s time to write your first Rust program. It’s traditional when learning a new language to write a little program that prints the text `Hello, world!` to the screen, so we’ll do the same here!",
+    "zh": "现在你已经安装了 Rust，是时候编写你的第一个 Rust 程序了。学习一门新语言时，传统做法是写一个在屏幕上打印 `Hello, world!` 的小程序，所以我们这里也这样做！"
+  },
+  {
+    "en": "Note: This book assumes basic familiarity with the command line. Rust makes no specific demands about your editing or tooling or where your code lives, so if you prefer to use an IDE instead of the command line, feel free to use your favorite IDE. Many IDEs now have some degree of Rust support; check the IDE’s documentation for details. The Rust team has been focusing on enabling great IDE support via `rust-analyzer`. See [Appendix D](https://doc.rust-lang.org/book/appendix-04-useful-development-tools.html) for more details.",
+    "zh": "注意：本书假定你对命令行有基本了解。Rust 对你的编辑器、工具或代码存放位置没有特定要求，所以如果你更喜欢使用 IDE 而不是命令行，尽管使用你喜欢的 IDE。如今许多 IDE 都有一定程度的 Rust 支持；详情请查看该 IDE 的文档。Rust 团队一直致力于通过 `rust-analyzer` 提供出色的 IDE 支持。更多详情请参见[附录 D](https://doc.rust-lang.org/book/appendix-04-useful-development-tools.html)。"
+  },
+  {
+    "en": "### Project Directory Setup",
+    "zh": "### 项目目录设置"
+  },
+  {
+    "en": "You’ll start by making a directory to store your Rust code. It doesn’t matter to Rust where your code lives, but for the exercises and projects in this book, we suggest making a *projects* directory in your home directory and keeping all your projects there.",
+    "zh": "首先创建一个目录来存放你的 Rust 代码。对 Rust 来说代码放在哪里并不重要，但为了本书中的练习和项目，我们建议在主目录下创建一个 *projects* 目录，并把所有项目都放在那里。"
+  },
+  {
+    "en": "Open a terminal and enter the following commands to make a *projects* directory and a directory for the “Hello, world!” project within the *projects* directory.",
+    "zh": "打开终端并输入以下命令，创建一个 *projects* 目录，并在 *projects* 目录内创建一个用于“Hello, world!”项目的目录。"
+  },
+  {
+    "en": "For Linux, macOS, and PowerShell on Windows, enter this:",
+    "zh": "在 Linux、macOS 和 Windows 上的 PowerShell 中，输入："
+  },
+  {
+    "en": "```console\n$ mkdir ~/projects\n$ cd ~/projects\n$ mkdir hello_world\n$ cd hello_world\n```",
+    "zh": "```console\n$ mkdir ~/projects\n$ cd ~/projects\n$ mkdir hello_world\n$ cd hello_world\n```"
+  },
+  {
+    "en": "For Windows CMD, enter this:",
+    "zh": "在 Windows CMD 中，输入："
+  },
+  {
+    "en": "```cmd\n> mkdir \"%USERPROFILE%\\projects\"\n> cd /d \"%USERPROFILE%\\projects\"\n> mkdir hello_world\n> cd hello_world\n```",
+    "zh": "```cmd\n> mkdir \"%USERPROFILE%\\projects\"\n> cd /d \"%USERPROFILE%\\projects\"\n> mkdir hello_world\n> cd hello_world\n```"
+  },
+  {
+    "en": "### Rust Program Basics",
+    "zh": "### Rust 程序基础"
+  },
+  {
+    "en": "Next, make a new source file and call it *main.rs*. Rust files always end with the *.rs* extension. If you’re using more than one word in your filename, the convention is to use an underscore to separate them. For example, use *hello_world.rs* rather than *helloworld.rs*.",
+    "zh": "接下来，新建一个源文件并将其命名为 *main.rs*。Rust 文件始终以 *.rs* 扩展名结尾。如果文件名中包含多个单词，惯例是用下划线分隔。例如，使用 *hello_world.rs* 而不是 *helloworld.rs*。"
+  },
+  {
+    "en": "Now open the *main.rs* file you just created and enter the code in Listing 1-1.",
+    "zh": "现在打开你刚创建的 *main.rs* 文件，并输入代码清单 1-1 中的代码。"
+  },
+  {
+    "en": "Save the file and go back to your terminal window in the *~/projects/hello_world* directory. On Linux or macOS, enter the following commands to compile and run the file:",
+    "zh": "保存文件，然后回到终端窗口中的 *~/projects/hello_world* 目录。在 Linux 或 macOS 上，输入以下命令来编译并运行该文件："
+  },
+  {
+    "en": "```console\n$ rustc main.rs\n$ ./main\nHello, world!\n```",
+    "zh": "```console\n$ rustc main.rs\n$ ./main\nHello, world!\n```"
+  },
+  {
+    "en": "On Windows, enter the command `.\\main` instead of `./main`:",
+    "zh": "在 Windows 上，输入命令 `.\\main` 而不是 `./main`："
+  },
+  {
+    "en": "```powershell\n> rustc main.rs\n> .\\main\nHello, world!\n```",
+    "zh": "```powershell\n> rustc main.rs\n> .\\main\nHello, world!\n```"
+  },
+  {
+    "en": "Regardless of your operating system, the string `Hello, world!` should print to the terminal. If you don’t see this output, refer back to the [“Troubleshooting”](https://doc.rust-lang.org/book/ch01-01-installation.html#troubleshooting) part of the Installation section for ways to get help.",
+    "zh": "无论你使用什么操作系统，字符串 `Hello, world!` 都应打印到终端。如果没有看到此输出，请回看安装部分中的[“疑难解答”](https://doc.rust-lang.org/book/ch01-01-installation.html#troubleshooting)以获取帮助。"
+  },
+  {
+    "en": "If `Hello, world!` did print, congratulations! You’ve officially written a Rust program. That makes you a Rust programmer—welcome!",
+    "zh": "如果 `Hello, world!` 成功打印出来了，恭喜你！你已经正式编写了一个 Rust 程序。这让你成为一名 Rust 程序员——欢迎！"
+  },
+  {
+    "en": "### The Anatomy of a Rust Program",
+    "zh": "### Rust 程序剖析"
+  },
+  {
+    "en": "Let’s review this “Hello, world!” program in detail. Here’s the first piece of the puzzle:",
+    "zh": "让我们详细回顾这个“Hello, world!”程序。下面是谜题的第一块拼图："
+  },
+  {
+    "en": "```rust\nfn main() {\n\n}\n```",
+    "zh": "```rust\nfn main() {\n\n}\n```"
+  },
+  {
+    "en": "These lines define a function named `main`. The `main` function is special: It is always the first code that runs in every executable Rust program. Here, the first line declares a function named `main` that has no parameters and returns nothing. If there were parameters, they would go inside the parentheses (`()`).",
+    "zh": "这几行定义了一个名为 `main` 的函数。`main` 函数很特殊：它始终是每个可执行 Rust 程序中首先运行的代码。这里，第一行声明了一个名为 `main` 的函数，它没有参数，也不返回任何值。如果有参数，它们会放在圆括号（`()`）内。"
+  },
+  {
+    "en": "The function body is wrapped in `{}`. Rust requires curly brackets around all function bodies. It’s good style to place the opening curly bracket on the same line as the function declaration, adding one space in between.",
+    "zh": "函数体包裹在 `{}` 中。Rust 要求所有函数体都用花括号括起来。良好的风格是将左花括号放在与函数声明同一行，并在两者之间加一个空格。"
+  },
+  {
+    "en": "Note: If you want to stick to a standard style across Rust projects, you can use an automatic formatter tool called `rustfmt` to format your code in a particular style (more on `rustfmt` in [Appendix D](https://doc.rust-lang.org/book/appendix-04-useful-development-tools.html)). The Rust team has included this tool with the standard Rust distribution, as `rustc` is, so it should already be installed on your computer!",
+    "zh": "注意：如果你希望在各个 Rust 项目中保持一致的标准风格，可以使用名为 `rustfmt` 的自动格式化工具，按照特定风格格式化你的代码（更多关于 `rustfmt` 的内容见[附录 D](https://doc.rust-lang.org/book/appendix-04-useful-development-tools.html)）。Rust 团队已将此工具随标准 Rust 发行版一起提供，就像 `rustc` 一样，所以它应该已经安装在你的电脑上了！"
+  },
+  {
+    "en": "The body of the `main` function holds the following code:",
+    "zh": "`main` 函数体包含以下代码："
+  },
+  {
+    "en": "```rust\nprintln!(\"Hello, world!\");\n```",
+    "zh": "```rust\nprintln!(\"Hello, world!\");\n```"
+  },
+  {
+    "en": "This line does all the work in this little program: It prints text to the screen. There are three important details to notice here.",
+    "zh": "这一行完成了这个小程序的全部工作：把文本打印到屏幕上。这里有三个重要细节需要注意。"
+  },
+  {
+    "en": "First, `println!` calls a Rust macro. If it had called a function instead, it would be entered as `println` (without the `!`). Rust macros are a way to write code that generates code to extend Rust syntax, and we’ll discuss them in more detail in [Chapter 20](https://doc.rust-lang.org/book/ch20-05-macros.html). For now, you just need to know that using a `!` means that you’re calling a macro instead of a normal function and that macros don’t always follow the same rules as functions.",
+    "zh": "第一，`println!` 调用的是一个 Rust 宏。如果它调用的是函数，则应写成 `println`（不带 `!`）。Rust 宏是一种编写可生成代码以扩展 Rust 语法的代码的方式，我们将在[第 20 章](https://doc.rust-lang.org/book/ch20-05-macros.html)更详细地讨论它们。目前，你只需要知道，使用 `!` 表示你调用的是宏而不是普通函数，而且宏并不总是遵循与函数相同的规则。"
+  },
+  {
+    "en": "Second, you see the `\"Hello, world!\"` string. We pass this string as an argument to `println!`, and the string is printed to the screen.",
+    "zh": "第二，你看到了 `\"Hello, world!\"` 字符串。我们将这个字符串作为参数传给 `println!`，该字符串会被打印到屏幕上。"
+  },
+  {
+    "en": "Third, we end the line with a semicolon (`;`), which indicates that this expression is over, and the next one is ready to begin. Most lines of Rust code end with a semicolon.",
+    "zh": "第三，我们在行末用分号（`;`）结束，表示这个表达式结束了，下一个表达式可以开始。大多数 Rust 代码行都以分号结尾。"
+  },
+  {
+    "en": "### Compilation and Execution",
+    "zh": "### 编译与执行"
+  },
+  {
+    "en": "You’ve just run a newly created program, so let’s examine each step in the process.",
+    "zh": "你刚刚运行了一个新创建的程序，现在让我们检查这个过程中的每一步。"
+  },
+  {
+    "en": "Before running a Rust program, you must compile it using the Rust compiler by entering the `rustc` command and passing it the name of your source file, like this:",
+    "zh": "在运行 Rust 程序之前，你必须使用 Rust 编译器编译它：输入 `rustc` 命令并传入源文件名，像这样："
+  },
+  {
+    "en": "```console\n$ rustc main.rs\n```",
+    "zh": "```console\n$ rustc main.rs\n```"
+  },
+  {
+    "en": "If you have a C or C++ background, you’ll notice that this is similar to `gcc` or `clang`. After compiling successfully, Rust outputs a binary executable.",
+    "zh": "如果你有 C 或 C++ 背景，会注意到这类似于 `gcc` 或 `clang`。成功编译后，Rust 会输出一个二进制可执行文件。"
+  },
+  {
+    "en": "On Linux, macOS, and PowerShell on Windows, you can see the executable by entering the `ls` command in your shell:",
+    "zh": "在 Linux、macOS 和 Windows 上的 PowerShell 中，可以在 shell 中输入 `ls` 命令查看该可执行文件："
+  },
+  {
+    "en": "```console\n$ ls\nmain  main.rs\n```",
+    "zh": "```console\n$ ls\nmain  main.rs\n```"
+  },
+  {
+    "en": "On Linux and macOS, you’ll see two files. With PowerShell on Windows, you’ll see the same three files that you would see using CMD. With CMD on Windows, you would enter the following:",
+    "zh": "在 Linux 和 macOS 上，你会看到两个文件。在 Windows 上使用 PowerShell 时，你会看到与使用 CMD 时相同的三个文件。在 Windows 上使用 CMD 时，你会输入以下命令："
+  },
+  {
+    "en": "```cmd\n> dir /B %= the /B option says to only show the file names =%\nmain.exe\nmain.pdb\nmain.rs\n```",
+    "zh": "```cmd\n> dir /B %= the /B option says to only show the file names =%\nmain.exe\nmain.pdb\nmain.rs\n```"
+  },
+  {
+    "en": "This shows the source code file with the *.rs* extension, the executable file (*main.exe* on Windows, but *main* on all other platforms), and, when using Windows, a file containing debugging information with the *.pdb* extension. From here, you run the *main* or *main.exe* file, like this:",
+    "zh": "这显示了带有 *.rs* 扩展名的源代码文件、可执行文件（在 Windows 上是 *main.exe*，在其他所有平台上是 *main*），以及在使用 Windows 时包含调试信息、带有 *.pdb* 扩展名的文件。接下来，像这样运行 *main* 或 *main.exe* 文件："
+  },
+  {
+    "en": "```console\n$ ./main # or .\\main on Windows\n```",
+    "zh": "```console\n$ ./main # or .\\main on Windows\n```"
+  },
+  {
+    "en": "If your *main.rs* is your “Hello, world!” program, this line prints `Hello, world!` to your terminal.",
+    "zh": "如果你的 *main.rs* 是那个“Hello, world!”程序，这一行会把 `Hello, world!` 打印到终端。"
+  },
+  {
+    "en": "If you’re more familiar with a dynamic language, such as Ruby, Python, or JavaScript, you might not be used to compiling and running a program as separate steps. Rust is an *ahead-of-time compiled* language, meaning you can compile a program and give the executable to someone else, and they can run it even without having Rust installed. If you give someone a *.rb*, *.py*, or *.js* file, they need to have a Ruby, Python, or JavaScript implementation installed (respectively). But in those languages, you only need one command to compile and run your program. Everything is a trade-off in language design.",
+    "zh": "如果你更熟悉动态语言，例如 Ruby、Python 或 JavaScript，你可能不习惯将编译和运行程序分成两个步骤。Rust 是一门*提前编译*（ahead-of-time compiled）的语言，这意味着你可以编译一个程序，并把可执行文件交给别人，即使对方没有安装 Rust 也能运行。如果你给别人一个 *.rb*、*.py* 或 *.js* 文件，对方需要分别安装 Ruby、Python 或 JavaScript 的实现。但在那些语言中，你只需要一条命令就能编译并运行程序。语言设计中的一切都是权衡。"
+  },
+  {
+    "en": "Just compiling with `rustc` is fine for simple programs, but as your project grows, you’ll want to manage all the options and make it easy to share your code. Next, we’ll introduce you to the Cargo tool, which will help you write real-world Rust programs.",
+    "zh": "对于简单程序，仅用 `rustc` 编译就可以了，但随着项目变大，你会希望管理所有选项并方便地共享代码。接下来，我们将介绍 Cargo 工具，它将帮助你编写真实世界的 Rust 程序。"
+  }
+]

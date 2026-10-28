@@ -24,12 +24,14 @@ type Segment struct {
 	Zh       string `json:"zh"`
 }
 type Article struct {
-	ID       int64     `json:"id"`
-	BookID   int64     `json:"bookId"`
-	UnitName string    `json:"unitName"`
-	Position int       `json:"position"`
-	Title    Title     `json:"title"`
-	Segments []Segment `json:"segments"`
+	ID         int64     `json:"id"`
+	BookID     int64     `json:"bookId"`
+	ParentID   *int64    `json:"parentId"`
+	UnitName   string    `json:"unitName"`
+	Position   int       `json:"position"`
+	ChildCount int       `json:"childCount"`
+	Title      Title     `json:"title"`
+	Segments   []Segment `json:"segments"`
 }
 type SegmentInput struct {
 	ID   *int64 `json:"id,omitempty"`
@@ -116,15 +118,8 @@ func (a *ArticleInput) validate() error {
 		if err := field(&s.En, fmt.Sprintf("第%d组英语正文", i+1), 20000); err != nil {
 			return err
 		}
-		name := fmt.Sprintf("第%d组中文正文", i+1)
-		if kind == kindCode || kind == kindTable {
-			// 代码段与表格段不朗读，中文说明可有可无。
-			if err := optionalField(&s.Zh, name, 20000); err != nil {
-				return err
-			}
-			continue
-		}
-		if err := field(&s.Zh, name, 20000); err != nil {
+		// 中文译文允许为空：代码段、无需翻译的标题与术语都不强制翻译。
+		if err := optionalField(&s.Zh, fmt.Sprintf("第%d组中文正文", i+1), 20000); err != nil {
 			return err
 		}
 	}

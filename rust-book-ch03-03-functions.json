@@ -1,0 +1,250 @@
+[
+  {
+    "en": "## Functions",
+    "zh": "## 函数"
+  },
+  {
+    "en": "Functions are prevalent in Rust code. You’ve already seen one of the most important functions in the language: the `main` function, which is the entry point of many programs. You’ve also seen the `fn` keyword, which allows you to declare new functions.",
+    "zh": "函数在 Rust 代码中非常普遍。你已经见过语言中最重要的函数之一：`main` 函数，它是许多程序的入口点。你还见过 `fn` 关键字，它允许你声明新函数。"
+  },
+  {
+    "en": "Rust code uses *snake case* as the conventional style for function and variable names, in which all letters are lowercase and underscores separate words. Here’s a program that contains an example function definition:",
+    "zh": "Rust 代码使用*蛇形命名法*（snake case）作为函数和变量名称的惯例风格，其中所有字母都小写，并用下划线分隔单词。下面是一个包含示例函数定义的程序："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\nfn main() {\n    println!(\"Hello, world!\");\n\n    another_function();\n}\n\nfn another_function() {\n    println!(\"Another function.\");\n}\n```",
+    "zh": "```rust\nfn main() {\n    println!(\"Hello, world!\");\n\n    another_function();\n}\n\nfn another_function() {\n    println!(\"Another function.\");\n}\n```"
+  },
+  {
+    "en": "We define a function in Rust by entering `fn` followed by a function name and a set of parentheses. The curly brackets tell the compiler where the function body begins and ends.",
+    "zh": "在 Rust 中，我们通过输入 `fn`、函数名和一对圆括号来定义函数。花括号告诉编译器函数体从哪里开始、到哪里结束。"
+  },
+  {
+    "en": "We can call any function we’ve defined by entering its name followed by a set of parentheses. Because `another_function` is defined in the program, it can be called from inside the `main` function. Note that we defined `another_function` *after* the `main` function in the source code; we could have defined it before as well. Rust doesn’t care where you define your functions, only that they’re defined somewhere in a scope that can be seen by the caller.",
+    "zh": "我们可以通过输入函数名后跟一对圆括号来调用任何已定义的函数。因为 `another_function` 定义在程序中，所以它可以从 `main` 函数内部调用。注意，我们在源代码中把 `another_function` 定义在 `main` 函数*之后*；我们也可以把它定义在前面。Rust 不在乎你在哪里定义函数，只要求它们在调用者可见的某个作用域中被定义。"
+  },
+  {
+    "en": "Let’s start a new binary project named *functions* to explore functions further. Place the `another_function` example in *src/main.rs* and run it. You should see the following output:",
+    "zh": "让我们新建一个名为 *functions* 的二进制项目，以进一步探索函数。把 `another_function` 示例放到 *src/main.rs* 中并运行它。你应该会看到以下输出："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling functions v0.1.0 (file:///projects/functions)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.28s\n     Running `target/debug/functions`\nHello, world!\nAnother function.\n```",
+    "zh": "```console\n$ cargo run\n   Compiling functions v0.1.0 (file:///projects/functions)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.28s\n     Running `target/debug/functions`\nHello, world!\nAnother function.\n```"
+  },
+  {
+    "en": "The lines execute in the order in which they appear in the `main` function. First the “Hello, world!” message prints, and then `another_function` is called and its message is printed.",
+    "zh": "这些行按照它们在 `main` 函数中出现的顺序执行。首先打印“Hello, world!”消息，然后调用 `another_function` 并打印它的消息。"
+  },
+  {
+    "en": "### Parameters",
+    "zh": "### 参数"
+  },
+  {
+    "en": "We can define functions to have *parameters*, which are special variables that are part of a function’s signature. When a function has parameters, you can provide it with concrete values for those parameters. Technically, the concrete values are called *arguments*, but in casual conversation, people tend to use the words *parameter* and *argument* interchangeably for either the variables in a function’s definition or the concrete values passed in when you call a function.",
+    "zh": "我们可以定义带*参数*的函数，参数是函数签名的一部分的特殊变量。当函数有参数时，你可以为这些参数提供具体值。严格来说，这些具体值被称为*实参*（arguments），但在日常交流中，人们往往把*形参*（parameter）和*实参*（argument）这两个词混用，既可指函数定义中的变量，也可指调用函数时传入的具体值。"
+  },
+  {
+    "en": "In this version of `another_function` we add a parameter:",
+    "zh": "在这个版本的 `another_function` 中，我们添加一个参数："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\nfn main() {\n    another_function(5);\n}\n\nfn another_function(x: i32) {\n    println!(\"The value of x is: {x}\");\n}\n```",
+    "zh": "```rust\nfn main() {\n    another_function(5);\n}\n\nfn another_function(x: i32) {\n    println!(\"The value of x is: {x}\");\n}\n```"
+  },
+  {
+    "en": "Try running this program; you should get the following output:",
+    "zh": "试着运行这个程序；你应该会得到以下输出："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling functions v0.1.0 (file:///projects/functions)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.21s\n     Running `target/debug/functions`\nThe value of x is: 5\n```",
+    "zh": "```console\n$ cargo run\n   Compiling functions v0.1.0 (file:///projects/functions)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.21s\n     Running `target/debug/functions`\nThe value of x is: 5\n```"
+  },
+  {
+    "en": "The declaration of `another_function` has one parameter named `x`. The type of `x` is specified as `i32`. When we pass `5` in to `another_function`, the `println!` macro puts `5` where the pair of curly brackets containing `x` was in the format string.",
+    "zh": "`another_function` 的声明有一个名为 `x` 的参数。`x` 的类型指定为 `i32`。当我们把 `5` 传给 `another_function` 时，`println!` 宏会把 `5` 放在格式字符串中原先包含 `x` 的那对花括号的位置。"
+  },
+  {
+    "en": "In function signatures, you *must* declare the type of each parameter. This is a deliberate decision in Rust’s design: Requiring type annotations in function definitions means the compiler almost never needs you to use them elsewhere in the code to figure out what type you mean. The compiler is also able to give more-helpful error messages if it knows what types the function expects.",
+    "zh": "在函数签名中，你*必须*声明每个参数的类型。这是 Rust 设计中的一个有意决定：要求在函数定义中标注类型，意味着编译器几乎不需要你在代码的其他地方使用类型标注来判断你指的是什么类型。如果编译器知道函数期望的类型，它也能给出更有帮助的错误消息。"
+  },
+  {
+    "en": "When defining multiple parameters, separate the parameter declarations with commas, like this:",
+    "zh": "定义多个参数时，用逗号分隔参数声明，像这样："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\nfn main() {\n    print_labeled_measurement(5, 'h');\n}\n\nfn print_labeled_measurement(value: i32, unit_label: char) {\n    println!(\"The measurement is: {value}{unit_label}\");\n}\n```",
+    "zh": "```rust\nfn main() {\n    print_labeled_measurement(5, 'h');\n}\n\nfn print_labeled_measurement(value: i32, unit_label: char) {\n    println!(\"The measurement is: {value}{unit_label}\");\n}\n```"
+  },
+  {
+    "en": "This example creates a function named `print_labeled_measurement` with two parameters. The first parameter is named `value` and is an `i32`. The second is named `unit_label` and is type `char`. The function then prints text containing both the `value` and the `unit_label`.",
+    "zh": "这个例子创建了一个名为 `print_labeled_measurement` 的函数，它有两个参数。第一个参数名为 `value`，类型为 `i32`。第二个参数名为 `unit_label`，类型为 `char`。然后该函数打印同时包含 `value` 和 `unit_label` 的文本。"
+  },
+  {
+    "en": "Let’s try running this code. Replace the program currently in your *functions* project’s *src/main.rs* file with the preceding example and run it using `cargo run`:",
+    "zh": "让我们试着运行这段代码。把 *functions* 项目的 *src/main.rs* 文件中的当前程序替换为前面的示例，并使用 `cargo run` 运行它："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling functions v0.1.0 (file:///projects/functions)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.31s\n     Running `target/debug/functions`\nThe measurement is: 5h\n```",
+    "zh": "```console\n$ cargo run\n   Compiling functions v0.1.0 (file:///projects/functions)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.31s\n     Running `target/debug/functions`\nThe measurement is: 5h\n```"
+  },
+  {
+    "en": "Because we called the function with `5` as the value for `value` and `'h'` as the value for `unit_label`, the program output contains those values.",
+    "zh": "因为我们调用函数时把 `5` 作为 `value` 的值、把 `'h'` 作为 `unit_label` 的值，所以程序输出包含这些值。"
+  },
+  {
+    "en": "### Statements and Expressions",
+    "zh": "### 语句与表达式"
+  },
+  {
+    "en": "Function bodies are made up of a series of statements optionally ending in an expression. So far, the functions we’ve covered haven’t included an ending expression, but you have seen an expression as part of a statement. Because Rust is an expression-based language, this is an important distinction to understand. Other languages don’t have the same distinctions, so let’s look at what statements and expressions are and how their differences affect the bodies of functions.",
+    "zh": "函数体由一系列语句组成，并可选地以一个表达式结尾。到目前为止，我们介绍过的函数都没有包含结尾表达式，但你已经见过作为语句一部分的表达式。因为 Rust 是一门基于表达式的语言，所以理解这个区别很重要。其他语言没有同样的区别，所以让我们看看语句和表达式是什么，以及它们的差异如何影响函数体。"
+  },
+  {
+    "en": "- Statements are instructions that perform some action and do not return a value.\n- Expressions evaluate to a resultant value.",
+    "zh": "- 语句是执行某些操作但不返回值的指令。\n- 表达式求值并产生一个结果值。"
+  },
+  {
+    "en": "Let’s look at some examples.",
+    "zh": "让我们看一些例子。"
+  },
+  {
+    "en": "We’ve actually already used statements and expressions. Creating a variable and assigning a value to it with the `let` keyword is a statement. In Listing 3-1, `let y = 6;` is a statement.",
+    "zh": "我们其实已经使用过语句和表达式。用 `let` 关键字创建变量并给它赋值就是一条语句。在代码清单 3-1 中，`let y = 6;` 是一条语句。"
+  },
+  {
+    "en": "Function definitions are also statements; the entire preceding example is a statement in itself. (As we’ll see shortly, calling a function is not a statement, though.)",
+    "zh": "函数定义也是语句；前面整个例子本身就是一条语句。（不过，正如我们很快会看到的，调用函数不是语句。）"
+  },
+  {
+    "en": "Statements do not return values. Therefore, you can’t assign a `let` statement to another variable, as the following code tries to do; you’ll get an error:",
+    "zh": "语句不返回值。因此，你不能把一条 `let` 语句赋给另一个变量，如下面的代码所尝试的那样；你会得到一个错误："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\nfn main() {\n    let x = (let y = 6);\n}\n```",
+    "zh": "```rust\nfn main() {\n    let x = (let y = 6);\n}\n```"
+  },
+  {
+    "en": "When you run this program, the error you’ll get looks like this:",
+    "zh": "运行这个程序时，你会看到类似下面的错误："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling functions v0.1.0 (file:///projects/functions)\nerror: expected expression, found `let` statement\n --> src/main.rs:2:14\n  |\n2 |     let x = (let y = 6);\n  |              ^^^\n  |\n  = note: only supported directly in conditions of `if` and `while` expressions\n\nwarning: unnecessary parentheses around assigned value\n --> src/main.rs:2:13\n  |\n2 |     let x = (let y = 6);\n  |             ^         ^\n  |\n  = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default\nhelp: remove these parentheses\n  |\n2 -     let x = (let y = 6);\n2 +     let x = let y = 6 ;\n  |\n\nwarning: `functions` (bin \"functions\") generated 1 warning\nerror: could not compile `functions` (bin \"functions\") due to 1 previous error; 1 warning emitted\n```",
+    "zh": "```console\n$ cargo run\n   Compiling functions v0.1.0 (file:///projects/functions)\nerror: expected expression, found `let` statement\n --> src/main.rs:2:14\n  |\n2 |     let x = (let y = 6);\n  |              ^^^\n  |\n  = note: only supported directly in conditions of `if` and `while` expressions\n\nwarning: unnecessary parentheses around assigned value\n --> src/main.rs:2:13\n  |\n2 |     let x = (let y = 6);\n  |             ^         ^\n  |\n  = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default\nhelp: remove these parentheses\n  |\n2 -     let x = (let y = 6);\n2 +     let x = let y = 6 ;\n  |\n\nwarning: `functions` (bin \"functions\") generated 1 warning\nerror: could not compile `functions` (bin \"functions\") due to 1 previous error; 1 warning emitted\n```"
+  },
+  {
+    "en": "The `let y = 6` statement does not return a value, so there isn’t anything for `x` to bind to. This is different from what happens in other languages, such as C and Ruby, where the assignment returns the value of the assignment. In those languages, you can write `x = y = 6` and have both `x` and `y` have the value `6`; that is not the case in Rust.",
+    "zh": "`let y = 6` 语句不返回值，所以 `x` 没有任何可绑定的东西。这与 C 和 Ruby 等其他语言中的情况不同——在那些语言中，赋值会返回所赋的值。在那些语言中，你可以写 `x = y = 6`，让 `x` 和 `y` 都得到值 `6`；在 Rust 中则不是这样。"
+  },
+  {
+    "en": "Expressions evaluate to a value and make up most of the rest of the code that you’ll write in Rust. Consider a math operation, such as `5 + 6`, which is an expression that evaluates to the value `11`. Expressions can be part of statements: In Listing 3-1, the `6` in the statement `let y = 6;` is an expression that evaluates to the value `6`. Calling a function is an expression. Calling a macro is an expression. A new scope block created with curly brackets is an expression, for example:",
+    "zh": "表达式求值为一个值，构成你在 Rust 中编写的其余代码的大部分。考虑一个数学运算，例如 `5 + 6`，它是一个求值为 `11` 的表达式。表达式可以是语句的一部分：在代码清单 3-1 中，语句 `let y = 6;` 中的 `6` 就是一个求值为 `6` 的表达式。调用函数是表达式。调用宏是表达式。用花括号创建的新作用域块也是表达式，例如："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\nfn main() {\n    let y = {\n        let x = 3;\n        x + 1\n    };\n\n    println!(\"The value of y is: {y}\");\n}\n```",
+    "zh": "```rust\nfn main() {\n    let y = {\n        let x = 3;\n        x + 1\n    };\n\n    println!(\"The value of y is: {y}\");\n}\n```"
+  },
+  {
+    "en": "This expression:",
+    "zh": "这个表达式："
+  },
+  {
+    "en": "```rust\n{\n    let x = 3;\n    x + 1\n}\n```",
+    "zh": "```rust\n{\n    let x = 3;\n    x + 1\n}\n```"
+  },
+  {
+    "en": "is a block that, in this case, evaluates to `4`. That value gets bound to `y` as part of the `let` statement. Note the `x + 1` line without a semicolon at the end, which is unlike most of the lines you’ve seen so far. Expressions do not include ending semicolons. If you add a semicolon to the end of an expression, you turn it into a statement, and it will then not return a value. Keep this in mind as you explore function return values and expressions next.",
+    "zh": "是一个块，在这个例子中求值为 `4`。该值作为 `let` 语句的一部分绑定到 `y`。注意 `x + 1` 这一行末尾没有分号，这与你目前见过的大多数行不同。表达式不包含结尾分号。如果你在表达式末尾添加分号，就会把它变成语句，它就不再返回值。接下来探索函数返回值和表达式时，请记住这一点。"
+  },
+  {
+    "en": "### Functions with Return Values",
+    "zh": "### 带返回值的函数"
+  },
+  {
+    "en": "Functions can return values to the code that calls them. We don’t name return values, but we must declare their type after an arrow (`->`). In Rust, the return value of the function is synonymous with the value of the final expression in the block of the body of a function. You can return early from a function by using the `return` keyword and specifying a value, but most functions return the last expression implicitly. Here’s an example of a function that returns a value:",
+    "zh": "函数可以向调用它们的代码返回值。我们不命名返回值，但必须在箭头（`->`）之后声明它们的类型。在 Rust 中，函数的返回值与函数体块中最后一个表达式的值同义。你可以使用 `return` 关键字并指定一个值来提前从函数返回，但大多数函数会隐式返回最后一个表达式。下面是一个返回值的函数示例："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\nfn five() -> i32 {\n    5\n}\n\nfn main() {\n    let x = five();\n\n    println!(\"The value of x is: {x}\");\n}\n```",
+    "zh": "```rust\nfn five() -> i32 {\n    5\n}\n\nfn main() {\n    let x = five();\n\n    println!(\"The value of x is: {x}\");\n}\n```"
+  },
+  {
+    "en": "There are no function calls, macros, or even `let` statements in the `five` function—just the number `5` by itself. That’s a perfectly valid function in Rust. Note that the function’s return type is specified too, as `-> i32`. Try running this code; the output should look like this:",
+    "zh": "`five` 函数中没有函数调用、宏，甚至没有 `let` 语句——只有一个单独的数字 `5`。这在 Rust 中是完全合法的函数。注意，函数的返回类型也指定了，即 `-> i32`。试着运行这段代码；输出应该像这样："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling functions v0.1.0 (file:///projects/functions)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.30s\n     Running `target/debug/functions`\nThe value of x is: 5\n```",
+    "zh": "```console\n$ cargo run\n   Compiling functions v0.1.0 (file:///projects/functions)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.30s\n     Running `target/debug/functions`\nThe value of x is: 5\n```"
+  },
+  {
+    "en": "The `5` in `five` is the function’s return value, which is why the return type is `i32`. Let’s examine this in more detail. There are two important bits: First, the line `let x = five();` shows that we’re using the return value of a function to initialize a variable. Because the function `five` returns a `5`, that line is the same as the following:",
+    "zh": "`five` 中的 `5` 是函数的返回值，这就是返回类型为 `i32` 的原因。让我们更详细地检查这一点。有两个重要的地方：第一，`let x = five();` 这一行表明我们正在使用函数的返回值来初始化一个变量。因为函数 `five` 返回 `5`，所以这一行等同于："
+  },
+  {
+    "en": "```rust\nlet x = 5;\n```",
+    "zh": "```rust\nlet x = 5;\n```"
+  },
+  {
+    "en": "Second, the `five` function has no parameters and defines the type of the return value, but the body of the function is a lonely `5` with no semicolon because it’s an expression whose value we want to return.",
+    "zh": "第二，`five` 函数没有参数，并定义了返回值的类型，但函数体只是一个单独的 `5`，没有分号，因为它是一个我们想要返回其值的表达式。"
+  },
+  {
+    "en": "Let’s look at another example:",
+    "zh": "让我们看另一个例子："
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\nfn main() {\n    let x = plus_one(5);\n\n    println!(\"The value of x is: {x}\");\n}\n\nfn plus_one(x: i32) -> i32 {\n    x + 1\n}\n```",
+    "zh": "```rust\nfn main() {\n    let x = plus_one(5);\n\n    println!(\"The value of x is: {x}\");\n}\n\nfn plus_one(x: i32) -> i32 {\n    x + 1\n}\n```"
+  },
+  {
+    "en": "Running this code will print `The value of x is: 6`. But what happens if we place a semicolon at the end of the line containing `x + 1`, changing it from an expression to a statement?",
+    "zh": "运行这段代码会打印 `The value of x is: 6`。但是，如果我们在包含 `x + 1` 的那一行末尾加上分号，把它从表达式变成语句，会发生什么呢？"
+  },
+  {
+    "en": "Filename: src/main.rs",
+    "zh": "文件名：src/main.rs"
+  },
+  {
+    "en": "```rust\nfn main() {\n    let x = plus_one(5);\n\n    println!(\"The value of x is: {x}\");\n}\n\nfn plus_one(x: i32) -> i32 {\n    x + 1;\n}\n```",
+    "zh": "```rust\nfn main() {\n    let x = plus_one(5);\n\n    println!(\"The value of x is: {x}\");\n}\n\nfn plus_one(x: i32) -> i32 {\n    x + 1;\n}\n```"
+  },
+  {
+    "en": "Compiling this code will produce an error, as follows:",
+    "zh": "编译这段代码会产生如下错误："
+  },
+  {
+    "en": "```console\n$ cargo run\n   Compiling functions v0.1.0 (file:///projects/functions)\nerror[E0308]: mismatched types\n --> src/main.rs:7:24\n  |\n7 | fn plus_one(x: i32) -> i32 {\n  |    --------            ^^^ expected `i32`, found `()`\n  |    |\n  |    implicitly returns `()` as its body has no tail or `return` expression\n8 |     x + 1;\n  |          - help: remove this semicolon to return this value\n\nFor more information about this error, try `rustc --explain E0308`.\nerror: could not compile `functions` (bin \"functions\") due to 1 previous error\n```",
+    "zh": "```console\n$ cargo run\n   Compiling functions v0.1.0 (file:///projects/functions)\nerror[E0308]: mismatched types\n --> src/main.rs:7:24\n  |\n7 | fn plus_one(x: i32) -> i32 {\n  |    --------            ^^^ expected `i32`, found `()`\n  |    |\n  |    implicitly returns `()` as its body has no tail or `return` expression\n8 |     x + 1;\n  |          - help: remove this semicolon to return this value\n\nFor more information about this error, try `rustc --explain E0308`.\nerror: could not compile `functions` (bin \"functions\") due to 1 previous error\n```"
+  },
+  {
+    "en": "The main error message, `mismatched types`, reveals the core issue with this code. The definition of the function `plus_one` says that it will return an `i32`, but statements don’t evaluate to a value, which is expressed by `()`, the unit type. Therefore, nothing is returned, which contradicts the function definition and results in an error. In this output, Rust provides a message to possibly help rectify this issue: It suggests removing the semicolon, which would fix the error.",
+    "zh": "主要错误消息 `mismatched types` 揭示了这段代码的核心问题。函数 `plus_one` 的定义说它会返回 `i32`，但语句不求值（值用 `()`，即单元类型表示）。因此，没有返回任何值，这与函数定义相矛盾，导致错误。在这个输出中，Rust 提供了一条可能有助于修正该问题的信息：它建议删除分号，这样就能修复错误。"
+  }
+]
